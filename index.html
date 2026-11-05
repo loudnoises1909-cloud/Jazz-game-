@@ -20,7 +20,7 @@
     --ink:#231a14; --cream:#f3e9d2; --paper:#efe2c4;
     --navy:#22364f; --navy2:#2f4a6d; --mustard:#e0a930; --brick:#b5432f; --olive:#6b7a3a;
     --wood:#7a4e2d; --wood2:#5a3a22;
-    --slot:clamp(56px, 11vmin, 112px);
+    --slot:clamp(64px, 13vmin, 130px);
     --tool:clamp(84px, min(18vh, 20vw), 160px);
     --display:"Luckiest Guy","Arial Rounded MT Bold",ui-rounded,system-ui,sans-serif;
   }
@@ -55,11 +55,12 @@
 
   /* the "wall of healed bats": empty dashed spots become little wooden picture frames */
   #shelf{display:flex;justify-content:center;gap:clamp(8px,1.8vmin,18px);padding:clamp(10px,2.2vmin,20px) 72px clamp(14px,2.4vmin,24px);transition:transform .7s}
-  .slot{position:relative;width:var(--slot);height:calc(var(--slot) * .82);border-radius:8px;border:3px dashed rgba(243,233,210,.35);
+  .slot{position:relative;width:var(--slot);height:calc(var(--slot) * .65);border-radius:8px;border:3px dashed rgba(243,233,210,.35);
         background:rgba(243,233,210,.04);display:grid;place-items:center;overflow:visible}
   .slot.filled{border:5px solid var(--wood);background:var(--paper);
         box-shadow:0 0 0 3px var(--ink), inset 0 0 0 2px var(--ink), 0 6px 0 3px var(--ink)}
-  .slot svg{width:118%;height:auto;overflow:visible}
+  .slot svg.pcsvg{width:100%;height:100%;display:block}
+  .slot.filled{border-width:3px}
   .slot.filled svg{animation:popIn .5s ease-out}
   .slot.dance{animation:dance .55s ease-in-out infinite alternate}
   body.party #shelf{transform:translateY(24vh) scale(1.4)}
@@ -146,6 +147,7 @@
   .opts{display:flex;flex-wrap:wrap;gap:16px;margin:12px 0;font-size:15px}
   .opts label{display:flex;align-items:center;gap:6px}
   .opts input{width:22px;height:22px;accent-color:var(--brick)}
+  .opts select{font:inherit;padding:6px 8px;border:3px solid var(--ink);border-radius:8px;background:var(--cream);color:var(--ink)}
   .panelBtns{display:flex;gap:10px;justify-content:flex-end;margin-top:8px}
   .panelBtns button.primary{background:var(--navy2);color:var(--cream)}
   .note{background:#f5d98a;border:2px solid var(--ink);border-radius:8px;padding:8px 10px;font-size:13px;margin-bottom:8px;display:none}
@@ -178,6 +180,21 @@
   @keyframes liftOut{to{transform:translateY(40px);opacity:0}}
   @keyframes pluck{to{transform:translate(40px,-55px) rotate(20deg);opacity:0}}
   @keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.25)}30%{transform:scale(1)}45%{transform:scale(1.18)}}
+  /* moonlight flight home + family postcard */
+  #night{position:fixed;inset:0;z-index:260;opacity:0;pointer-events:none;transition:opacity .6s;overflow:hidden;
+         background:radial-gradient(circle at 72% 26%, #46668c 0, #22364f 38%, #101826 100%)}
+  #night.show{opacity:1;pointer-events:auto}
+  .moonbig{position:absolute;left:72%;top:26%;width:min(28vmin,240px);height:min(28vmin,240px);transform:translate(-50%,-50%);border-radius:50%;
+           background:radial-gradient(circle at 35% 40%, rgba(0,0,0,.08) 0 10%, transparent 11%), radial-gradient(circle at 62% 64%, rgba(0,0,0,.07) 0 13%, transparent 14%), radial-gradient(circle at 66% 30%, rgba(0,0,0,.06) 0 7%, transparent 8%), var(--cream);
+           border:4px solid var(--ink);box-shadow:0 0 70px 24px rgba(243,233,210,.28)}
+  #night .trees{position:absolute;left:0;bottom:0;width:100%;height:30%}
+  .flyer{position:absolute;left:0;top:0;width:min(40vw,360px);animation:flyHome 3s ease-in forwards}
+  @keyframes flyHome{0%{transform:translate(8vw,52vh) scale(1)}30%{transform:translate(28vw,40vh) scale(.78) rotate(-6deg)}
+    60%{transform:translate(48vw,30vh) scale(.5) rotate(5deg)}100%{transform:translate(58vw,12vh) scale(.12) rotate(0);opacity:.2}}
+  #postcard{position:fixed;left:50%;top:50%;width:min(88vw,110vh,780px);z-index:270;pointer-events:none;
+            transform:translate(-50%,-50%) scale(0) rotate(-14deg);filter:drop-shadow(8px 10px 0 rgba(0,0,0,.45))}
+  #postcard.show{transition:transform .6s cubic-bezier(.3,1.5,.5,1);transform:translate(-50%,-50%) scale(1) rotate(-3deg)}
+  #postcard svg{width:100%;height:auto;display:block}
   @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
   @keyframes flap{0%,100%{transform:scaleY(1) rotate(0)}50%{transform:scaleY(.78) rotate(-9deg)}}
   @keyframes prop{0%,100%{transform:scaleX(1)}50%{transform:scaleX(.06)}}
@@ -212,6 +229,8 @@
   <div class="moon"></div>
 </div>
 <div id="rings"></div>
+<div id="night"></div>
+<div id="postcard"></div>
 
 <div id="app">
   <div id="shelf"></div>
@@ -249,6 +268,7 @@
     <div class="opts">
       <label><input type="checkbox" id="optTts"> Robot voice for lines you haven't recorded</label>
       <label><input type="checkbox" id="optSfx"> Sound effects</label>
+      <label>Postcards: <select id="optTheme"></select></label>
     </div>
     <div class="panelBtns"><button class="primary" id="closePanel">Done</button></div>
   </div>
@@ -326,12 +346,13 @@ const LINES = [
   { k: 'wrong',     t: "Hmm, not that one. Let's try another!" },
   { k: 'tap',       t: 'Now tap the bat to help it heal.' },
   { k: 'healed',    t: 'Yay! All better!' },
+  { k: 'home',      t: 'Back home with the family!' },
   { k: 'party',     t: 'You healed all the bats! Thank you, Doctor!' }
 ];
 const LINE = Object.fromEntries(LINES.map(l => [l.k, l.t]));
 
 /* ================= settings ================= */
-const SET = { tts: true, sfx: true };
+const SET = { tts: true, sfx: true, theme: 'auto' };
 try { Object.assign(SET, JSON.parse(localStorage.getItem('batdoctor.settings') || '{}')); } catch (e) {}
 const saveSet = () => { try { localStorage.setItem('batdoctor.settings', JSON.stringify(SET)); } catch (e) {} };
 
@@ -468,7 +489,7 @@ function batSVG(col, { happy = false, id = '', hat = 0 } = {}) {
     <path class="mouth" d="${m.d}" fill="${m.fill}" stroke="${INK}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
     <ellipse class="tongue" cx="200" cy="217" rx="15" ry="7" fill="#d65a5a" style="display:${happy ? 'inline' : 'none'}"/>
     <g class="teeth" transform="translate(0,${(m.mid - 186).toFixed(1)})">${teethSVG()}</g>
-    ${HATS[hat % HATS.length]()}
+    ${hat == null ? '' : HATS[hat % HATS.length]()}
     </g>
     <g class="care-layer"></g>
     <g class="booboo-layer"></g>
@@ -533,6 +554,171 @@ const TOOL_ICON = {
   star: `<polygon points="${starPts(0, 0, 44, .48)}" fill="#e0a930" ${sw}/>`
 };
 const FIX_ICON = { scrape: 'strip', bump: 'icebag', splinter: 'tweezers', hungry: 'bottle' };
+
+/* ---------- family postcards ---------- */
+// extra accessory hats for the grown-ups: 6 Santa, 7 witch, 8 sunglasses, 9 bunny ears, 10 party hat
+HATS.push(
+  () => `<g transform="rotate(-8 200 112)">
+    <path d="M166,112 Q170,70 214,58 Q246,52 254,82 Q232,72 228,112 Z" fill="#c2452f" ${sw}/>
+    <circle cx="254" cy="86" r="10" fill="#fffaf0" ${sw}/>
+    <rect x="158" y="102" width="84" height="18" rx="9" fill="#fffaf0" ${sw}/></g>`,
+  () => `<g transform="rotate(-10 200 110)">
+    <path d="M174,108 L196,42 Q204,34 207,48 L226,108 Z" fill="#3a2f4d" ${sw}/>
+    <path d="M176,99 L224,99 L226,108 L174,108 Z" fill="#e0a930" ${sw}/>
+    <ellipse cx="200" cy="110" rx="50" ry="9" fill="#3a2f4d" ${sw}/></g>`,
+  () => `<g>
+    <path d="M160,140 H240" stroke="${INK}" stroke-width="5"/>
+    <rect x="163" y="133" width="32" height="22" rx="9" fill="${INK}" ${sw}/>
+    <rect x="205" y="133" width="32" height="22" rx="9" fill="${INK}" ${sw}/>
+    <path d="M170,140 l9,-3 M212,140 l9,-3" stroke="#9fcbd6" stroke-width="3" stroke-linecap="round"/></g>`,
+  () => `<g>
+    <path d="M178,112 Q158,40 174,28 Q194,34 192,110 Z" fill="#fffaf0" ${sw}/>
+    <path d="M181,100 Q170,54 176,42 Q186,50 186,100 Z" fill="#f5b8c8"/>
+    <path d="M222,112 Q242,40 226,28 Q206,34 208,110 Z" fill="#fffaf0" ${sw}/>
+    <path d="M219,100 Q230,54 224,42 Q214,50 214,100 Z" fill="#f5b8c8"/>
+    <path d="M164,116 Q200,96 236,116" stroke="${INK}" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <path d="M164,116 Q200,96 236,116" stroke="#e0a930" stroke-width="5" fill="none" stroke-linecap="round"/></g>`,
+  () => `<g transform="rotate(-10 200 110)">
+    <path d="M178,112 L200,52 L222,112 Z" fill="#3f6fa8" ${sw}/>
+    <path d="M185,94 L215,94 M191,76 L209,76" stroke="#e0a930" stroke-width="5"/>
+    <circle cx="200" cy="50" r="7" fill="#c2452f" ${sw}/></g>`
+);
+const H_SANTA = 6, H_WITCH = 7, H_SHADES = 8, H_BUNNY = 9, H_PARTY = 10;
+
+const EVERYDAY = ['beach', 'camping', 'picnic', 'snow', 'birthday'];
+const THEME_NAMES = {
+  halloween: 'Halloween', thanksgiving: 'Thanksgiving', christmas: 'Christmas', easter: 'Easter', july4: '4th of July',
+  beach: 'Beach', camping: 'Camping', picnic: 'Picnic', snow: 'Snow day', birthday: 'Birthday'
+};
+function thanksgivingDay(y) { const d = new Date(y, 10, 1); return new Date(y, 10, 1 + ((4 - d.getDay() + 7) % 7) + 21); }
+function easterDay(y) { // anonymous Gregorian algorithm
+  const a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25),
+    g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4,
+    l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451),
+    month = Math.floor((h + l - 7 * m + 114) / 31), day = ((h + l - 7 * m + 114) % 31) + 1;
+  return new Date(y, month - 1, day);
+}
+function holidayFor(now) {
+  const y = now.getFullYear(), D = (m, d) => new Date(y, m, d);
+  const day = new Date(y, now.getMonth(), now.getDate());
+  const within = (a, b) => day >= a && day <= b;
+  if (within(D(9, 10), D(9, 31))) return 'halloween';
+  if (within(D(10, 1), thanksgivingDay(y))) return 'thanksgiving';
+  if (within(D(11, 1), D(11, 26))) return 'christmas';
+  const e = easterDay(y); if (within(new Date(y, e.getMonth(), e.getDate() - 14), e)) return 'easter';
+  if (within(D(5, 25), D(6, 4))) return 'july4';
+  return null;
+}
+
+const cloud = (x, y, s) => `<g transform="translate(${x},${y}) scale(${s})"><path d="M-30,10 Q-34,-6 -16,-8 Q-10,-24 8,-18 Q24,-26 30,-6 Q44,-2 36,12 Z" fill="#fffaf0" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/></g>`;
+const sun = (x, y, r) => `<g transform="translate(${x},${y})">${Array.from({ length: 10 }, (_, i) => { const a = i * Math.PI / 5; return `<path d="M${(Math.cos(a) * (r + 6)).toFixed(1)},${(Math.sin(a) * (r + 6)).toFixed(1)} L${(Math.cos(a) * (r + 16)).toFixed(1)},${(Math.sin(a) * (r + 16)).toFixed(1)}" stroke="${INK}" stroke-width="4" stroke-linecap="round"/>`; }).join('')}<circle r="${r}" fill="#e0a930" stroke="${INK}" stroke-width="3.5"/></g>`;
+const dots = (n, col, y0, y1, r = 1.8, seed = 1) => { let s = seed, o = ''; const rnd = () => (s = (s * 9301 + 49297) % 233280) / 233280; for (let i = 0; i < n; i++) o += `<circle cx="${(12 + rnd() * 376).toFixed(0)}" cy="${(y0 + rnd() * (y1 - y0)).toFixed(0)}" r="${(r * (.6 + rnd() * .8)).toFixed(1)}" fill="${col}"/>`; return o; };
+const pine = (x, y, h, col = '#2f6b3a') => `<g transform="translate(${x},${y})"><rect x="-4" y="-6" width="8" height="10" fill="#5a3a22" stroke="${INK}" stroke-width="2.5"/>
+  <polygon points="0,${-h} ${h * .32},${-h * .45} ${-h * .32},${-h * .45}" fill="${col}" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/>
+  <polygon points="0,${-h * .7} ${h * .42},-4 ${-h * .42},-4" fill="${col}" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/></g>`;
+const pumpkin = (x, y, s, face) => `<g transform="translate(${x},${y}) scale(${s})">
+  <path d="M0,-26 q2,-10 8,-12" stroke="#4c5728" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <ellipse cx="-14" cy="0" rx="16" ry="24" fill="#e07a2a" ${sw}/><ellipse cx="14" cy="0" rx="16" ry="24" fill="#e07a2a" ${sw}/><ellipse cx="0" cy="0" rx="15" ry="25" fill="#ea8a34" ${sw}/>
+  ${face ? `<path d="M-14,-8 l6,-8 l6,8 Z M2,-8 l6,-8 l6,8 Z" fill="${INK}"/><path d="M-14,6 Q0,18 14,6 Q0,12 -14,6 Z" fill="${INK}" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>` : ''}</g>`;
+const egg = (x, y, c, r = 0) => `<g transform="translate(${x},${y}) rotate(${r})"><ellipse rx="11" ry="15" fill="${c}" ${sw}/><path d="M-10,-2 l5,-4 l5,4 l5,-4 l5,4" stroke="${CREAM}" stroke-width="3" fill="none"/></g>`;
+const present = (x, y, w, h, c, rib) => `<g transform="translate(${x},${y})"><rect x="0" y="0" width="${w}" height="${h}" fill="${c}" ${sw}/><rect x="${w / 2 - 4}" y="0" width="8" height="${h}" fill="${rib}"/><rect x="0" y="${h / 2 - 4}" width="${w}" height="8" fill="${rib}"/><path d="M${w / 2},0 q-12,-12 -14,-2 q4,4 14,2 q12,-12 14,-2 q-4,4 -14,2" fill="${rib}" stroke="${INK}" stroke-width="2.5"/></g>`;
+const burst = (cx, cy, r, c) => `<g transform="translate(${cx},${cy})">${Array.from({ length: 12 }, (_, i) => { const a = i * Math.PI / 6; return `<path d="M${(Math.cos(a) * r * .3).toFixed(1)},${(Math.sin(a) * r * .3).toFixed(1)} L${(Math.cos(a) * r).toFixed(1)},${(Math.sin(a) * r).toFixed(1)}" stroke="${c}" stroke-width="4" stroke-linecap="round"/>`; }).join('')}<circle r="4" fill="${c}"/></g>`;
+const bunting = cols => `<path d="M0,22 Q200,40 400,22" stroke="${INK}" stroke-width="2.5" fill="none"/>` + Array.from({ length: 14 }, (_, i) => { const x = 14 + i * 28, y = 24 + Math.sin(i / 13 * Math.PI) * 9; return `<polygon points="${x - 10},${y} ${x + 10},${y} ${x},${y + 18}" fill="${cols[i % cols.length]}" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>`; }).join('');
+
+const SCENES = {
+  christmas: () => ({ cap: 'Merry Christmas!', adults: [H_SANTA, H_SANTA],
+    bg: `<rect width="400" height="260" fill="#3d5a3a"/><path d="M0,0 V260 M40,0 V260 M80,0 V260 M120,0 V260 M160,0 V260 M200,0 V260 M240,0 V260 M280,0 V260 M320,0 V260 M360,0 V260" stroke="#476a43" stroke-width="14"/>
+      <rect x="30" y="70" width="70" height="80" fill="#22364f" stroke="${INK}" stroke-width="4"/>${'<circle cx="45" cy="88" r="2.5" fill="#fff"/><circle cx="70" cy="80" r="2" fill="#fff"/><circle cx="88" cy="104" r="2.5" fill="#fff"/><circle cx="52" cy="124" r="2" fill="#fff"/><circle cx="80" cy="136" r="2.5" fill="#fff"/>'}
+      <path d="M65,70 V150 M30,110 H100" stroke="${CREAM}" stroke-width="5"/><rect x="30" y="70" width="70" height="80" fill="none" stroke="${INK}" stroke-width="4"/>
+      <rect x="0" y="214" width="400" height="46" fill="#7a4e2d"/><path d="M0,214 H400" stroke="${INK}" stroke-width="4"/>
+      <g transform="translate(338,0)"><rect x="-6" y="196" width="12" height="20" fill="#5a3a22" ${sw}/>
+        <polygon points="0,52 34,110 -34,110" fill="#2f6b3a" ${sw}/><polygon points="0,84 44,156 -44,156" fill="#2f6b3a" ${sw}/><polygon points="0,124 54,200 -54,200" fill="#2f6b3a" ${sw}/>
+        <circle cx="-12" cy="104" r="5" fill="#c2452f" ${sw}/><circle cx="16" cy="140" r="5" fill="#e0a930" ${sw}/><circle cx="-24" cy="160" r="5" fill="${CREAM}" ${sw}/><circle cx="20" cy="186" r="5" fill="#c2452f" ${sw}/><circle cx="-8" cy="188" r="5" fill="#3f6fa8" ${sw}/>
+        <polygon points="${starPts(0, 50, 13, .45)}" fill="#e0a930" ${sw}/></g>`,
+    fg: present(28, 208, 46, 38, '#c2452f', '#e0a930') + present(80, 220, 32, 28, '#3f6fa8', CREAM) + present(300, 214, 40, 34, '#5f8f3a', '#c2452f') }),
+  thanksgiving: () => ({ cap: 'Happy Thanksgiving!', adults: [null, null],
+    bg: `<rect width="400" height="260" fill="#d08a3a"/><rect x="0" y="0" width="400" height="120" fill="#c97a2e"/>
+      ${[[40, 70, '#b5432f', 20], [110, 40, '#7a4e2d', -30], [300, 60, '#e0a930', 40], [360, 110, '#b5432f', -10], [60, 140, '#e0a930', 60], [340, 160, '#7a4e2d', 15]].map(([x, y, c, r]) => `<path transform="translate(${x},${y}) rotate(${r})" d="M0,-14 Q10,-6 6,0 Q14,4 4,8 Q4,14 0,16 Q-4,14 -4,8 Q-14,4 -6,0 Q-10,-6 0,-14 Z" fill="${c}" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/>`).join('')}`,
+    fg: `<rect x="0" y="216" width="400" height="44" fill="#7a4e2d" ${sw}/><rect x="0" y="210" width="400" height="12" fill="${CREAM}" ${sw}/>
+      ${pumpkin(70, 196, .9, false)}
+      <g transform="translate(200,206)"><ellipse rx="44" ry="12" fill="#dfe2e6" ${sw}/><ellipse cy="-6" rx="34" ry="10" fill="#d9a35a" ${sw}/><path d="M-24,-8 L20,-2 M-14,-14 L28,-8 M-22,-2 L-6,-14 M-4,0 L12,-15" stroke="#a8743a" stroke-width="3"/></g>
+      <g transform="translate(320,196) rotate(-20)"><ellipse rx="11" ry="24" fill="#e3b23c" ${sw}/><path d="M-6,-14 h12 M-7,-4 h14 M-7,6 h14" stroke="#c49020" stroke-width="2"/><path d="M0,22 Q-18,10 -14,-12 Q-6,8 0,22 Q18,10 14,-12 Q6,8 0,22 Z" fill="#6b7a3a" ${sw}/></g>` }),
+  halloween: () => ({ cap: 'Happy Halloween!', adults: [H_WITCH, null],
+    bg: `<rect width="400" height="260" fill="#2d2442"/>${dots(30, CREAM, 14, 140, 1.6, 3)}<circle cx="320" cy="80" r="44" fill="#e9a03a" stroke="${INK}" stroke-width="4"/>
+      <path d="M0,214 Q100,196 200,212 Q300,226 400,206 V260 H0 Z" fill="#1d1729" ${sw}/>`,
+    fg: pumpkin(62, 222, 1.1, true) + pumpkin(342, 226, 1, true) +
+      `<g transform="translate(300,232)"><path d="M-14,-14 L14,-14 L11,10 L-11,10 Z" fill="#e07a2a" ${sw}/><path d="M-14,-14 Q0,-34 14,-14" stroke="${INK}" stroke-width="3" fill="none"/><circle cx="-4" cy="-18" r="5" fill="#c2452f" ${sw}/><circle cx="6" cy="-17" r="5" fill="#e0a930" ${sw}/></g>` }),
+  easter: () => ({ cap: 'Happy Easter!', adults: [H_BUNNY, H_BUNNY],
+    bg: `<rect width="400" height="260" fill="#a9d3e0"/>${cloud(80, 70, 1)}${cloud(300, 90, .8)}${sun(350, 40, 18)}
+      <path d="M0,200 Q120,184 220,198 Q320,212 400,196 V260 H0 Z" fill="#6b9a3a" ${sw}/>
+      ${[[30, 214], [110, 232], [270, 236], [380, 220]].map(([x, y], i) => `<g transform="translate(${x},${y})"><circle r="6" fill="${['#fffaf0', '#e3b23c', '#f5b8c8', '#fffaf0'][i]}" stroke="${INK}" stroke-width="2"/><circle r="2.5" fill="#e0a930"/></g>`).join('')}`,
+    fg: egg(52, 232, '#c2452f', -15) + egg(84, 240, '#3f6fa8', 10) + egg(300, 238, '#e3b23c', 12) +
+      `<g transform="translate(350,232)"><path d="M-26,-8 L26,-8 L20,18 L-20,18 Z" fill="#a8743a" ${sw}/><path d="M-22,-8 Q0,-46 22,-8" stroke="${INK}" stroke-width="4" fill="none"/>${egg(-10, -12, '#5f8f3a', -20)}${egg(10, -12, '#f5b8c8', 20)}<path d="M-26,-8 L26,-8 L20,18 L-20,18 Z" fill="none" ${sw}/><path d="M-24,2 H24" stroke="#7a4e2d" stroke-width="3"/></g>` }),
+  july4: () => ({ cap: 'Happy 4th of July!', adults: [H_PARTY, H_PARTY],
+    bg: `<rect width="400" height="260" fill="#1f2f4a"/>${dots(25, CREAM, 50, 160, 1.5, 7)}${burst(70, 80, 34, '#c2452f')}${burst(330, 90, 40, CREAM)}${burst(210, 60, 26, '#5f9ec8')}${burst(270, 150, 22, '#e0a930')}
+      <path d="M0,220 H400 V260 H0 Z" fill="#2b3b2a" ${sw}/>${bunting(['#c2452f', CREAM, '#3f6fa8'])}` }),
+  beach: () => ({ cap: 'Beach Day!', adults: [H_SHADES, H_SHADES],
+    bg: `<rect width="400" height="260" fill="#9fd0e0"/>${sun(330, 50, 22)}${cloud(90, 60, .9)}
+      <rect x="0" y="134" width="400" height="66" fill="#3f6fa8"/><path d="M20,150 q15,-8 30,0 t30,0 M150,170 q15,-8 30,0 t30,0 M290,152 q15,-8 30,0 t30,0" stroke="${CREAM}" stroke-width="3" fill="none"/>
+      <path d="M0,198 Q200,184 400,198 V260 H0 Z" fill="#e8c98a" ${sw}/>
+      <g transform="translate(350,0)"><path d="M0,110 V236" stroke="${INK}" stroke-width="5"/>
+        <path d="M-52,118 Q0,58 52,118 Z" fill="${CREAM}" ${sw}/><path d="M0,72 Q-18,90 -30,116 L-10,118 Q-4,92 0,72 Q4,92 10,118 L30,116 Q18,90 0,72" fill="#c2452f"/><path d="M-52,118 Q0,58 52,118 Z" fill="none" ${sw}/></g>`,
+    fg: `<g transform="translate(56,232)"><path d="M-16,-14 L16,-14 L12,14 L-12,14 Z" fill="#e3b23c" ${sw}/><path d="M-16,-14 Q0,-34 16,-14" stroke="${INK}" stroke-width="3" fill="none"/></g>
+      <g transform="translate(300,238)"><circle r="14" fill="${CREAM}" ${sw}/><path d="M-14,0 H14 M0,-14 V14" stroke="#c2452f" stroke-width="5"/><circle r="14" fill="none" ${sw}/></g>` }),
+  camping: () => ({ cap: 'Camping Trip!', adults: [null, null],
+    bg: `<rect width="400" height="260" fill="#1f2f4a"/>${dots(30, CREAM, 14, 120, 1.6, 11)}<circle cx="330" cy="62" r="20" fill="${CREAM}" stroke="${INK}" stroke-width="3"/>
+      ${pine(30, 210, 110, '#24452c')}${pine(380, 214, 120, '#24452c')}${pine(352, 210, 80, '#2f5a37')}
+      <path d="M0,206 H400 V260 H0 Z" fill="#33502f" ${sw}/>
+      <g transform="translate(70,210)"><polygon points="0,-74 58,0 -58,0" fill="#6b7a3a" ${sw}/><polygon points="0,-60 18,0 -18,0" fill="#3a4520" ${sw}/></g>`,
+    fg: `<g transform="translate(318,236)"><path d="M-26,8 L26,-6 M-26,-6 L26,8" stroke="#5a3a22" stroke-width="9" stroke-linecap="round"/><path d="M-26,8 L26,-6 M-26,-6 L26,8" stroke="${INK}" stroke-width="2" opacity=".4"/>
+      <path d="M-16,0 Q-18,-26 -4,-40 Q-2,-24 6,-30 Q4,-16 14,-22 Q18,-8 16,0 Z" fill="#e0a930" ${sw}/><path d="M-6,0 Q-8,-14 0,-22 Q2,-12 8,-14 Q8,-6 6,0 Z" fill="#c2452f"/></g>` }),
+  picnic: () => ({ cap: 'Picnic Day!', adults: [null, null],
+    bg: `<rect width="400" height="260" fill="#a9d3e0"/>${sun(50, 46, 18)}${cloud(250, 50, .8)}${cloud(350, 80, .6)}
+      <path d="M0,190 Q140,160 260,180 Q340,192 400,176 V260 H0 Z" fill="#6b9a3a" ${sw}/>
+      <g transform="translate(350,170)"><rect x="-7" y="-10" width="14" height="40" fill="#7a4e2d" ${sw}/><circle cx="0" cy="-34" r="34" fill="#4c7330" ${sw}/><circle cx="-14" cy="-40" r="5" fill="#c2452f"/><circle cx="12" cy="-26" r="5" fill="#c2452f"/></g>`,
+    fg: `<path d="M20,226 L380,226 L396,258 L4,258 Z" fill="#c2452f" ${sw}/>${[60, 120, 180, 240, 300, 360].map(x => `<path d="M${x},226 L${x + 6},258" stroke="${CREAM}" stroke-width="8"/>`).join('')}<path d="M10,242 H390" stroke="${CREAM}" stroke-width="7"/>
+      <g transform="translate(64,214)"><path d="M-24,-10 L24,-10 L20,16 L-20,16 Z" fill="#c08a4a" ${sw}/><path d="M-18,-10 Q0,-34 18,-10" stroke="${INK}" stroke-width="4" fill="none"/></g>
+      <g transform="translate(330,226)"><polygon points="-16,0 16,0 0,-20" fill="#f3e3b0" ${sw}/><path d="M-12,-3 H12" stroke="#5f8f3a" stroke-width="3"/></g>` }),
+  snow: () => ({ cap: 'Snow Day!', adults: [null, null],
+    bg: `<rect width="400" height="260" fill="#b9d6e6"/>${dots(45, '#fffaf0', 14, 220, 2.6, 5)}
+      <path d="M0,196 Q120,178 230,194 Q330,206 400,190 V260 H0 Z" fill="#f6f2ea" ${sw}/>
+      <g transform="translate(350,196)"><circle cy="-8" r="24" fill="#fffaf0" ${sw}/><circle cy="-46" r="17" fill="#fffaf0" ${sw}/>
+        <circle cx="-6" cy="-50" r="2.5" fill="${INK}"/><circle cx="6" cy="-50" r="2.5" fill="${INK}"/><path d="M0,-44 L14,-41 L0,-40 Z" fill="#e07a2a" stroke="${INK}" stroke-width="1.5"/>
+        <path d="M-16,-32 Q0,-26 16,-32 L18,-26 Q0,-20 -18,-26 Z" fill="#c2452f" ${sw}/><path d="M10,-28 L16,-8 L8,-8 Z" fill="#c2452f" ${sw}/>
+        <rect x="-12" y="-74" width="24" height="12" fill="${INK}"/><rect x="-18" y="-64" width="36" height="5" fill="${INK}"/></g>`,
+    fg: '' }),
+  birthday: () => ({ cap: 'Happy Birthday!', adults: [H_PARTY, H_PARTY],
+    bg: `<rect width="400" height="260" fill="#2f4a6d"/>${dots(40, '#3b5a80', 40, 250, 6, 9)}${bunting(['#e0a930', '#c2452f', CREAM, '#5f9ea0'])}
+      ${[[40, 90, '#c2452f'], [72, 70, '#e0a930'], [352, 80, '#5f9ea0'], [328, 106, '#c2452f']].map(([x, y, c]) => `<path d="M${x},${y + 24} q6,30 -4,60" stroke="${INK}" stroke-width="2" fill="none"/><ellipse cx="${x}" cy="${y}" rx="18" ry="23" fill="${c}" ${sw}/><path d="M${x - 7},${y - 10} q3,-6 9,-6" stroke="#fff" stroke-width="3" fill="none" opacity=".7"/>`).join('')}
+      <rect x="0" y="222" width="400" height="38" fill="#7a4e2d" ${sw}/>`,
+    fg: `<g transform="translate(296,238) scale(.75)"><rect x="-40" y="-26" width="80" height="26" rx="4" fill="#fffaf0" ${sw}/><rect x="-30" y="-46" width="60" height="22" rx="4" fill="#f5b8c8" ${sw}/>
+      <path d="M-40,-14 q10,8 20,0 t20,0 t20,0 t20,0" stroke="#c2452f" stroke-width="4" fill="none"/>
+      ${[-16, 0, 16].map(x => `<rect x="${x - 3}" y="-62" width="6" height="16" fill="#3f6fa8" stroke="${INK}" stroke-width="2"/><path d="M${x},-64 q-5,-6 0,-12 q5,6 0,12" fill="#e0a930" stroke="${INK}" stroke-width="1.5"/>`).join('')}</g>
+      ${present(36, 214, 40, 32, '#c2452f', '#e0a930')}` })
+};
+
+let pcCount = 0;
+function nestBat(col, hat, x, y, w) {
+  return batSVG(col, { happy: true, hat }).replace('class="batsvg"', '').replace('<svg ', `<svg x="${x}" y="${y}" width="${w}" height="${w * .75}" `);
+}
+function postcardSVG(bat, theme) {
+  const sc = SCENES[theme](), id = 'pcclip' + (pcCount++);
+  const A = mix(bat.color, '#b0506e', .28), B = mix(bat.color, '#ffffff', .15);
+  const size = sc.cap.length <= 12 ? 30 : sc.cap.length <= 16 ? 26 : 22;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 260" class="pcsvg">
+    <defs><clipPath id="${id}"><rect x="12" y="12" width="376" height="236" rx="6"/></clipPath></defs>
+    <rect x="2" y="2" width="396" height="256" rx="12" fill="${CREAM}" stroke="${INK}" stroke-width="4"/>
+    <g clip-path="url(#${id})">${sc.bg}
+      ${nestBat(A, sc.adults[0], -52, 44, 236)}${nestBat(B, sc.adults[1], 216, 44, 236)}${nestBat(bat.color, bat.hat, 117, 116, 166)}
+      ${sc.fg || ''}</g>
+    <rect x="12" y="12" width="376" height="236" rx="6" fill="none" stroke="${INK}" stroke-width="3"/>
+    <g stroke="${INK}" stroke-width="2" fill="none" opacity=".5"><circle cx="322" cy="60" r="17"/><path d="M270,50 q8,-5 16,0 t16,0 M270,58 q8,-5 16,0 t16,0 M270,66 q8,-5 16,0 t16,0"/></g>
+    <g transform="translate(334,20)"><rect width="46" height="54" fill="${CREAM}" stroke="${INK}" stroke-width="2.5" stroke-dasharray="4 3"/><rect x="5" y="5" width="36" height="44" fill="#b5432f"/>
+      <path d="M23,22 q-6,-8 -16,-4 q4,6 2,12 q6,-3 9,2 q2,-5 5,-6 q3,1 5,6 q3,-5 9,-2 q-2,-6 2,-12 q-10,-4 -16,4 z" fill="${CREAM}"/></g>
+    <text x="26" y="50" font-family="Luckiest Guy, Arial Rounded MT Bold, sans-serif" font-size="${size}" fill="#e0a930" stroke="${INK}" stroke-width="5" stroke-linejoin="round" paint-order="stroke" letter-spacing="1" transform="rotate(-3 26 50)">${sc.cap}</text>
+    <text x="378" y="240" text-anchor="end" font-family="Luckiest Guy, Arial Rounded MT Bold, sans-serif" font-size="15" fill="${CREAM}" stroke="${INK}" stroke-width="4" stroke-linejoin="round" paint-order="stroke">Love, ${bat.name}</text>
+  </svg>`;
+}
 
 /* ================= audio ================= */
 let ac = null, sfxGain = null, voiceGain = null;
@@ -671,7 +857,10 @@ if (location.hash === '#test') window.__bd = { S };
 
 function newRoster() {
   const probs = shuffle(['scrape', 'bump', 'splinter', 'hungry', 'scrape']);
-  roster = shuffle(BATS.slice()).map((b, i) => ({ ...b, problem: probs[i] }));
+  const forced = SET.theme && SET.theme !== 'auto' ? SET.theme : null;
+  const holiday = forced || holidayFor(new Date());
+  const themes = holiday ? Array(TOTAL).fill(holiday) : shuffle(EVERYDAY.slice());
+  roster = shuffle(BATS.slice()).map((b, i) => ({ ...b, problem: probs[i], theme: themes[i] }));
 }
 const layer = n => $(`#bat .${n}-layer`);
 function svgRect(x, y, r) { // a square target around a point in bat coordinates, in screen pixels
@@ -1056,14 +1245,55 @@ async function healDone() {
   await say('healed');
   await wait(200);
   $('#meter').classList.remove('show');
-  await flyToSlot(S.healed);
-  const slot = $$('.slot')[S.healed];
-  slot.classList.add('filled');
-  slot.innerHTML = batSVG(S.cur.color, { happy: true, hat: S.cur.hat }) + `<span class="nm">${S.cur.name}</span>`;
-  sfx.pop();
+  await flyHome();
   S.healed++;
   if (S.healed >= TOTAL) party();
   else { await wait(600); nextBat(); }
+}
+function nightTrees() {
+  let o = '', x = -20, i = 0;
+  while (x < 1020) {
+    const h = 70 + ((i * 37) % 60), pine = i % 3 !== 1;
+    o += pine
+      ? `<polygon points="${x},200 ${x + h * .35},${200 - h} ${x + h * .7},200" fill="#0d141e" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/>`
+      : `<rect x="${x + 22}" y="${200 - h * .5}" width="10" height="${h * .5}" fill="#0d141e"/><circle cx="${x + 27}" cy="${200 - h * .7}" r="${h * .36}" fill="#101a26" stroke="${INK}" stroke-width="3"/>`;
+    x += pine ? h * .5 : h * .62; i++;
+  }
+  return `<svg class="trees" viewBox="0 0 1000 200" preserveAspectRatio="none">${o}<rect x="0" y="186" width="1000" height="14" fill="#0d141e"/></svg>`;
+}
+// wait for a tap on the night scene (after minMs), or move on by itself after a few seconds
+const tapToGo = minMs => new Promise(res => {
+  const t0 = Date.now(), n = $('#night');
+  let done = false;
+  const finish = () => { if (done) return; done = true; n.removeEventListener('pointerdown', h); res(); };
+  const h = () => { if (Date.now() - t0 >= minMs) finish(); };
+  n.addEventListener('pointerdown', h);
+  setTimeout(finish, 4500);
+});
+async function flyHome() {
+  const n = $('#night'), pc = $('#postcard'), slotI = S.healed;
+  n.innerHTML = `<div class="moonbig"></div>${nightTrees()}<div class="flyer flying">${batSVG(S.cur.color, { happy: true, hat: S.cur.hat })}</div>`;
+  n.classList.add('show');
+  wrap.style.transition = 'opacity .4s'; wrap.style.opacity = '0';
+  sfx.whoosh();
+  await wait(3000);
+  pc.innerHTML = postcardSVG(S.cur, S.cur.theme);
+  pc.style.transition = ''; pc.style.transform = '';
+  pc.classList.add('show'); sfx.yay();
+  say('home');
+  await wait(650);
+  await tapToGo(600);
+  n.classList.remove('show');
+  const slot = $$('.slot')[slotI], pr = pc.getBoundingClientRect(), sr = slot.getBoundingClientRect();
+  const a = center(pr), b = center(sr);
+  pc.style.transition = 'transform .9s cubic-bezier(.5,-0.2,.5,1)';
+  pc.style.transform = `translate(calc(-50% + ${(b.x - a.x).toFixed(0)}px), calc(-50% + ${(b.y - a.y).toFixed(0)}px)) scale(${(sr.width / pr.width).toFixed(3)}) rotate(0deg)`;
+  sfx.whoosh();
+  await wait(920);
+  slot.classList.add('filled');
+  slot.innerHTML = postcardSVG(S.cur, S.cur.theme) + `<span class="nm">${S.cur.name}</span>`;
+  pc.classList.remove('show'); pc.style.transition = 'none'; pc.style.transform = ''; pc.innerHTML = '';
+  sfx.pop();
 }
 async function flyToSlot(i) {
   const slot = $$('.slot')[i];
@@ -1157,6 +1387,10 @@ const canRecord = !!(window.isSecureContext && navigator.mediaDevices && navigat
 function renderPanel() {
   $('#micNote').style.display = canRecord ? 'none' : 'block';
   $('#optTts').checked = SET.tts; $('#optSfx').checked = SET.sfx;
+  const hol = holidayFor(new Date());
+  $('#optTheme').innerHTML = `<option value="auto">Automatic${hol ? ' (now: ' + THEME_NAMES[hol] + ')' : ' (holidays when close)'}</option>` +
+    Object.keys(THEME_NAMES).map(k => `<option value="${k}">${THEME_NAMES[k]}</option>`).join('');
+  $('#optTheme').value = SET.theme || 'auto';
   const box = $('#lines'); box.innerHTML = '';
   LINES.forEach(l => {
     const isRec = rec && recKey === l.k;
@@ -1216,6 +1450,7 @@ function closePanel() {
 $('#closePanel').onclick = closePanel;
 $('#optTts').onchange = e => { SET.tts = e.target.checked; saveSet(); renderPanel(); };
 $('#optSfx').onchange = e => { SET.sfx = e.target.checked; saveSet(); };
+$('#optTheme').onchange = e => { SET.theme = e.target.value; saveSet(); };
 
 // press-and-hold so little fingers don't open it by accident
 (() => {
