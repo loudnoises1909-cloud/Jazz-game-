@@ -32,6 +32,8 @@ The voice ships with the app; players never record anything.
 1. Open `studio.html` from an `https://` address (or in Chrome on a computer) and
    record each of the 25 lines. Takes are trimmed and levelled automatically and
    kept in that browser until you download them.
+   Click **Try in game** at any point to play the real game with the takes
+   recorded so far (preview mode; nothing is uploaded).
 2. Click **Download all (zip)**, unzip, and put the `.wav` files in `voice-takes/`.
 3. Run `bash tools/build-voices.sh` (needs ffmpeg). It writes `voice/<line>.mp3`
    and `voice/voices.json`.

@@ -47,6 +47,7 @@
 <header>
   <h1>Bat Doctor · Voice Studio</h1>
   <p>Record every line the game says. Each take is trimmed and its volume evened out automatically, and saved in this browser so you can stop and come back later.
+     Press <b>Try in game</b> any time to play the real game with the lines you've recorded so far (lines not recorded yet use the device voice).
      When you're done, download the zip and add the files to the game's <b>voice-takes/</b> folder.</p>
 </header>
 <main>
@@ -72,6 +73,7 @@
     <div class="export">
       <button class="next" id="zip">⬇ Download all (zip)</button>
       <button id="one">⬇ Download this line</button>
+      <button id="try">🦇 Try in game</button>
     </div>
     <p class="note">Tips: a quiet room, phone or laptop about a hand-width from your mouth, and the same distance for every line. Smile while you talk. It really comes through.</p>
   </aside>
@@ -181,7 +183,7 @@ function render() {
   if (!rec) $('#status').textContent = t ? `✓ Recorded (${t.dur.toFixed(1)} s). Play it, re-record, or go to the next line.` : 'Not recorded yet.';
   const doneN = LINES.filter(l => takes[l.k]).length;
   $('#done').textContent = `${doneN} of ${LINES.length} recorded`;
-  $('#zip').disabled = doneN === 0;
+  $('#zip').disabled = doneN === 0; $('#try').disabled = doneN === 0;
   $('#list').innerHTML = LINES.map((l, j) => `<div class="item ${j === i ? 'cur' : ''}" data-j="${j}"><span class="dot ${takes[l.k] ? 'ok' : ''}">${takes[l.k] ? '✓' : ''}</span><div>${l.t.replace(/</g, '&lt;')}<small>${l.k}</small></div></div>`).join('');
 }
 $('#list').addEventListener('click', e => { const it = e.target.closest('.item'); if (it && !rec) { i = +it.dataset.j; render(); } });
@@ -279,6 +281,7 @@ $('#zip').onclick = () => {
   const files = LINES.filter(l => takes[l.k]).map(l => ({ name: l.k + '.wav', data: takes[l.k].wav }));
   if (files.length) download(makeZip(files), 'bat-doctor-voice-takes.zip');
 };
+$('#try').onclick = () => window.open('index.html?preview=studio', '_blank');
 $('#one').onclick = () => { const L = LINES[i], t = takes[L.k]; if (t) download(new Blob([t.wav], { type: 'audio/wav' }), L.k + '.wav'); };
 
 /* ---------- restore saved takes ---------- */

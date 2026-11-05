@@ -147,6 +147,8 @@
   .opts{display:flex;flex-wrap:wrap;gap:16px;margin:12px 0;font-size:15px}
   .opts label{display:flex;align-items:center;gap:6px}
   .opts input{width:22px;height:22px;accent-color:var(--brick)}
+  #previewTag{position:fixed;left:calc(env(safe-area-inset-left) + 10px);bottom:calc(env(safe-area-inset-bottom) + 8px);z-index:460;pointer-events:none;
+     background:var(--mustard);color:var(--ink);border:3px solid var(--ink);border-radius:10px;padding:4px 10px;font-weight:800;font-size:13px}
   .opts select{font:inherit;padding:6px 8px;border:3px solid var(--ink);border-radius:8px;background:var(--cream);color:var(--ink)}
   .panelBtns{display:flex;gap:10px;justify-content:flex-end;margin-top:8px}
   .panelBtns button.primary{background:var(--navy2);color:var(--cream)}
@@ -843,7 +845,8 @@ function say(k) {
 function decode(ab) {
   return new Promise((res, rej) => { audio().decodeAudioData(ab.slice(0), res, rej); });
 }
-async function loadVoices() {
+const PREVIEW = new URLSearchParams(location.search).get('preview') === 'studio';
+async function loadBundledVoices() {
   if (location.protocol === 'file:') return; // browsers block loading files next to a local page
   try {
     const r = await fetch('voice/voices.json', { cache: 'no-cache' });
@@ -852,7 +855,36 @@ async function loadVoices() {
     await Promise.all(Object.entries(map).map(async ([k, f]) => {
       try { const a = await fetch('voice/' + f); if (a.ok) BUF[k] = await decode(await a.arrayBuffer()); } catch (e) {}
     }));
-  } catch (e) {} // opened as a local file, or no recordings yet
+  } catch (e) {} // no recordings yet
+}
+// Preview mode (opened from studio.html's "Try in game"): use the takes saved in this browser.
+function loadStudioTakes() {
+  return new Promise(res => {
+    if (!window.indexedDB) return res(0);
+    const r = indexedDB.open('bat-doctor-studio', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('takes');
+    r.onerror = () => res(0);
+    r.onsuccess = () => {
+      const takes = {}, t = r.result.transaction('takes'), c = t.objectStore('takes').openCursor();
+      c.onsuccess = () => { const x = c.result; if (x) { takes[x.key] = x.value; x.continue(); } };
+      t.oncomplete = async () => {
+        let n = 0;
+        for (const [k, v] of Object.entries(takes)) { try { BUF[k] = await decode(v.wav); n++; } catch (e) {} }
+        res(n);
+      };
+      t.onerror = () => res(0);
+    };
+  });
+}
+async function loadVoices() {
+  await loadBundledVoices();
+  if (PREVIEW) {
+    const n = await loadStudioTakes();
+    const tag = document.createElement('div');
+    tag.id = 'previewTag';
+    tag.textContent = `Preview: your studio recordings (${n} of ${LINES.length})`;
+    document.body.appendChild(tag);
+  }
 }
 
 /* ================= extra sounds ================= */
