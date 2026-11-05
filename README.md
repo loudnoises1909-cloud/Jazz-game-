@@ -1,8 +1,18 @@
 # Bat Doctor
 
-A toddler game: a pink bat has a booboo. Drag (or tap) the bandage that matches
-the booboo's shape and colour, then tap the bat 3 times to heal it. Heal 5 bats
-to fill the shelf and start the party.
+A toddler game. Five pink bats (Doowy, Hoowy, Tooby, Boopy, Zoomy) each need the
+doctor. Every visit follows the same routine:
+
+1. Listen to the heart with the stethoscope.
+2. Check the temperature with the thermometer.
+3. Fix the problem with the right tool:
+   - scrape → the bandage with the same shape and colour
+   - bump on the head → ice bag
+   - splinter → tweezers
+   - hungry and weak (cold, tired heart) → shoe box, blanket, bottle of milk
+4. Tap the bat 3 times to fill the stars, and it flies to its picture frame.
+
+Heal all 5 to start the party. Drag a tool, or just tap it.
 
 - Single file: `index.html` (no build, no internet needed once loaded).
 - Made for tablets and phones (touch), works with a mouse too.

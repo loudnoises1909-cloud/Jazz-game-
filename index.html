@@ -54,8 +54,8 @@
        padding:env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left)}
 
   /* the "wall of healed bats": empty dashed spots become little wooden picture frames */
-  #shelf{display:flex;justify-content:center;gap:clamp(8px,1.8vmin,18px);padding:clamp(10px,2.2vmin,20px) 72px 0;transition:transform .7s}
-  .slot{width:var(--slot);height:calc(var(--slot) * .82);border-radius:8px;border:3px dashed rgba(243,233,210,.35);
+  #shelf{display:flex;justify-content:center;gap:clamp(8px,1.8vmin,18px);padding:clamp(10px,2.2vmin,20px) 72px clamp(14px,2.4vmin,24px);transition:transform .7s}
+  .slot{position:relative;width:var(--slot);height:calc(var(--slot) * .82);border-radius:8px;border:3px dashed rgba(243,233,210,.35);
         background:rgba(243,233,210,.04);display:grid;place-items:center;overflow:visible}
   .slot.filled{border:5px solid var(--wood);background:var(--paper);
         box-shadow:0 0 0 3px var(--ink), inset 0 0 0 2px var(--ink), 0 6px 0 3px var(--ink)}
@@ -82,7 +82,7 @@
   #bat.flip{animation:flip .9s ease-in-out}
   #bat.hint{animation:hintPulse 1s ease-in-out 2}
 
-  #meter{position:absolute;top:1%;left:50%;transform:translateX(-50%);display:flex;gap:14px;opacity:0;transition:opacity .3s;pointer-events:none}
+  #meter{position:absolute;bottom:2%;left:50%;transform:translateX(-50%);display:flex;gap:14px;opacity:0;transition:opacity .3s;pointer-events:none}
   #meter.show{opacity:1}
   #meter svg{width:clamp(40px,7.5vmin,68px);height:auto;overflow:visible}
   #meter polygon{fill:rgba(243,233,210,.12);stroke:var(--cream);stroke-width:5;stroke-linejoin:round;transition:fill .2s}
@@ -154,6 +154,30 @@
   .spark{position:fixed;left:0;top:0;width:30px;height:30px;margin:-15px 0 0 -15px;pointer-events:none;z-index:200;animation:burst .9s ease-out forwards}
   .conf{position:fixed;top:-70px;pointer-events:none;z-index:150;animation:fall var(--d) linear forwards}
 
+
+  /* routine checklist: listen, temperature, fix, stars */
+  #steps{position:absolute;top:1%;left:50%;transform:translateX(-50%);display:flex;gap:clamp(8px,1.6vmin,14px);z-index:3;pointer-events:none}
+  .st{position:relative;width:clamp(40px,7vmin,62px);height:clamp(40px,7vmin,62px);border-radius:12px;background:var(--paper);
+      border:3px solid var(--ink);opacity:.4;transition:opacity .3s, transform .3s, box-shadow .3s}
+  .st svg{width:100%;height:100%;display:block}
+  .st.cur{opacity:1;transform:scale(1.18);box-shadow:0 0 0 4px var(--mustard)}
+  .st.done{opacity:1}
+  .st.done::after{content:"";position:absolute;right:-9px;bottom:-9px;width:26px;height:26px;border-radius:50%;border:3px solid var(--ink);
+      background:var(--olive) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M5 12.5l4.5 4.5L19 7.5' fill='none' stroke='%23f3e9d2' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'/></svg>") center/80% no-repeat}
+  .slot .nm{position:absolute;left:-10px;right:-10px;bottom:-1.5em;text-align:center;font-family:var(--display);font-size:clamp(11px,1.8vmin,16px);color:var(--cream);letter-spacing:1px;text-shadow:2px 2px 0 var(--ink)}
+  #bat.weak .wing{animation-duration:4.5s}
+  #bat.inbox .wing{animation:none;transform:scale(.55) rotate(18deg);transition:transform .5s}
+  .drop-in{transform-box:fill-box;transform-origin:center bottom;animation:dropIn .45s cubic-bezier(.3,1.5,.5,1)}
+  .pop-in{animation:none}
+  .pop-in > *{transform-box:fill-box;transform-origin:center;animation:popIn .4s ease-out}
+  .lift-out{animation:liftOut .5s ease-in forwards}
+  .pluck{animation:pluck .8s ease-in forwards}
+  .beat{transform-box:fill-box;transform-origin:center;animation:beat .65s ease-in-out infinite}
+  .tw{transform-box:fill-box;transform-origin:center;animation:twinkle 1s ease-in-out infinite}
+  @keyframes dropIn{0%{transform:translateY(-40px);opacity:0}100%{transform:none;opacity:1}}
+  @keyframes liftOut{to{transform:translateY(40px);opacity:0}}
+  @keyframes pluck{to{transform:translate(40px,-55px) rotate(20deg);opacity:0}}
+  @keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.25)}30%{transform:scale(1)}45%{transform:scale(1.18)}}
   @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
   @keyframes flap{0%,100%{transform:scaleY(1) rotate(0)}50%{transform:scaleY(.78) rotate(-9deg)}}
   @keyframes prop{0%,100%{transform:scaleX(1)}50%{transform:scaleX(.06)}}
@@ -192,6 +216,7 @@
 <div id="app">
   <div id="shelf"></div>
   <div id="stage">
+    <div id="steps"></div>
     <div id="meter"></div>
     <div id="batWrap"><div id="batFloat"></div></div>
   </div>
@@ -259,23 +284,49 @@ function starPts(cx, cy, r, inner = .5) {
 
 /* ================= content ================= */
 const INK = '#231a14', CREAM = '#f3e9d2';
-const SHAPES = ['circle', 'star', 'heart', 'triangle', 'square'];
+const SHAPES = ['circle', 'star', 'heart', 'triangle', 'square', 'strip'];
 const COLORS = [
   { n: 'blue', c: '#3f6fa8' }, { n: 'green', c: '#5f8f3a' },
   { n: 'yellow', c: '#e3b23c' }, { n: 'red', c: '#c2452f' }
 ];
-const BAT_COLORS = ['#f290ae', '#ee7fa0', '#f5a3bb', '#eb89a9', '#f39ab4'];
-const SPOTS = [{ x: 84, y: 128 }, { x: 316, y: 128 }, { x: 200, y: 224 }, { x: 116, y: 150 }, { x: 284, y: 150 }];
+// hats: 0 propeller beanie, 1 newsboy cap, 2 bowler, 3 aviator, 4 baseball cap, 5 T-Rex hood
+const BATS = [
+  { key: 'doowy', name: 'Doowy', color: '#f290ae', hat: 0 },
+  { key: 'hoowy', name: 'Hoowy', color: '#ee7fa0', hat: 1 },
+  { key: 'tooby', name: 'Tooby', color: '#f5a3bb', hat: 5 },
+  { key: 'boopy', name: 'Boopy', color: '#eb89a9', hat: 2 },
+  { key: 'zoomy', name: 'Zoomy', color: '#f39ab4', hat: 3 }
+];
+const PROBLEMS = ['scrape', 'bump', 'splinter', 'hungry'];
+const WING_SPOTS = [{ x: 84, y: 128 }, { x: 316, y: 128 }, { x: 116, y: 150 }, { x: 284, y: 150 }];
+const BUMP_SPOT = { x: 244, y: 124 };
 const TOTAL = 5;
+let TEETH = 'classic'; // 'classic' or 'goofy'
 const LINES = [
-  { k: 'welcome', t: 'Hi, Doctor! The bats need your help!' },
-  { k: 'ohno',    t: 'Oh no! This bat has a booboo!' },
-  { k: 'find',    t: 'Can you find the bandage that matches?' },
-  { k: 'wrong',   t: "Hmm, not that one. Let's try another!" },
-  { k: 'match',   t: 'You found it! Great matching!' },
-  { k: 'tap',     t: 'Now tap the bat to help it heal.' },
-  { k: 'healed',  t: 'Yay! The bat is all better!' },
-  { k: 'party',   t: 'You healed all the bats! Thank you, Doctor!' }
+  { k: 'welcome',   t: 'Hi, Doctor! The bats need your help!' },
+  { k: 'n_doowy',   t: 'Here comes Doowy!' },
+  { k: 'n_hoowy',   t: 'Here comes Hoowy!' },
+  { k: 'n_tooby',   t: 'Here comes Tooby!' },
+  { k: 'n_boopy',   t: 'Here comes Boopy!' },
+  { k: 'n_zoomy',   t: 'Here comes Zoomy!' },
+  { k: 'listen',    t: "First, let's listen to the heart." },
+  { k: 'heartOk',   t: 'Ba-dum, ba-dum. A strong heart!' },
+  { k: 'heartWeak', t: 'Ba... dum. A very tired heart.' },
+  { k: 'temp',      t: "Now let's check the temperature." },
+  { k: 'tempOk',    t: 'Not too hot, not too cold.' },
+  { k: 'tempCold',  t: 'Brrr! This bat is cold.' },
+  { k: 'p_scrape',  t: 'Oh no, a scrape! Find the bandage that matches.' },
+  { k: 'p_bump',    t: 'Bonk! A bump on the head. What will help?' },
+  { k: 'p_splinter',t: 'Ouch, a splinter! What can pull it out?' },
+  { k: 'p_hungry',  t: "This bat is hungry and weak. Let's take care of it." },
+  { k: 'box',       t: 'First, a cozy box.' },
+  { k: 'blanket',   t: 'Now a warm blanket.' },
+  { k: 'bottle',    t: 'And some yummy milk!' },
+  { k: 'match',     t: 'You did it! Great job!' },
+  { k: 'wrong',     t: "Hmm, not that one. Let's try another!" },
+  { k: 'tap',       t: 'Now tap the bat to help it heal.' },
+  { k: 'healed',    t: 'Yay! All better!' },
+  { k: 'party',     t: 'You healed all the bats! Thank you, Doctor!' }
 ];
 const LINE = Object.fromEntries(LINES.map(l => [l.k, l.t]));
 
@@ -285,27 +336,32 @@ try { Object.assign(SET, JSON.parse(localStorage.getItem('batdoctor.settings') |
 const saveSet = () => { try { localStorage.setItem('batdoctor.settings', JSON.stringify(SET)); } catch (e) {} };
 
 /* ================= drawing ================= */
-function shapeSVG(type, r, fill, stroke, sw, extra = '') {
-  const a = `fill="${fill}" stroke="${stroke}" stroke-width="${sw}" stroke-linejoin="round" ${extra}`;
+const sw = `stroke="${INK}" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"`;
+function shapeSVG(type, r, fill, stroke, w, extra = '') {
+  const a = `fill="${fill}" stroke="${stroke}" stroke-width="${w}" stroke-linejoin="round" ${extra}`;
   switch (type) {
     case 'circle': return `<circle r="${r}" ${a}/>`;
     case 'square': return `<rect x="${-r * .9}" y="${-r * .9}" width="${r * 1.8}" height="${r * 1.8}" rx="${r * .3}" ${a}/>`;
+    case 'strip': return `<rect x="${-r * 1.35}" y="${-r * .55}" width="${r * 2.7}" height="${r * 1.1}" rx="${r * .55}" ${a}/>`;
     case 'triangle': return `<polygon points="0,${-r * 1.12} ${r * 1.1},${r * .8} ${-r * 1.1},${r * .8}" ${a}/>`;
     case 'star': return `<polygon points="${starPts(0, 0, r * 1.18, .47)}" ${a}/>`;
     case 'heart': return `<path d="M0,${r * .95} C${-r * 1.7},${-r * .1} ${-r * .85},${-r * 1.35} 0,${-r * .45} C${r * .85},${-r * 1.35} ${r * 1.7},${-r * .1} 0,${r * .95}Z" ${a}/>`;
   }
 }
 function bandageSVG(shape, color, r) {
+  if (shape === 'strip') { // the classic adhesive strip with a pad in the middle
+    const dots = [-1, 1].flatMap(sx => [-1, 1].map(sy => `<circle cx="${sx * r * .95}" cy="${sy * r * .2}" r="${r * .07}" fill="${CREAM}"/>`)).join('');
+    return shapeSVG('strip', r, color, INK, r * .12) +
+      `<rect x="${-r * .45}" y="${-r * .42}" width="${r * .9}" height="${r * .84}" rx="${r * .12}" fill="rgba(255,250,240,.6)" stroke="${INK}" stroke-width="${r * .05}"/>` + dots;
+  }
   const d = r * .24;
   return shapeSVG(shape, r, color, INK, r * .12) +
     shapeSVG(shape, r * .68, 'none', 'rgba(243,233,210,.85)', r * .06, `stroke-dasharray="${r * .14} ${r * .12}" stroke-linecap="round"`) +
     [[-d, -d], [d, -d], [-d, d], [d, d]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="${r * .07}" fill="${CREAM}"/>`).join('');
 }
 
-// Five vintage hats, one per patient. Each sits on the top of the head (around y=112).
-const sw = `stroke="${INK}" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"`;
+// Hats sit on the top of the head (around y=112).
 const HATS = [
-  // propeller beanie
   () => `<g transform="rotate(-6 200 112)">
     <rect x="197" y="60" width="6" height="16" fill="${INK}"/>
     <path d="M170,113 Q168,76 200,75 Q232,76 230,113 Z" fill="#e0a930" ${sw}/>
@@ -315,21 +371,18 @@ const HATS = [
     <g class="prop"><ellipse cx="200" cy="60" rx="26" ry="6" fill="#b5432f" ${sw}/></g>
     <circle cx="200" cy="60" r="5" fill="#e0a930" stroke="${INK}" stroke-width="3"/>
   </g>`,
-  // newsboy cap
   () => `<g transform="rotate(-8 200 112)">
     <path d="M166,112 Q156,80 198,78 Q246,78 236,110 Z" fill="#6b7a3a" ${sw}/>
     <path d="M199,80 L186,108 M199,80 L214,108" stroke="#4c5728" stroke-width="3" fill="none"/>
     <circle cx="199" cy="80" r="5" fill="#4c5728" stroke="${INK}" stroke-width="3"/>
     <path d="M160,109 Q200,121 242,106 Q246,116 232,119 Q200,126 170,119 Q156,116 160,109 Z" fill="#4c5728" ${sw}/>
   </g>`,
-  // bowler hat
   () => `<g transform="rotate(-10 200 110)">
     <path d="M174,108 Q172,68 200,68 Q228,68 226,108 Z" fill="#5a3a22" ${sw}/>
     <path d="M174,98 L226,98 L226,108 L174,108 Z" fill="#b5432f" ${sw}/>
     <ellipse cx="200" cy="110" rx="42" ry="8" fill="#5a3a22" ${sw}/>
     <path d="M183,86 Q186,76 195,73" stroke="#8a6040" stroke-width="4" fill="none" stroke-linecap="round"/>
   </g>`,
-  // aviator cap with goggles
   () => `<g transform="rotate(-5 200 112)">
     <path d="M166,116 Q162,76 200,74 Q238,76 234,116 Q200,108 166,116 Z" fill="#8a5a32" ${sw}/>
     <path d="M200,76 L200,108" stroke="#6b4226" stroke-width="3"/>
@@ -338,15 +391,33 @@ const HATS = [
     <circle cx="215" cy="100" r="12" fill="#9fcbd6" ${sw}/>
     <path d="M179,96 L184,91 M209,96 L214,91" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
   </g>`,
-  // baseball cap with a star
   () => `<g transform="rotate(-8 200 112)">
     <path d="M170,112 Q168,77 200,76 Q232,77 230,112 Z" fill="#2f4a6d" ${sw}/>
     <polygon points="${starPts(203, 96, 10, .45)}" fill="${CREAM}" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/>
     <circle cx="200" cy="77" r="4" fill="#2f4a6d" stroke="${INK}" stroke-width="3"/>
     <path d="M172,111 Q150,106 134,115 Q150,124 188,115 Z" fill="#22364f" ${sw}/>
+  </g>`,
+  () => `<g transform="rotate(-6 200 112)">
+    <polygon points="172,84 178,60 190,76" fill="#e0a930" ${sw}/>
+    <polygon points="190,74 200,50 212,72" fill="#e0a930" ${sw}/>
+    <polygon points="210,76 222,58 228,84" fill="#e0a930" ${sw}/>
+    <path d="M162,118 Q156,70 200,68 Q244,70 238,118 Z" fill="#5f8f3a" ${sw}/>
+    <path d="M176,90 q6,-4 10,2 M214,92 q4,-6 10,-2" stroke="#4c7330" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <circle cx="184" cy="88" r="9" fill="#fffaf0" ${sw}/><circle cx="216" cy="88" r="9" fill="#fffaf0" ${sw}/>
+    <circle cx="186" cy="90" r="4" fill="${INK}"/><circle cx="218" cy="90" r="4" fill="${INK}"/>
+    <path d="M164,112 L172,124 L180,113 L188,125 L196,113 L204,125 L212,113 L220,125 L228,113 L236,124 L238,112 Z" fill="#fffaf0" ${sw}/>
   </g>`
 ];
 
+function teethSVG() {
+  const t = `fill="#fffaf0" stroke="${INK}" stroke-width="3.5" stroke-linejoin="round"`;
+  if (TEETH === 'goofy') return `
+      <path d="M186,186 h13 v15 q0,5 -5,5 h-3 q-5,0 -5,-5 Z" transform="rotate(-7 192 186)" ${t}/>
+      <path d="M203,186 h12 v10 q0,5 -5,5 h-2 q-5,0 -5,-5 Z" transform="rotate(9 209 186)" ${t}/>`;
+  return `
+      <path d="M187,186 h26 v13 q0,5 -5,5 h-16 q-5,0 -5,-5 Z" ${t}/>
+      <path d="M200,186 v18" stroke="${INK}" stroke-width="3"/>`;
+}
 function mouthFor(h) {
   if (h >= 1) return { d: 'M166,184 Q200,194 234,184 Q228,228 200,228 Q172,228 166,184 Z', fill: '#5a1f1f', mid: 189, grin: true };
   const ctrl = 186 + (h * 2 - 1) * 16;
@@ -360,6 +431,9 @@ function batSVG(col, { happy = false, id = '', hat = 0 } = {}) {
     <path d="M28,104 l-7,-9" stroke="${INK}" stroke-width="4" stroke-linecap="round"/></g>`;
   const m = mouthFor(happy ? 1 : .1);
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" class="batsvg" ${id ? `id="${id}"` : ''}>
+    ${id === 'bat' ? '<defs><filter id="weakf"><feColorMatrix class="sat" type="saturate" values="1"/></filter></defs>' : ''}
+    <g class="behind-layer"></g>
+    <g class="bat-body" ${id === 'bat' ? 'filter="url(#weakf)"' : ''}>
     ${wingG}
     <g transform="translate(400,0) scale(-1,1)">${wingG}</g>
     <path d="M152,138 L140,64 L194,116 Z" fill="${col}" ${sw}/>
@@ -381,6 +455,10 @@ function batSVG(col, { happy = false, id = '', hat = 0 } = {}) {
       <g transform="translate(185,151)"><ellipse rx="6.5" ry="10" fill="${INK}"/><path d="M0.5,-2 L2,-10 L6.5,-5 Z" fill="#fffaf0"/></g>
       <g transform="translate(221,151)"><ellipse rx="6.5" ry="10" fill="${INK}"/><path d="M0.5,-2 L2,-10 L6.5,-5 Z" fill="#fffaf0"/></g>
     </g>
+    <g class="lids" style="display:none">
+      <path d="M169,147 A13,17 0 0,1 195,147 Z" fill="${col}" ${sw}/>
+      <path d="M205,147 A13,17 0 0,1 231,147 Z" fill="${col}" ${sw}/>
+    </g>
     <g class="eyes-happy" style="display:${happy ? 'inline' : 'none'}" stroke="${INK}" stroke-width="6" fill="none" stroke-linecap="round">
       <path d="M169,150 Q182,134 195,150"/><path d="M205,150 Q218,134 231,150"/>
     </g>
@@ -389,13 +467,14 @@ function batSVG(col, { happy = false, id = '', hat = 0 } = {}) {
     </g>
     <path class="mouth" d="${m.d}" fill="${m.fill}" stroke="${INK}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
     <ellipse class="tongue" cx="200" cy="217" rx="15" ry="7" fill="#d65a5a" style="display:${happy ? 'inline' : 'none'}"/>
-    <g class="teeth" transform="translate(0,${(m.mid - 186).toFixed(1)})">
-      <path d="M187,186 h26 v13 q0,5 -5,5 h-16 q-5,0 -5,-5 Z" fill="#fffaf0" stroke="${INK}" stroke-width="3.5" stroke-linejoin="round"/>
-      <path d="M200,186 v18" stroke="${INK}" stroke-width="3"/>
-    </g>
+    <g class="teeth" transform="translate(0,${(m.mid - 186).toFixed(1)})">${teethSVG()}</g>
     ${HATS[hat % HATS.length]()}
+    </g>
+    <g class="care-layer"></g>
     <g class="booboo-layer"></g>
     <g class="bandage-layer"></g>
+    <g class="tools-layer"></g>
+    <g class="fx-layer"></g>
   </svg>`;
 }
 function setHappy(h, svg = $('#bat')) {
@@ -408,8 +487,52 @@ function setHappy(h, svg = $('#bat')) {
   svg.querySelector('.brows').style.opacity = h < .5 ? 1 : 0;
   svg.querySelector('.eyes-open').style.display = m.grin ? 'none' : 'inline';
   svg.querySelector('.eyes-happy').style.display = m.grin ? 'inline' : 'none';
+  if (m.grin) svg.querySelector('.lids').style.display = 'none';
 }
 const STAR_SMALL = fill => `<svg viewBox="-12 -12 24 24" width="100%" height="100%"><polygon points="${starPts(0, 0, 11, .45)}" fill="${fill}" stroke="${INK}" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
+
+/* ---------- healing tools (drawn in a -60..60 box) ---------- */
+const TWEEZ = `<path d="M-4,-50 L-18,42 L-10,44 L2,-44 Z" fill="#c9ccd1" ${sw}/>
+   <path d="M4,-50 L18,42 L10,44 L-2,-44 Z" fill="#dfe2e6" ${sw}/>
+   <rect x="-8" y="-54" width="16" height="12" rx="4" fill="#b5432f" ${sw}/>`;
+// baby bottle with the nipple tip at (0,0) and the body going down (+y)
+const BOTTLE = `<path d="M-8,14 Q-9,2 0,0 Q9,2 8,14 Z" fill="#e8b27a" ${sw}/>
+   <rect x="-17" y="12" width="34" height="11" rx="3" fill="#b5432f" ${sw}/>
+   <rect x="-19" y="22" width="38" height="58" rx="12" fill="#d7e7ea" ${sw}/>
+   <rect class="milk" x="-14" y="28" width="28" height="47" rx="8" fill="#fffdf6"/>
+   <path d="M8,36 h7 M8,48 h7 M8,60 h7" stroke="${INK}" stroke-width="2.5" stroke-linecap="round"/>`;
+const THERMO = `<rect x="-8" y="-80" width="16" height="80" rx="8" fill="#f8f6f0" ${sw}/>
+   <rect class="merc" x="-3" y="-72" width="6" height="68" fill="#c42a2a"/>
+   <circle cx="0" cy="0" r="13" fill="#c42a2a" ${sw}/>
+   <path d="M8,-70 h-6 M8,-60 h-4 M8,-50 h-6 M8,-40 h-4 M8,-30 h-6" stroke="${INK}" stroke-width="2"/>`;
+const TOOL_ICON = {
+  stetho: `<path d="M-26,-46 Q-30,-6 0,2 Q30,-6 26,-46" stroke="${INK}" stroke-width="11" fill="none" stroke-linecap="round"/>
+     <path d="M-26,-46 Q-30,-6 0,2 Q30,-6 26,-46" stroke="#b5432f" stroke-width="5" fill="none" stroke-linecap="round"/>
+     <path d="M0,2 Q-4,34 22,38" stroke="${INK}" stroke-width="11" fill="none" stroke-linecap="round"/><path d="M0,2 Q-4,34 22,38" stroke="#b5432f" stroke-width="5" fill="none" stroke-linecap="round"/>
+     <circle cx="-26" cy="-48" r="6" fill="#dfe2e6" stroke="${INK}" stroke-width="3"/><circle cx="26" cy="-48" r="6" fill="#dfe2e6" stroke="${INK}" stroke-width="3"/>
+     <circle cx="30" cy="38" r="15" fill="#dfe2e6" stroke="${INK}" stroke-width="4"/><circle cx="30" cy="38" r="7" fill="#c9ccd1" stroke="${INK}" stroke-width="2"/>`,
+  thermo: `<g transform="rotate(35) translate(0,40)">${THERMO}</g>`,
+  icebag: `<path d="M-36,-2 Q-46,42 0,46 Q46,42 36,-2 Q28,-20 12,-24 L-12,-24 Q-28,-20 -36,-2Z" fill="#3f6fa8" ${sw}/>
+     <path d="M-30,10 L30,10 M-32,26 L32,26 M-16,-20 L-20,44 M16,-20 L20,44" stroke="#9fcbd6" stroke-width="3" opacity=".7"/>
+     <rect x="-12" y="-30" width="24" height="8" fill="#e0a930" stroke="${INK}" stroke-width="3"/>
+     <rect x="-18" y="-48" width="36" height="20" rx="5" fill="${CREAM}" ${sw}/>
+     <path d="M-10,-46 v16 M0,-46 v16 M10,-46 v16" stroke="${INK}" stroke-width="2"/>`,
+  tweezers: `<g transform="rotate(30)">${TWEEZ}</g>`,
+  strip: `<g transform="rotate(-20)">${bandageSVG('strip', '#d9a877', 38)}</g>`,
+  bottle: `<g transform="rotate(18) translate(0,-42)">${BOTTLE}</g>`,
+  box: `<path d="M-44,-22 L44,-22 L50,-8 L-50,-8 Z" fill="#a8743a" ${sw}/>
+     <path d="M-30,-22 Q-20,-40 -4,-26 Q8,-44 22,-24" fill="${CREAM}" ${sw}/>
+     <path d="M-46,-8 L46,-8 L42,40 L-42,40 Z" fill="#c08a4a" ${sw}/>
+     <path d="M-45,4 L45,4 L44,14 L-44,14 Z" fill="#b5432f"/>
+     <rect x="-12" y="20" width="24" height="13" rx="2" fill="${CREAM}" stroke="${INK}" stroke-width="2.5"/>`,
+  blanket: `<g transform="rotate(-8)"><rect x="-44" y="-32" width="88" height="64" rx="6" fill="#b5432f" ${sw}/>
+     <path d="M-24,-32 v64 M0,-32 v64 M24,-32 v64" stroke="${CREAM}" stroke-width="5" opacity=".85"/>
+     <path d="M-44,-10 h88 M-44,12 h88" stroke="#2f4a6d" stroke-width="5"/>
+     <path d="M-44,-32 h88 v64 h-88 Z" fill="none" ${sw}/>
+     <path d="M-40,32 v8 M-28,32 v8 M-16,32 v8 M-4,32 v8 M8,32 v8 M20,32 v8 M32,32 v8" stroke="${CREAM}" stroke-width="3" stroke-linecap="round"/></g>`,
+  star: `<polygon points="${starPts(0, 0, 44, .48)}" fill="#e0a930" ${sw}/>`
+};
+const FIX_ICON = { scrape: 'strip', bump: 'icebag', splinter: 'tweezers', hungry: 'bottle' };
 
 /* ================= audio ================= */
 let ac = null, sfxGain = null, voiceGain = null;
@@ -532,10 +655,30 @@ async function loadVoices() {
   } catch (e) {}
 }
 
+/* ================= extra sounds ================= */
+Object.assign(sfx, {
+  thump: weak => { const v = weak ? .25 : .5; tone(95, 0, .13, 'sine', v); tone(190, 0, .08, 'triangle', v * .35); tone(80, .2, .15, 'sine', v * .8); tone(160, .2, .08, 'triangle', v * .3); },
+  rise: () => tone(380, 0, 1.2, 'sine', .07, 900),
+  glug: () => tone(320, 0, .14, 'sine', .16, 170),
+  grumble: () => { tone(110, 0, .5, 'sawtooth', .04, 80); tone(90, .3, .5, 'sawtooth', .04, 120); }
+});
+
 /* ================= game state ================= */
-const S = { phase: 'idle', healed: 0, round: null, color: null, hat: 0, wrong: 0, taps: 0, busy: false, paused: false };
+const S = { phase: 'idle', healed: 0, cur: null, round: null, spot: null, step: null, wrong: 0, taps: 0, busy: false, paused: false };
 const tray = $('#tray'), stage = $('#stage'), wrap = $('#batWrap'), floatEl = $('#batFloat');
-let hatOrder = shuffle([0, 1, 2, 3, 4]);
+let roster = [];
+if (location.hash === '#test') window.__bd = { S };
+
+function newRoster() {
+  const probs = shuffle(['scrape', 'bump', 'splinter', 'hungry', 'scrape']);
+  roster = shuffle(BATS.slice()).map((b, i) => ({ ...b, problem: probs[i] }));
+}
+const layer = n => $(`#bat .${n}-layer`);
+function svgRect(x, y, r) { // a square target around a point in bat coordinates, in screen pixels
+  const svg = $('#bat'), m = svg.getScreenCTM(), p = svg.createSVGPoint();
+  p.x = x; p.y = y; const q = p.matrixTransform(m), s = Math.hypot(m.a, m.b);
+  return { left: q.x - r * s, top: q.y - r * s, width: 2 * r * s, height: 2 * r * s };
+}
 
 function renderShelf() {
   $('#shelf').innerHTML = Array.from({ length: TOTAL }, () => '<div class="slot"></div>').join('');
@@ -543,9 +686,16 @@ function renderShelf() {
 function renderMeter() {
   $('#meter').innerHTML = [0, 1, 2].map(() => `<svg viewBox="-34 -34 68 68"><polygon points="${starPts(0, 0, 30, .48)}"/></svg>`).join('');
 }
+function renderSteps(p) {
+  const icons = [TOOL_ICON.stetho, TOOL_ICON.thermo, TOOL_ICON[FIX_ICON[p]], TOOL_ICON.star];
+  $('#steps').innerHTML = icons.map(s => `<div class="st"><svg viewBox="-62 -62 124 124">${s}</svg></div>`).join('');
+}
+function setStep(i) {
+  $$('.st').forEach((e, j) => { e.classList.toggle('cur', j === i); e.classList.toggle('done', j < i); });
+}
 function makeRound(level) {
   const n = level === 0 ? 2 : level < 3 ? 3 : 4;
-  const target = { shape: rand(SHAPES), color: rand(COLORS) };
+  const target = { kind: 'band', shape: rand(SHAPES), color: rand(COLORS) };
   const list = [target], used = new Set([target.shape + target.color.n]);
   let guard = 0;
   while (list.length < n && guard++ < 300) {
@@ -554,9 +704,14 @@ function makeRound(level) {
     const color = hard ? target.color : rand(COLORS.filter(c => c !== target.color));
     const key = shape + color.n;
     if (used.has(key) || (!hard && list.some(t => t.shape === shape))) continue;
-    used.add(key); list.push({ shape, color });
+    used.add(key); list.push({ kind: 'band', shape, color });
   }
-  return { target, tools: shuffle(list), spot: rand(SPOTS) };
+  return { target, tools: shuffle(list) };
+}
+function pickTools(correct, level) {
+  const n = level === 0 ? 2 : 3;
+  const others = shuffle(['icebag', 'tweezers', 'strip', 'bottle'].filter(k => k !== correct)).slice(0, n - 1);
+  return shuffle([correct, ...others]).map(kind => ({ kind }));
 }
 function batAnim(name) {
   const b = $('#bat'); if (!b) return;
@@ -565,30 +720,53 @@ function batAnim(name) {
   b.classList.add(name);
   b.addEventListener('animationend', () => b.classList.remove(name), { once: true });
 }
-function putBooboo() {
-  const { spot, target: t } = S.round;
-  $('#bat .booboo-layer').innerHTML =
-    `<g transform="translate(${spot.x},${spot.y})"><g class="booboo-pulse">
+
+/* ---------- problem drawings on the bat ---------- */
+function putScrape() {
+  const { x, y } = S.spot, t = S.round.target;
+  layer('booboo').innerHTML =
+    `<g transform="translate(${x},${y})"><g class="booboo-pulse">
       <circle r="31" fill="#d23b3b" opacity=".22"/>
       ${shapeSVG(t.shape, 24, t.color.c + '66', t.color.c, 5, 'stroke-dasharray="7 5"')}
       <path d="M-12,3 l6,-6 l6,6 l6,-6 l6,6" stroke="#c42a2a" stroke-width="4.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
     </g></g>`;
 }
-function putBandage() {
-  const { spot, target: t } = S.round;
-  $('#bat .booboo-layer').style.opacity = 0;
-  $('#bat .bandage-layer').innerHTML =
-    `<g transform="translate(${spot.x},${spot.y})"><g class="stick">${bandageSVG(t.shape, t.color.c, 27)}</g></g>`;
+function putBump() {
+  const { x, y } = BUMP_SPOT;
+  const st = (cx, cy, d) => `<polygon class="tw" style="animation-delay:${d}s" points="${starPts(cx, cy, 7, .45)}" fill="#e0a930" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>`;
+  layer('booboo').innerHTML =
+    `<g transform="translate(${x},${y})"><g class="bump">
+      <ellipse rx="18" ry="14" fill="#c56b9a" ${sw}/>
+      <path d="M-8,-5 q5,-6 12,-4" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round" opacity=".7"/>
+      <ellipse cx="0" cy="-24" rx="28" ry="7" fill="none" stroke="${INK}" stroke-width="2.5" stroke-dasharray="4 5"/>
+      ${st(-26, -24, 0)}${st(24, -27, .3)}${st(2, -17, .6)}
+    </g></g>`;
 }
-const boobooRect = () => $('#bat .booboo-layer > g').getBoundingClientRect();
+function putSplinter() {
+  const { x, y } = S.spot;
+  layer('booboo').innerHTML =
+    `<g transform="translate(${x},${y})"><circle class="sore" r="15" fill="#e0607e" opacity=".55"/>
+      <g class="splinter"><path d="M-3,5 L18,-20" stroke="${INK}" stroke-width="10" stroke-linecap="round"/><path d="M-3,5 L18,-20" stroke="#a0703a" stroke-width="5" stroke-linecap="round"/></g></g>`;
+}
+function setWeak(on, ms = 0) {
+  const b = $('#bat'); b.classList.toggle('weak', on);
+  b.querySelector('.lids').style.display = on ? 'inline' : 'none';
+  const m = b.querySelector('.sat'); if (!m) return;
+  const from = +m.getAttribute('values'), to = on ? .25 : 1, t0 = performance.now();
+  if (!ms) { m.setAttribute('values', to); return; }
+  const step = now => { const k = Math.min(1, (now - t0) / ms); m.setAttribute('values', (from + (to - from) * k).toFixed(3)); if (k < 1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
 
+/* ---------- tray ---------- */
+function toolSVG(t) { return t.kind === 'band' ? bandageSVG(t.shape, t.color.c, 42) : TOOL_ICON[t.kind]; }
 function renderTools(list) {
   tray.innerHTML = '';
   list.forEach((t, i) => {
     const el = document.createElement('div');
     el.className = 'tool'; el._t = t;
-    el.setAttribute('aria-label', `${t.color.n} ${t.shape} bandage`);
-    el.innerHTML = `<svg viewBox="-60 -60 120 120" class="pop" style="animation-delay:${i * .12}s">${bandageSVG(t.shape, t.color.c, 42)}</svg>`;
+    el.setAttribute('aria-label', t.kind === 'band' ? `${t.color.n} ${t.shape} bandage` : t.kind);
+    el.innerHTML = `<svg viewBox="-60 -60 120 120" class="pop" style="animation-delay:${i * .12}s">${toolSVG(t)}</svg>`;
     const svg = el.firstElementChild;
     svg.addEventListener('animationend', () => svg.classList.remove('pop', 'wiggle'));
     attachDrag(el, t);
@@ -596,9 +774,16 @@ function renderTools(list) {
   });
 }
 function hintTool() {
-  const el = [...tray.children].find(x => x._t === S.round.target);
+  const el = [...tray.children].find(x => S.step && S.step.accept(x._t));
   const svg = el && el.firstElementChild; if (!svg) return;
   svg.classList.remove('wiggle'); void svg.getBoundingClientRect(); svg.classList.add('wiggle');
+}
+// Show tools and wait for the right one. cfg: { prompt, target(), accept(t), onAccept(center) }
+function offer(tools, cfg) {
+  S.step = cfg; S.wrong = 0; S.phase = 'tool';
+  renderTools(tools);
+  if (cfg.prompt) say(cfg.prompt);
+  armIdle();
 }
 
 /* ================= idle hints ================= */
@@ -608,10 +793,10 @@ function armIdle() {
   clearIdle();
   idleT = setTimeout(() => {
     if (!S.paused) {
-      if (S.phase === 'matching') { hintTool(); say('find'); }
+      if (S.phase === 'tool') { hintTool(); if (S.step && S.step.prompt) say(S.step.prompt); }
       else if (S.phase === 'healing') { batAnim('hint'); say('tap'); }
     }
-    if (S.phase === 'matching' || S.phase === 'healing') armIdle();
+    if (S.phase === 'tool' || S.phase === 'healing') armIdle();
   }, 9000);
 }
 
@@ -619,7 +804,7 @@ function armIdle() {
 function attachDrag(el, t) {
   let d = null;
   el.addEventListener('pointerdown', e => {
-    if (S.phase !== 'matching' || S.busy || S.paused || d) return;
+    if (S.phase !== 'tool' || S.busy || S.paused || d) return;
     e.preventDefault();
     try { el.setPointerCapture(e.pointerId); } catch (err) {}
     d = { id: e.pointerId, x0: e.clientX, y0: e.clientY, moved: false, home: el.getBoundingClientRect() };
@@ -648,45 +833,198 @@ function returnHome(el) {
   setTimeout(() => el.classList.remove('dragging'), 460);
 }
 async function drop(el, t, info, x, y) {
-  const bb = boobooRect(), bc = center(bb), hc = center(info.home);
+  const st = S.step;
+  if (!st) { returnHome(el); return; }
+  const tr = st.target(), tc = center(tr), hc = center(info.home);
   S.busy = true;
   if (!info.moved) {
-    // a simple tap also works: the bandage flies to the booboo
+    // a simple tap also works: the tool flies to where it is needed
     el.style.transition = 'transform .45s cubic-bezier(.3,.8,.4,1)';
-    el.style.transform = `translate(${bc.x - hc.x}px,${bc.y - hc.y}px) scale(.9)`;
+    el.style.transform = `translate(${tc.x - hc.x}px,${tc.y - hc.y}px) scale(.8)`;
     await wait(460);
   } else {
     const br = $('#bat').getBoundingClientRect();
-    const near = Math.hypot(x - bc.x, y - bc.y) < Math.max(120, info.home.width * .9);
+    const near = Math.hypot(x - tc.x, y - tc.y) < Math.max(130, info.home.width * .9);
     const onBat = x > br.left && x < br.right && y > br.top && y < br.bottom;
     if (!near && !onBat) { returnHome(el); S.busy = false; return; }
   }
-  if (t === S.round.target) await correct(el, info.home, bb);
-  else await wrong(el);
-  S.busy = false;
+  if (st.accept(t)) {
+    S.phase = 'acting'; S.step = null; clearIdle();
+    const s = Math.max(.3, Math.min(1, tr.width * 1.3 / info.home.width));
+    el.style.transition = 'transform .25s ease-out';
+    el.style.transform = `translate(${tc.x - hc.x}px,${tc.y - hc.y}px) scale(${s})`;
+    await wait(260);
+    el.style.visibility = 'hidden';
+    [...tray.children].forEach(x => x !== el && x.classList.add('gone'));
+    S.busy = false;
+    await st.onAccept(tc);
+  } else {
+    S.wrong++;
+    sfx.soft(); returnHome(el); batAnim('hmm'); say('wrong');
+    if (S.wrong >= 2) setTimeout(hintTool, 500);
+    armIdle();
+    await wait(350);
+    S.busy = false;
+  }
 }
-async function correct(el, home, bb) {
-  S.phase = 'healing'; clearIdle();
-  const bc = center(bb), hc = center(home);
-  const s = (bb.width * 54 / 62) / (home.width * 84 / 120);
-  el.style.transition = 'transform .25s ease-out';
-  el.style.transform = `translate(${bc.x - hc.x}px,${bc.y - hc.y}px) scale(${s})`;
-  await wait(260);
-  el.style.visibility = 'hidden';
-  putBandage(); sfx.match(); sparkle(bc.x, bc.y, 10); vibrate(20);
-  [...tray.children].forEach(x => x !== el && x.classList.add('gone'));
-  setHappy(.4); batAnim('bounce');
+
+/* ================= the doctor's routine: listen → temperature → fix → stars ================= */
+function stepListen() {
+  setStep(0);
+  offer([{ kind: 'stetho' }], {
+    prompt: 'listen', target: () => svgRect(200, 210, 28), accept: t => t.kind === 'stetho',
+    onAccept: async () => {
+      const weak = S.cur.problem === 'hungry';
+      layer('tools').innerHTML = `<g class="drop-in">
+        <path d="M212,214 Q262,252 318,206" stroke="${INK}" stroke-width="11" fill="none" stroke-linecap="round"/>
+        <path d="M212,214 Q262,252 318,206" stroke="#b5432f" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <circle cx="200" cy="212" r="15" fill="#dfe2e6" ${sw}/><circle cx="200" cy="212" r="7" fill="#c9ccd1" stroke="${INK}" stroke-width="2"/></g>`;
+      const c = weak ? '#c9a3ae' : '#d23b3b', sc = weak ? .7 : 1;
+      layer('fx').innerHTML = `<g transform="translate(322,74)"><circle r="40" fill="${CREAM}" ${sw}/>
+        <g class="beat" style="animation-duration:${weak ? 1.1 : .65}s"><path transform="scale(${sc * .55}) translate(-50,-48)" d="M50,85 C10,55 0,35 10,20 C20,5 42,8 50,25 C58,8 80,5 90,20 C100,35 90,55 50,85Z" fill="${c}" stroke="${INK}" stroke-width="7" stroke-linejoin="round"/></g></g>`;
+      for (let i = 0; i < (weak ? 3 : 4); i++) { sfx.thump(weak); await wait(weak ? 1100 : 650); }
+      await say(weak ? 'heartWeak' : 'heartOk');
+      layer('tools').innerHTML = ''; layer('fx').innerHTML = '';
+      stepTemp();
+    }
+  });
+}
+function stepTemp() {
+  setStep(1);
+  offer([{ kind: 'thermo' }], {
+    prompt: 'temp', target: () => svgRect(186, 194, 26), accept: t => t.kind === 'thermo',
+    onAccept: async () => {
+      const cold = S.cur.problem === 'hungry';
+      layer('tools').innerHTML = `<g transform="translate(184,198) rotate(-52) scale(.85)">${THERMO}</g>`;
+      const merc = $('#bat .merc');
+      merc.style.transform = 'scaleY(.08)';
+      await wait(60);
+      merc.style.transition = 'transform 1.3s ease-out';
+      merc.style.transform = `scaleY(${cold ? .22 : .6})`;
+      sfx.rise();
+      await wait(1400);
+      layer('fx').innerHTML = cold
+        ? `<g transform="translate(74,74)" class="pop-in"><circle r="38" fill="#9fcbd6" ${sw}/>
+             <path d="M0,-24 V24 M-21,-12 L21,12 M-21,12 L21,-12" stroke="${CREAM}" stroke-width="7" stroke-linecap="round"/>
+             <path d="M0,-24 V24 M-21,-12 L21,12 M-21,12 L21,-12" stroke="#2f4a6d" stroke-width="3" stroke-linecap="round"/></g>`
+        : `<g transform="translate(74,74)" class="pop-in"><circle r="38" fill="#5f8f3a" ${sw}/>
+             <path d="M-16,0 L-4,13 L18,-12" stroke="${CREAM}" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>`;
+      sfx.pop();
+      await say(cold ? 'tempCold' : 'tempOk');
+      await wait(300);
+      layer('tools').innerHTML = ''; layer('fx').innerHTML = '';
+      stepFix();
+    }
+  });
+}
+function stepFix() {
+  setStep(2);
+  const p = S.cur.problem, level = S.healed;
+  if (p === 'scrape') {
+    offer(S.round.tools, {
+      prompt: 'p_scrape', target: () => layer('booboo').firstElementChild.getBoundingClientRect(), accept: t => t === S.round.target,
+      onAccept: async c => {
+        const { x, y } = S.spot, t = S.round.target;
+        layer('booboo').style.opacity = 0;
+        layer('bandage').innerHTML = `<g transform="translate(${x},${y})"><g class="stick">${bandageSVG(t.shape, t.color.c, 27)}</g></g>`;
+        sfx.match(); sparkle(c.x, c.y, 10); vibrate(20); setHappy(.4); batAnim('bounce');
+        await say('match'); stepHeal();
+      }
+    });
+  } else if (p === 'bump') {
+    offer(pickTools('icebag', level), {
+      prompt: 'p_bump', target: () => svgRect(BUMP_SPOT.x, BUMP_SPOT.y, 22), accept: t => t.kind === 'icebag',
+      onAccept: async c => {
+        layer('tools').innerHTML = `<g transform="translate(${BUMP_SPOT.x + 4},${BUMP_SPOT.y - 12}) rotate(24) scale(.5)"><g class="stick">${TOOL_ICON.icebag}</g></g>`;
+        sfx.match(); vibrate(20);
+        await wait(500);
+        layer('booboo').querySelector('.bump').classList.add('melt');
+        await wait(900);
+        layer('tools').innerHTML = ''; layer('booboo').innerHTML = '';
+        sparkle(c.x, c.y, 10); setHappy(.4); batAnim('bounce');
+        await say('match'); stepHeal();
+      }
+    });
+  } else if (p === 'splinter') {
+    const { x, y } = S.spot;
+    offer(pickTools('tweezers', level), {
+      prompt: 'p_splinter', target: () => svgRect(x + 8, y - 8, 22), accept: t => t.kind === 'tweezers',
+      onAccept: async c => {
+        layer('tools').innerHTML = `<g transform="translate(${x + 18},${y - 20})"><g class="pull"><g transform="rotate(40) scale(.5) translate(0,-44)">${TWEEZ}</g></g></g>`;
+        await wait(500);
+        layer('tools').querySelector('.pull').classList.add('pluck');
+        layer('booboo').querySelector('.splinter').classList.add('pluck');
+        sfx.pop(); vibrate(20);
+        await wait(800);
+        layer('booboo').querySelector('.sore').classList.add('melt');
+        layer('tools').innerHTML = '';
+        sparkle(c.x, c.y, 10); sfx.match(); setHappy(.4); batAnim('bounce');
+        await wait(400);
+        layer('booboo').innerHTML = '';
+        await say('match'); stepHeal();
+      }
+    });
+  } else {
+    say('p_hungry').then(() => { if (S.phase !== 'party') hungryBox(); });
+    S.phase = 'acting';
+  }
+}
+function hungryBox() {
+  offer([{ kind: 'box' }], {
+    prompt: 'box', target: () => svgRect(200, 205, 55), accept: t => t.kind === 'box',
+    onAccept: async () => {
+      layer('behind').innerHTML = `<path class="drop-in" d="M124,216 L276,216 L284,240 L116,240 Z" fill="#8a5f2e" ${sw}/>`;
+      layer('care').innerHTML = `<g class="box-front drop-in">
+        <path d="M112,238 L288,238 L281,286 L119,286 Z" fill="#c08a4a" ${sw}/>
+        <path d="M114,250 L286,250 L285,260 L115,260 Z" fill="#b5432f"/>
+        <rect x="184" y="265" width="32" height="14" rx="2" fill="${CREAM}" stroke="${INK}" stroke-width="2.5"/></g>`;
+      $('#bat').classList.add('inbox');
+      sfx.pop(); vibrate(15);
+      await wait(800);
+      hungryBlanket();
+    }
+  });
+}
+function hungryBlanket() {
+  offer([{ kind: 'blanket' }], {
+    prompt: 'blanket', target: () => svgRect(200, 220, 45), accept: t => t.kind === 'blanket',
+    onAccept: async c => {
+      const v = [150, 170, 190, 210, 230, 250].map(x => `M${x},${x > 160 && x < 240 ? 207 : 210} V252`).join(' ');
+      layer('care').insertAdjacentHTML('afterbegin', `<g class="drop-in">
+        <path d="M132,212 Q200,200 268,212 L272,254 L128,254 Z" fill="#b5432f" ${sw}/>
+        <path d="${v}" stroke="${CREAM}" stroke-width="4" opacity=".85"/>
+        <path d="M130,224 H270 M129,236 H271" stroke="#2f4a6d" stroke-width="4"/>
+        <path d="M132,212 Q200,200 268,212" fill="none" ${sw}/></g>`);
+      sfx.match(); sparkle(c.x, c.y, 6);
+      await wait(800);
+      hungryBottle();
+    }
+  });
+}
+function hungryBottle() {
+  offer([{ kind: 'bottle' }], {
+    prompt: 'bottle', target: () => svgRect(206, 192, 26), accept: t => t.kind === 'bottle',
+    onAccept: async () => {
+      layer('tools').innerHTML = `<g transform="translate(208,194) rotate(-135) scale(.8)">${BOTTLE}</g>`;
+      const milk = $('#bat .milk');
+      await wait(60);
+      milk.style.transition = 'transform 2.8s linear';
+      milk.style.transform = 'scaleY(.08)';
+      $('#bat').classList.add('drinking');
+      setWeak(false, 2600); $('#bat .lids').style.display = 'inline';
+      for (let i = 0; i < 6; i++) { sfx.glug(); await wait(470); if (i === 3) $('#bat .lids').style.display = 'none'; }
+      $('#bat').classList.remove('drinking');
+      layer('tools').innerHTML = '';
+      setHappy(.4); batAnim('bounce');
+      stepHeal();
+    }
+  });
+}
+function stepHeal() {
+  setStep(3);
+  S.phase = 'healing'; S.taps = 0;
   $('#meter').classList.add('show');
-  armIdle();
-  await say('match');
-  if (S.phase === 'healing' && S.taps === 0) say('tap');
-}
-async function wrong(el) {
-  S.wrong++;
-  sfx.soft(); returnHome(el); batAnim('hmm'); say('wrong');
-  if (S.wrong >= 2) setTimeout(hintTool, 500);
-  armIdle();
-  await wait(350);
+  say('tap'); armIdle();
 }
 
 /* ================= healing taps ================= */
@@ -700,21 +1038,28 @@ stage.addEventListener('pointerdown', e => {
   if (S.taps === 3) healDone();
 });
 async function healDone() {
-  S.phase = 'done'; clearIdle();
+  S.phase = 'done'; clearIdle(); setStep(4);
   await wait(250);
-  const bc = center(boobooRect());
+  const bc = center(wrap.getBoundingClientRect());
   sparkle(bc.x, bc.y, 16);
-  const band = $('#bat .bandage-layer .stick'); if (band) band.classList.add('melt');
-  sfx.yay(); setHappy(1);
+  const band = layer('bandage').querySelector('.stick'); if (band) band.classList.add('melt');
+  if (S.cur.problem === 'hungry') {
+    layer('care').querySelectorAll(':scope > g').forEach(g => g.classList.add('lift-out'));
+    layer('behind').innerHTML = '';
+  }
+  sfx.yay();
   await wait(650);
-  $('#bat .bandage-layer').innerHTML = ''; $('#bat .booboo-layer').innerHTML = '';
+  ['bandage', 'booboo', 'care', 'tools', 'fx'].forEach(n => { layer(n).innerHTML = ''; });
+  $('#bat').classList.remove('inbox');
+  setHappy(1);
   batAnim('flip');
   await say('healed');
   await wait(200);
   $('#meter').classList.remove('show');
   await flyToSlot(S.healed);
   const slot = $$('.slot')[S.healed];
-  slot.classList.add('filled'); slot.innerHTML = batSVG(S.color, { happy: true, hat: S.hat });
+  slot.classList.add('filled');
+  slot.innerHTML = batSVG(S.cur.color, { happy: true, hat: S.cur.hat }) + `<span class="nm">${S.cur.name}</span>`;
   sfx.pop();
   S.healed++;
   if (S.healed >= TOTAL) party();
@@ -734,13 +1079,17 @@ async function flyToSlot(i) {
 
 /* ================= flow ================= */
 async function nextBat() {
-  S.phase = 'entering'; S.wrong = 0; S.taps = 0; S.busy = false;
-  S.color = BAT_COLORS[S.healed % BAT_COLORS.length];
-  S.hat = hatOrder[S.healed % hatOrder.length];
-  S.round = makeRound(S.healed);
-  renderMeter(); tray.innerHTML = '';
-  floatEl.innerHTML = batSVG(S.color, { id: 'bat', hat: S.hat });
-  putBooboo(); setHappy(.1);
+  S.phase = 'entering'; S.wrong = 0; S.taps = 0; S.busy = false; S.step = null;
+  S.cur = roster[S.healed];
+  const p = S.cur.problem;
+  renderMeter(); renderSteps(p); setStep(-1); tray.innerHTML = '';
+  floatEl.innerHTML = batSVG(S.cur.color, { id: 'bat', hat: S.cur.hat });
+  setHappy(.1);
+  S.spot = rand(WING_SPOTS);
+  if (p === 'scrape') { S.round = makeRound(S.healed); putScrape(); }
+  else if (p === 'bump') putBump();
+  else if (p === 'splinter') putSplinter();
+  else setWeak(true);
   wrap.style.transition = 'none'; wrap.style.opacity = '1'; wrap.style.transform = 'translateX(110vw)';
   void wrap.getBoundingClientRect();
   wrap.classList.add('flying'); sfx.whoosh();
@@ -748,26 +1097,25 @@ async function nextBat() {
   wrap.style.transform = 'none';
   await wait(1000);
   wrap.classList.remove('flying');
-  batAnim('sad');
-  await say('ohno');
-  renderTools(S.round.tools);
-  S.phase = 'matching';
-  say('find'); armIdle();
+  if (p === 'hungry') sfx.grumble(); else batAnim('sad');
+  await say('n_' + S.cur.key);
+  stepListen();
 }
 async function party() {
   S.phase = 'party';
   document.body.classList.add('party');
+  $('#steps').innerHTML = '';
   confetti(55); sfx.yay();
   $$('.slot').forEach((s, i) => { s.style.animationDelay = (i * .12) + 's'; s.classList.add('dance'); });
   await say('party');
   await wait(900);
   $('#again').classList.add('show');
 }
+function startRound() { newRoster(); S.healed = 0; renderShelf(); nextBat(); }
 function restart() {
   $('#again').classList.remove('show');
   document.body.classList.remove('party');
-  hatOrder = shuffle([0, 1, 2, 3, 4]);
-  S.healed = 0; renderShelf(); nextBat();
+  startRound();
 }
 $('#again').addEventListener('click', () => { unlockAudio(); restart(); });
 
@@ -892,15 +1240,14 @@ $('#optSfx').onchange = e => { SET.sfx = e.target.checked; saveSet(); };
     bg.appendChild(s);
   }
 })();
-$('#startBat').innerHTML = batSVG(BAT_COLORS[0], { happy: true, hat: 0 });
+$('#startBat').innerHTML = batSVG(BATS[0].color, { happy: true, hat: BATS[0].hat });
 $('#play').addEventListener('click', async () => {
   unlockAudio();
   try { if (navigator.wakeLock) navigator.wakeLock.request('screen').catch(() => {}); } catch (e) {}
   $('#start').remove();
-  renderShelf(); renderMeter();
   say('welcome');               // started inside the tap so iOS allows speech
   await wait(2600);
-  nextBat();
+  startRound();
 });
 
 // keep the page still on tablets
@@ -912,7 +1259,7 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) stopV
 // home-screen icon, drawn from the same bat
 (() => {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><rect width="400" height="400" fill="#22364f"/><circle cx="200" cy="200" r="170" fill="#2f4a6d"/>` +
-    batSVG(BAT_COLORS[0], { happy: true, hat: 0 }).replace('<svg ', '<svg x="0" y="60" width="400" height="300" ') + '</svg>';
+    batSVG(BATS[2].color, { happy: true, hat: BATS[2].hat }).replace('<svg ', '<svg x="0" y="60" width="400" height="300" ') + '</svg>';
   const img = new Image();
   img.onload = () => {
     try {
