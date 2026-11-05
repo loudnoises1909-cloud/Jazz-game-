@@ -252,7 +252,7 @@
   <button id="play" class="bigBtn" aria-label="Play">
     <svg viewBox="0 0 100 100"><path d="M36,22 L80,50 L36,78 Z" fill="#f3e9d2" stroke="#f3e9d2" stroke-width="10" stroke-linejoin="round"/></svg>
   </button>
-  <small>Grown-ups: press and hold ⚙︎ (top right) for 2 seconds to record your own voice.</small>
+  <small>Grown-ups: press and hold ⚙︎ (top right) for 2 seconds for settings.</small>
 </div>
 
 <button id="gear" aria-label="Grown-up settings (press and hold)">
@@ -262,11 +262,9 @@
 <div id="panel" class="overlay">
   <div class="card">
     <h2>Grown-up corner</h2>
-    <p>Record each line in your own voice. Tap <b>● Record</b>, speak, then tap <b>■ Stop</b>. Recordings stay on this device only.</p>
-    <div class="note" id="micNote">Recording needs the game opened from an <b>https://</b> address (not a downloaded file) and microphone permission.</div>
-    <div id="lines"></div>
+    <p>Settings for grown-ups.</p>
     <div class="opts">
-      <label><input type="checkbox" id="optTts"> Robot voice for lines you haven't recorded</label>
+      <label><input type="checkbox" id="optTts"> Device voice for any line without a recording</label>
       <label><input type="checkbox" id="optSfx"> Sound effects</label>
       <label>Postcards: <select id="optTheme"></select></label>
     </div>
@@ -337,7 +335,7 @@ const LINES = [
   { k: 'tempCold',  t: 'Brrr! This bat is cold.' },
   { k: 'p_scrape',  t: 'Oh no, a scrape! Find the bandage that matches.' },
   { k: 'p_bump',    t: 'Bonk! A bump on the head. What will help?' },
-  { k: 'p_splinter',t: 'Ouch, a splinter! What can pull it out?' },
+  { k: 'p_splinter', t: 'Ouch, a splinter! What can pull it out?' },
   { k: 'p_hungry',  t: "This bat is hungry and weak. Let's take care of it." },
   { k: 'box',       t: 'First, a cozy box.' },
   { k: 'blanket',   t: 'Now a warm blanket.' },
@@ -585,10 +583,11 @@ HATS.push(
 );
 const H_SANTA = 6, H_WITCH = 7, H_SHADES = 8, H_BUNNY = 9, H_PARTY = 10;
 
-const EVERYDAY = ['beach', 'camping', 'picnic', 'snow', 'birthday'];
+const EVERYDAY = ['beach', 'camping', 'picnic', 'snow', 'birthday', 'museum', 'stars', 'rain'];
 const THEME_NAMES = {
-  halloween: 'Halloween', thanksgiving: 'Thanksgiving', christmas: 'Christmas', easter: 'Easter', july4: '4th of July',
-  beach: 'Beach', camping: 'Camping', picnic: 'Picnic', snow: 'Snow day', birthday: 'Birthday'
+  halloween: 'Halloween', thanksgiving: 'Thanksgiving', christmas: 'Christmas', newyear: 'New Year', easter: 'Easter', july4: '4th of July',
+  beach: 'Beach', camping: 'Camping', picnic: 'Picnic', snow: 'Snow day', birthday: 'Birthday',
+  museum: 'Dinosaur museum', stars: 'Stargazing', rain: 'Rainy day'
 };
 function thanksgivingDay(y) { const d = new Date(y, 10, 1); return new Date(y, 10, 1 + ((4 - d.getDay() + 7) % 7) + 21); }
 function easterDay(y) { // anonymous Gregorian algorithm
@@ -605,6 +604,7 @@ function holidayFor(now) {
   if (within(D(9, 10), D(9, 31))) return 'halloween';
   if (within(D(10, 1), thanksgivingDay(y))) return 'thanksgiving';
   if (within(D(11, 1), D(11, 26))) return 'christmas';
+  if (within(D(11, 27), D(11, 31)) || within(D(0, 1), D(0, 1))) return 'newyear';
   const e = easterDay(y); if (within(new Date(y, e.getMonth(), e.getDate() - 14), e)) return 'easter';
   if (within(D(5, 25), D(6, 4))) return 'july4';
   return null;
@@ -694,7 +694,47 @@ const SCENES = {
     fg: `<g transform="translate(296,238) scale(.75)"><rect x="-40" y="-26" width="80" height="26" rx="4" fill="#fffaf0" ${sw}/><rect x="-30" y="-46" width="60" height="22" rx="4" fill="#f5b8c8" ${sw}/>
       <path d="M-40,-14 q10,8 20,0 t20,0 t20,0 t20,0" stroke="#c2452f" stroke-width="4" fill="none"/>
       ${[-16, 0, 16].map(x => `<rect x="${x - 3}" y="-62" width="6" height="16" fill="#3f6fa8" stroke="${INK}" stroke-width="2"/><path d="M${x},-64 q-5,-6 0,-12 q5,6 0,12" fill="#e0a930" stroke="${INK}" stroke-width="1.5"/>`).join('')}</g>
-      ${present(36, 214, 40, 32, '#c2452f', '#e0a930')}` })
+      ${present(36, 214, 40, 32, '#c2452f', '#e0a930')}` }),
+  newyear: () => ({ cap: 'Happy New Year!', adults: [H_PARTY, H_PARTY],
+    bg: `<rect width="400" height="260" fill="#1f2f4a"/>${dots(30, CREAM, 60, 200, 1.4, 21)}
+      ${burst(60, 92, 30, '#e0a930')}${burst(340, 120, 26, CREAM)}
+      <path d="M0,70 q40,24 80,0 t80,0 t80,0 t80,0 t80,0" stroke="#e0a930" stroke-width="4" fill="none"/>
+      <path d="M0,84 q40,-20 80,0 t80,0 t80,0 t80,0 t80,0" stroke="#c2452f" stroke-width="3" fill="none"/>
+      <g transform="translate(200,96)"><circle r="30" fill="${CREAM}" ${sw}/><path d="M0,-30 V-22 M30,0 H22 M0,30 V22 M-30,0 H-22" stroke="${INK}" stroke-width="3"/>
+        <path d="M0,4 V-21" stroke="${INK}" stroke-width="5" stroke-linecap="round"/><path d="M0,4 V-15" stroke="#c2452f" stroke-width="3" stroke-linecap="round"/><circle r="4" fill="${INK}"/></g>
+      ${[[30, 190, '#e0a930', 20], [90, 160, '#c2452f', -30], [150, 200, '#5f9ec8', 45], [260, 170, CREAM, 10], [320, 205, '#e0a930', -20], [370, 160, '#c2452f', 30]].map(([x, y, c, r]) => `<rect x="${x}" y="${y}" width="10" height="5" fill="${c}" transform="rotate(${r} ${x} ${y})"/>`).join('')}
+      <rect x="0" y="222" width="400" height="38" fill="#2b2238" ${sw}/>` }),
+  museum: () => ({ cap: 'Dinosaur Museum!', adults: [null, null],
+    bg: `<rect width="400" height="260" fill="#d9c7a0"/><path d="M0,60 H400" stroke="#c4ae82" stroke-width="10"/>
+      <rect x="0" y="212" width="400" height="48" fill="#a8743a" ${sw}/><rect x="40" y="196" width="320" height="18" fill="#7a4e2d" ${sw}/>
+      <g fill="none" stroke="${INK}" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20,160 Q80,100 176,96" stroke-width="11"/><path d="M20,160 Q80,100 176,96" stroke="#fffaf0" stroke-width="6"/>
+        ${[96, 120, 144, 168].map((x, i) => `<path d="M${x},${108 - i * 4} q${6 - i},30 -2,52" stroke-width="8"/><path d="M${x},${108 - i * 4} q${6 - i},30 -2,52" stroke="#fffaf0" stroke-width="4"/>`).join('')}
+        <path d="M110,112 L100,196 M160,100 L172,196" stroke-width="12"/><path d="M110,112 L100,196 M160,100 L172,196" stroke="#fffaf0" stroke-width="7"/>
+      </g>
+      <g transform="translate(206,86)"><path d="M-30,-18 Q-20,-38 20,-34 Q46,-30 50,-8 L48,6 L-24,10 Q-36,4 -30,-18 Z" fill="#fffaf0" ${sw}/>
+        <circle cx="8" cy="-18" r="7" fill="${INK}"/><path d="M-20,10 L46,8 L40,28 L-14,26 Z" fill="#fffaf0" ${sw}/>
+        <path d="M-12,10 l4,8 l4,-8 l4,8 l4,-8 l4,8 l4,-8 l4,8 l4,-8 l4,8 l4,-8" stroke="${INK}" stroke-width="2.5" fill="none"/></g>
+      <rect x="168" y="200" width="64" height="12" rx="2" fill="${CREAM}" stroke="${INK}" stroke-width="2"/><text x="200" y="210" text-anchor="middle" font-family="Luckiest Guy, sans-serif" font-size="9" fill="${INK}">T-REX</text>` }),
+  stars: () => ({ cap: 'Star Gazing!', adults: [null, null],
+    bg: `<rect width="400" height="260" fill="#17233a"/>${dots(50, CREAM, 14, 190, 1.5, 31)}
+      <g stroke="#9fcbd6" stroke-width="1.5" opacity=".7"><path d="M150,40 L190,56 L226,44 L262,64 L300,52"/></g>
+      ${[[150, 40], [190, 56], [226, 44], [262, 64], [300, 52]].map(([x, y]) => `<polygon points="${starPts(x, y, 7, .45)}" fill="${CREAM}" stroke="${INK}" stroke-width="1.5"/>`).join('')}
+      <circle cx="60" cy="56" r="18" fill="${CREAM}" stroke="${INK}" stroke-width="3"/><circle cx="68" cy="50" r="16" fill="#17233a"/>
+      <path d="M0,206 Q120,190 230,204 Q330,216 400,200 V260 H0 Z" fill="#2b4a33" ${sw}/>
+      <g transform="translate(342,206)"><path d="M0,0 L-16,40 M0,0 L16,40 M0,0 L0,42" stroke="${INK}" stroke-width="5" stroke-linecap="round"/>
+        <g transform="rotate(-40)"><rect x="-14" y="-62" width="22" height="70" rx="4" fill="#2f4a6d" ${sw}/><rect x="-18" y="-70" width="30" height="14" rx="3" fill="#e0a930" ${sw}/><rect x="-10" y="4" width="14" height="10" fill="#e0a930" ${sw}/></g></g>` }),
+  rain: () => ({ cap: 'Rainy Day!', adults: [null, null],
+    bg: `<rect width="400" height="260" fill="#8fa6b8"/>${cloud(70, 56, 1.2).replace('#fffaf0', '#cfd8de')}${cloud(250, 46, 1).replace('#fffaf0', '#cfd8de')}
+      ${Array.from({ length: 40 }, (_, i) => { const x = (i * 53) % 400, y = 70 + (i * 37) % 140; return `<path d="M${x},${y} l-5,12" stroke="#e6eef2" stroke-width="2.5" stroke-linecap="round"/>`; }).join('')}
+      <path d="M0,210 H400 V260 H0 Z" fill="#5f7a4a" ${sw}/>
+      <g transform="translate(236,62) scale(.82)"><path d="M0,0 V70" stroke="${INK}" stroke-width="4"/>
+        <path d="M-92,22 Q0,-56 92,22 Q70,12 46,22 Q24,10 0,22 Q-24,10 -46,22 Q-70,12 -92,22 Z" fill="#c2452f" ${sw}/>
+        <path d="M0,-17 Q-20,4 -46,22 M0,-17 Q20,4 46,22" stroke="${CREAM}" stroke-width="4" fill="none"/></g>`,
+    fg: `<ellipse cx="80" cy="238" rx="46" ry="10" fill="#6f93b0" ${sw}/><ellipse cx="80" cy="238" rx="24" ry="4" fill="none" stroke="${CREAM}" stroke-width="2"/>
+      <ellipse cx="330" cy="242" rx="40" ry="9" fill="#6f93b0" ${sw}/><ellipse cx="330" cy="242" rx="20" ry="4" fill="none" stroke="${CREAM}" stroke-width="2"/>
+      <g transform="translate(300,222)"><path d="M-8,-18 V6 H12 V0 H0 V-18 Z" fill="#e3b23c" ${sw}/></g>` })
+
 };
 
 let pcCount = 0;
@@ -798,47 +838,20 @@ function say(k) {
   });
 }
 
-/* ================= storage (IndexedDB) for recordings ================= */
-const DB = {
-  db: null,
-  open() {
-    if (this.db) return Promise.resolve(this.db);
-    return new Promise((res, rej) => {
-      if (!window.indexedDB) return rej(new Error('no indexedDB'));
-      const r = indexedDB.open('bat-doctor', 1);
-      r.onupgradeneeded = () => r.result.createObjectStore('voice');
-      r.onsuccess = () => { this.db = r.result; res(r.result); };
-      r.onerror = () => rej(r.error);
-    });
-  },
-  async tx(mode, fn) {
-    const d = await this.open();
-    return new Promise((res, rej) => {
-      const t = d.transaction('voice', mode);
-      fn(t.objectStore('voice'));
-      t.oncomplete = () => res();
-      t.onerror = () => rej(t.error);
-    });
-  },
-  put(k, v) { return this.tx('readwrite', s => s.put(v, k)); },
-  del(k) { return this.tx('readwrite', s => s.delete(k)); },
-  async all() {
-    const d = await this.open();
-    return new Promise((res, rej) => {
-      const out = {}, t = d.transaction('voice', 'readonly'), c = t.objectStore('voice').openCursor();
-      c.onsuccess = () => { const cur = c.result; if (cur) { out[cur.key] = cur.value; cur.continue(); } };
-      t.oncomplete = () => res(out); t.onerror = () => rej(t.error);
-    });
-  }
-};
+/* ================= bundled voice recordings ================= */
+// voice/voices.json maps each line key to an audio file in voice/. Lines without a file use the device voice.
 function decode(ab) {
   return new Promise((res, rej) => { audio().decodeAudioData(ab.slice(0), res, rej); });
 }
 async function loadVoices() {
   try {
-    const all = await DB.all();
-    for (const k of Object.keys(all)) { try { BUF[k] = await decode(all[k].ab); } catch (e) {} }
-  } catch (e) {}
+    const r = await fetch('voice/voices.json', { cache: 'no-cache' });
+    if (!r.ok) return;
+    const map = await r.json();
+    await Promise.all(Object.entries(map).map(async ([k, f]) => {
+      try { const a = await fetch('voice/' + f); if (a.ok) BUF[k] = await decode(await a.arrayBuffer()); } catch (e) {}
+    }));
+  } catch (e) {} // opened as a local file, or no recordings yet
 }
 
 /* ================= extra sounds ================= */
@@ -853,7 +866,7 @@ Object.assign(sfx, {
 const S = { phase: 'idle', healed: 0, cur: null, round: null, spot: null, step: null, wrong: 0, taps: 0, busy: false, paused: false };
 const tray = $('#tray'), stage = $('#stage'), wrap = $('#batWrap'), floatEl = $('#batFloat');
 let roster = [];
-if (location.hash === '#test') window.__bd = { S };
+if (location.hash === '#test') window.__bd = { S, BUF };
 
 function newRoster() {
   const probs = shuffle(['scrape', 'bump', 'splinter', 'hungry', 'scrape']);
@@ -1381,74 +1394,25 @@ function confetti(n) {
 }
 const vibrate = ms => { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} };
 
-/* ================= grown-up panel ================= */
-let rec = null, recKey = null, recTimer = null;
-const canRecord = !!(window.isSecureContext && navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
+/* ================= grown-up panel (settings only; the voice ships with the app) ================= */
 function renderPanel() {
-  $('#micNote').style.display = canRecord ? 'none' : 'block';
   $('#optTts').checked = SET.tts; $('#optSfx').checked = SET.sfx;
   const hol = holidayFor(new Date());
   $('#optTheme').innerHTML = `<option value="auto">Automatic${hol ? ' (now: ' + THEME_NAMES[hol] + ')' : ' (holidays when close)'}</option>` +
     Object.keys(THEME_NAMES).map(k => `<option value="${k}">${THEME_NAMES[k]}</option>`).join('');
   $('#optTheme').value = SET.theme || 'auto';
-  const box = $('#lines'); box.innerHTML = '';
-  LINES.forEach(l => {
-    const isRec = rec && recKey === l.k;
-    const row = document.createElement('div'); row.className = 'row';
-    row.innerHTML = `<div class="txt"><b></b><small>${BUF[l.k] ? '✓ Your voice' : (SET.tts ? 'Robot voice' : 'Silent')}</small></div>
-      <button class="rec ${isRec ? 'on' : ''}" ${canRecord && (!rec || isRec) ? '' : 'disabled'}>${isRec ? '■ Stop' : '● Record'}</button>
-      <button class="play" aria-label="Play">▶</button>
-      <button class="del" aria-label="Delete recording" ${BUF[l.k] && !rec ? '' : 'disabled'}>✕</button>`;
-    row.querySelector('b').textContent = l.t;
-    row.querySelector('.rec').onclick = () => isRec ? stopRec() : startRec(l.k);
-    row.querySelector('.play').onclick = () => { unlockAudio(); const p = S.paused; S.paused = false; say(l.k); S.paused = p; };
-    row.querySelector('.del').onclick = async () => { delete BUF[l.k]; try { await DB.del(l.k); } catch (e) {} renderPanel(); };
-    box.appendChild(row);
-  });
 }
-async function startRec(k) {
-  if (rec) return;
-  stopVoice(); unlockAudio();
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
-    const chunks = [];
-    const mr = new MediaRecorder(stream);
-    rec = mr; recKey = k;
-    mr.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
-    mr.onstop = async () => {
-      stream.getTracks().forEach(t => t.stop());
-      clearTimeout(recTimer);
-      const blob = new Blob(chunks, { type: mr.mimeType || (chunks[0] && chunks[0].type) || 'audio/mp4' });
-      rec = null;
-      try {
-        const ab = await blob.arrayBuffer();
-        BUF[k] = await decode(ab);
-        try { await DB.put(k, { ab, type: blob.type }); } catch (e) {}
-      } catch (e) { alert('Sorry, that recording could not be used. Please try again.'); }
-      renderPanel();
-    };
-    mr.start();
-    recTimer = setTimeout(stopRec, 12000); // safety stop
-    renderPanel();
-  } catch (err) {
-    rec = null;
-    alert('Microphone is not available: ' + (err && err.message ? err.message : err));
-    renderPanel();
-  }
-}
-function stopRec() { if (rec && rec.state !== 'inactive') rec.stop(); }
 function openPanel() {
   S.paused = true; stopVoice(); clearIdle();
   renderPanel(); $('#panel').classList.add('show');
 }
 function closePanel() {
-  stopRec();
   $('#panel').classList.remove('show');
   S.paused = false;
-  if (S.phase === 'matching' || S.phase === 'healing') armIdle();
+  if (S.phase === 'tool' || S.phase === 'healing') armIdle();
 }
 $('#closePanel').onclick = closePanel;
-$('#optTts').onchange = e => { SET.tts = e.target.checked; saveSet(); renderPanel(); };
+$('#optTts').onchange = e => { SET.tts = e.target.checked; saveSet(); };
 $('#optSfx').onchange = e => { SET.sfx = e.target.checked; saveSet(); };
 $('#optTheme').onchange = e => { SET.theme = e.target.value; saveSet(); };
 
