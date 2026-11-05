@@ -1,0 +1,819 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Bat Doctor">
+<meta name="theme-color" content="#2a1640">
+<title>Bat Doctor</title>
+<link id="touchIcon" rel="apple-touch-icon" href="">
+<link id="favIcon" rel="icon" href="">
+<style>
+  :root{
+    --bg1:#1f0f30; --bg2:#3a1a52; --bg3:#6b2f7d;
+    --pink:#ff8fc7; --hot:#ff4f9a; --cream:#fff5fa;
+    --slot:clamp(54px, 11vmin, 110px);
+    --tool:clamp(84px, min(19vh, 21vw), 170px);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+  html,body{margin:0;height:100%;overflow:hidden;touch-action:none;overscroll-behavior:none}
+  body{
+    background:radial-gradient(ellipse at 50% 42%, var(--bg3) 0%, var(--bg2) 55%, var(--bg1) 100%);
+    background-color:var(--bg1);
+    color:var(--cream);
+    font-family:ui-rounded,"SF Pro Rounded","Nunito","Varela Round",system-ui,-apple-system,"Segoe UI",sans-serif;
+  }
+
+  /* ---------- cave background ---------- */
+  #bg{position:fixed;inset:0;pointer-events:none;z-index:0}
+  #bg svg{position:absolute;left:0;top:0;width:100%;height:22%}
+  .twinkle{position:absolute;width:6px;height:6px;border-radius:50%;background:#ffe3f2;opacity:.5;animation:twinkle 3s ease-in-out infinite}
+  .moon{position:absolute;left:4%;top:16%;width:clamp(40px,8vmin,80px);height:clamp(40px,8vmin,80px);border-radius:50%;
+        box-shadow:inset -14px 6px 0 0 #fff1c9;opacity:.85;transform:rotate(-20deg)}
+
+  /* ---------- layout ---------- */
+  #app{position:fixed;inset:0;z-index:1;display:grid;grid-template-rows:auto 1fr auto;
+       padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+
+  #shelf{display:flex;justify-content:center;gap:clamp(6px,1.6vmin,16px);padding:clamp(10px,2.2vmin,20px) 72px 0;transition:transform .6s}
+  .slot{width:var(--slot);height:calc(var(--slot) * .78);border-radius:18px;border:3px dashed rgba(255,190,230,.35);
+        background:rgba(255,255,255,.05);display:grid;place-items:center;overflow:visible}
+  .slot.filled{border-style:solid;border-color:rgba(255,190,230,.75);background:rgba(255,143,199,.16)}
+  .slot svg{width:112%;height:auto;overflow:visible}
+  .slot.filled svg{animation:popIn .5s ease-out}
+  .slot.dance{animation:dance .6s ease-in-out infinite alternate}
+  body.party #shelf{transform:translateY(22vh) scale(1.35)}
+
+  #stage{position:relative;display:grid;place-items:center;min-height:0}
+  #batWrap{width:min(92vw, 76vh, 820px);will-change:transform}
+  #batFloat{animation:bob 3s ease-in-out infinite}
+  .batsvg{width:100%;height:auto;display:block;overflow:visible}
+  .wing{transform-box:fill-box;transform-origin:100% 45%;animation:flap 1.8s ease-in-out infinite}
+  .flying .wing{animation-duration:.22s}
+  .booboo-pulse{transform-box:fill-box;transform-origin:center;animation:throb 1.3s ease-in-out infinite}
+  .stick{transform-box:fill-box;transform-origin:center;animation:stick .4s ease-out}
+  .melt{transform-box:fill-box;transform-origin:center;animation:melt .6s ease-in forwards}
+  .mouth{transition:d .3s}
+
+  #bat.sad{animation:shiver .45s ease-in-out 2}
+  #bat.hmm{animation:hmm .8s ease-in-out}
+  #bat.bounce{animation:bounce .35s ease-out}
+  #bat.flip{animation:flip .9s ease-in-out}
+  #bat.hint{animation:hintPulse 1s ease-in-out 2}
+
+  #hearts{position:absolute;top:1%;left:50%;transform:translateX(-50%);display:flex;gap:14px;opacity:0;transition:opacity .3s;pointer-events:none}
+  #hearts.show{opacity:1}
+  #hearts svg{width:clamp(36px,7vmin,64px);height:auto;overflow:visible}
+  #hearts path{fill:rgba(255,255,255,.12);stroke:#ffc2e2;stroke-width:5;transition:fill .2s}
+  #hearts .on path{fill:var(--hot)}
+  #hearts .on{animation:popIn .4s ease-out}
+
+  #tray{display:flex;justify-content:center;align-items:center;gap:clamp(14px,4vw,52px);
+        padding:0 16px clamp(14px,3vh,32px);min-height:calc(var(--tool) + 30px)}
+  .tool{width:var(--tool);height:var(--tool);touch-action:none;position:relative;z-index:5;
+        filter:drop-shadow(0 6px 8px rgba(0,0,0,.35));will-change:transform}
+  .tool svg{width:100%;height:100%;overflow:visible;display:block}
+  .tool svg.pop{animation:popIn .45s ease-out both}
+  .tool svg.wiggle{animation:wiggle 1.1s ease-in-out 2}
+  .tool.dragging{z-index:100}
+  .tool.gone{opacity:0;transition:opacity .4s;pointer-events:none}
+
+  /* ---------- overlays ---------- */
+  .overlay{position:fixed;inset:0;z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2vh;padding:16px}
+  #start{background:radial-gradient(ellipse at 50% 42%, var(--bg3) 0%, var(--bg2) 55%, var(--bg1) 100%)}
+  #start h1{margin:0;font-size:clamp(34px,7vmin,72px);color:var(--pink);letter-spacing:1px;text-shadow:0 4px 0 #7a2a6a}
+  #start .batsvg{width:min(70vw,48vh,520px);animation:bob 3s ease-in-out infinite}
+  .bigBtn{width:clamp(110px,20vmin,180px);height:clamp(110px,20vmin,180px);border-radius:50%;border:0;
+          background:var(--hot);box-shadow:0 8px 0 #a3226a,0 12px 30px rgba(0,0,0,.4);display:grid;place-items:center;
+          animation:breathe 1.6s ease-in-out infinite;touch-action:manipulation;cursor:pointer}
+  .bigBtn:active{transform:translateY(6px);box-shadow:0 2px 0 #a3226a}
+  .bigBtn svg{width:50%;height:50%}
+  #start small{opacity:.55;font-size:clamp(12px,1.8vmin,16px);text-align:center;max-width:520px}
+  #again{position:fixed;left:50%;top:58%;transform:translate(-50%,-50%) scale(0);z-index:250;transition:transform .4s cubic-bezier(.3,1.6,.5,1)}
+  #again.show{transform:translate(-50%,-50%) scale(1)}
+
+  #gear{position:fixed;top:calc(env(safe-area-inset-top) + 10px);right:calc(env(safe-area-inset-right) + 10px);z-index:400;
+        width:48px;height:48px;border-radius:50%;border:0;background:rgba(255,255,255,.08);display:grid;place-items:center;
+        opacity:.45;touch-action:none;overflow:hidden}
+  #gear svg{width:26px;height:26px;position:relative;z-index:1}
+  #gear::after{content:"";position:absolute;inset:0;border-radius:50%;background:var(--hot);transform:scale(0)}
+  #gear.holding::after{animation:holdfill 1.5s linear forwards}
+
+  #panel{background:rgba(20,8,32,.85);display:none;z-index:500}
+  #panel.show{display:flex}
+  #panel .card{background:#fff5fa;color:#3a1a52;border-radius:22px;width:min(640px,100%);max-height:92vh;overflow:auto;
+               padding:20px 20px 16px;touch-action:pan-y;-webkit-user-select:text;user-select:text}
+  #panel h2{margin:0 0 4px}
+  #panel p{margin:4px 0 12px;font-size:14px;opacity:.8}
+  .row{display:flex;align-items:center;gap:8px;padding:10px 0;border-top:1px solid #f1d4e4}
+  .row .txt{flex:1;min-width:0}
+  .row small{display:block;font-size:12px;opacity:.65}
+  .row button,.panelBtns button{border:0;border-radius:12px;padding:10px 12px;font-size:15px;font-weight:700;background:#f3d6e7;color:#3a1a52;min-width:44px;min-height:44px;font-family:inherit}
+  .row button.rec{background:var(--hot);color:#fff}
+  .row button.rec.on{background:#3a1a52;animation:breathe 1s infinite}
+  .row button:disabled{opacity:.35}
+  .opts{display:flex;flex-wrap:wrap;gap:16px;margin:12px 0;font-size:15px}
+  .opts label{display:flex;align-items:center;gap:6px}
+  .opts input{width:22px;height:22px}
+  .panelBtns{display:flex;gap:10px;justify-content:flex-end;margin-top:8px}
+  .panelBtns button.primary{background:#3a1a52;color:#fff}
+  .note{background:#ffe9b8;border-radius:10px;padding:8px 10px;font-size:13px;margin-bottom:8px;display:none}
+
+  /* ---------- effects ---------- */
+  .spark{position:fixed;left:0;top:0;width:30px;height:30px;margin:-15px 0 0 -15px;pointer-events:none;z-index:200;animation:burst .9s ease-out forwards}
+  .conf{position:fixed;top:-70px;pointer-events:none;z-index:150;animation:fall var(--d) linear forwards}
+
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+  @keyframes flap{0%,100%{transform:scaleY(1) rotate(0)}50%{transform:scaleY(.78) rotate(-9deg)}}
+  @keyframes throb{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+  @keyframes stick{0%{transform:scale(1.6);opacity:0}70%{transform:scale(.9);opacity:1}100%{transform:scale(1)}}
+  @keyframes melt{0%{transform:scale(1);opacity:1}40%{transform:scale(1.25)}100%{transform:scale(0) rotate(90deg);opacity:0}}
+  @keyframes shiver{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+  @keyframes hmm{0%,100%{transform:rotate(0)}30%{transform:rotate(-7deg)}65%{transform:rotate(5deg)}}
+  @keyframes bounce{0%{transform:scale(1)}40%{transform:scale(1.07,.94)}100%{transform:scale(1)}}
+  @keyframes flip{0%{transform:translateY(0) rotate(0)}50%{transform:translateY(-50px) rotate(180deg)}100%{transform:translateY(0) rotate(360deg)}}
+  @keyframes hintPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+  @keyframes popIn{0%{transform:scale(0)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+  @keyframes wiggle{0%,100%{transform:rotate(0) scale(1)}20%{transform:rotate(-12deg) scale(1.1)}40%{transform:rotate(10deg) scale(1.1)}60%{transform:rotate(-8deg) scale(1.08)}80%{transform:rotate(5deg)}}
+  @keyframes dance{from{transform:translateY(0) rotate(-6deg)}to{transform:translateY(-14px) rotate(6deg)}}
+  @keyframes breathe{0%,100%{scale:1}50%{scale:1.07}}
+  @keyframes holdfill{from{transform:scale(0)}to{transform:scale(1)}}
+  @keyframes twinkle{0%,100%{opacity:.15}50%{opacity:.8}}
+  @keyframes burst{
+    0%{transform:translate(var(--x0),var(--y0)) scale(.3) rotate(0);opacity:1}
+    100%{transform:translate(calc(var(--x0) + var(--dx)),calc(var(--y0) + var(--dy))) scale(1.1) rotate(200deg);opacity:0}}
+  @keyframes fall{to{transform:translateY(120vh) rotate(var(--r))}}
+  @media (prefers-reduced-motion: reduce){ #batFloat,.wing,.booboo-pulse{animation:none} }
+</style>
+</head>
+<body>
+
+<div id="bg">
+  <svg viewBox="0 0 1000 120" preserveAspectRatio="none" aria-hidden="true">
+    <path fill="#170a24" d="M0,0 H1000 V18 L975,60 L955,20 L930,44 L905,16 L880,80 L858,22 L830,40 L806,14 L780,70 L752,18 L728,36 L700,12 L676,95 L650,20 L622,42 L600,14 L575,66 L548,18 L520,38 L496,12 L470,84 L445,20 L420,44 L398,14 L372,70 L346,18 L320,36 L296,12 L270,90 L245,22 L220,40 L196,14 L170,72 L146,20 L120,42 L96,14 L72,84 L48,22 L24,44 L0,16 Z"/>
+  </svg>
+  <div class="moon"></div>
+</div>
+
+<div id="app">
+  <div id="shelf"></div>
+  <div id="stage">
+    <div id="hearts"></div>
+    <div id="batWrap"><div id="batFloat"></div></div>
+  </div>
+  <div id="tray"></div>
+</div>
+
+<button id="again" class="bigBtn" aria-label="Play again">
+  <svg viewBox="0 0 100 100"><path d="M74,30 A30,30 0 1,0 80,56" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round"/><path d="M60,22 L84,26 L78,48 Z" fill="#fff" stroke="#fff" stroke-width="6" stroke-linejoin="round"/></svg>
+</button>
+
+<div id="start" class="overlay">
+  <h1>Bat Doctor</h1>
+  <div id="startBat"></div>
+  <button id="play" class="bigBtn" aria-label="Play">
+    <svg viewBox="0 0 100 100"><path d="M34,22 L80,50 L34,78 Z" fill="#fff" stroke="#fff" stroke-width="10" stroke-linejoin="round"/></svg>
+  </button>
+  <small>Grown-ups: press and hold ⚙︎ (top right) for 2 seconds to record your own voice.</small>
+</div>
+
+<button id="gear" aria-label="Grown-up settings (press and hold)">
+  <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+</button>
+
+<div id="panel" class="overlay">
+  <div class="card">
+    <h2>Grown-up corner</h2>
+    <p>Record each line in your own voice. Tap <b>● Record</b>, speak, then tap <b>■ Stop</b>. Recordings stay on this device only.</p>
+    <div class="note" id="micNote">Recording needs the game opened from an <b>https://</b> address (not a downloaded file) and microphone permission.</div>
+    <div id="lines"></div>
+    <div class="opts">
+      <label><input type="checkbox" id="optTts"> Robot voice for lines you haven't recorded</label>
+      <label><input type="checkbox" id="optSfx"> Sound effects</label>
+    </div>
+    <div class="panelBtns"><button class="primary" id="closePanel">Done</button></div>
+  </div>
+</div>
+
+<script>
+(() => {
+'use strict';
+
+/* ================= helpers ================= */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const wait = ms => new Promise(r => setTimeout(r, ms));
+const rand = a => a[Math.floor(Math.random() * a.length)];
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const center = r => ({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
+function mix(hex, to, t) {
+  const a = parseInt(hex.slice(1), 16), b = parseInt(to.slice(1), 16);
+  const ch = s => Math.round(((a >> s) & 255) * (1 - t) + ((b >> s) & 255) * t);
+  return '#' + ((1 << 24) | (ch(16) << 16) | (ch(8) << 8) | ch(0)).toString(16).slice(1);
+}
+
+/* ================= content ================= */
+const SHAPES = ['circle', 'star', 'heart', 'triangle', 'square'];
+const COLORS = [
+  { n: 'blue', c: '#3d9bff' }, { n: 'green', c: '#3cc46a' }, { n: 'yellow', c: '#ffc928' },
+  { n: 'orange', c: '#ff8a2a' }, { n: 'purple', c: '#9a64ff' }
+];
+const BAT_COLORS = ['#ff8fc7', '#ff70b3', '#f79ad9', '#ffa3c4', '#e98ae2'];
+const SPOTS = [{ x: 88, y: 130 }, { x: 312, y: 130 }, { x: 200, y: 224 }, { x: 200, y: 114 }];
+const TOTAL = 5;
+const LINES = [
+  { k: 'welcome', t: 'Hi, Doctor! The bats need your help!' },
+  { k: 'ohno',    t: 'Oh no! This bat has a booboo!' },
+  { k: 'find',    t: 'Can you find the bandage that matches?' },
+  { k: 'wrong',   t: "Hmm, not that one. Let's try another!" },
+  { k: 'match',   t: 'You found it! Great matching!' },
+  { k: 'tap',     t: 'Now tap the bat to help it heal.' },
+  { k: 'healed',  t: 'Yay! The bat is all better!' },
+  { k: 'party',   t: 'You healed all the bats! Thank you, Doctor!' }
+];
+const LINE = Object.fromEntries(LINES.map(l => [l.k, l.t]));
+
+/* ================= settings ================= */
+const SET = { tts: true, sfx: true };
+try { Object.assign(SET, JSON.parse(localStorage.getItem('batdoctor.settings') || '{}')); } catch (e) {}
+const saveSet = () => { try { localStorage.setItem('batdoctor.settings', JSON.stringify(SET)); } catch (e) {} };
+
+/* ================= drawing ================= */
+function shapeSVG(type, r, fill, stroke, sw, extra = '') {
+  const a = `fill="${fill}" stroke="${stroke}" stroke-width="${sw}" stroke-linejoin="round" ${extra}`;
+  switch (type) {
+    case 'circle': return `<circle r="${r}" ${a}/>`;
+    case 'square': return `<rect x="${-r * .9}" y="${-r * .9}" width="${r * 1.8}" height="${r * 1.8}" rx="${r * .3}" ${a}/>`;
+    case 'triangle': return `<polygon points="0,${-r * 1.12} ${r * 1.1},${r * .8} ${-r * 1.1},${r * .8}" ${a}/>`;
+    case 'star': {
+      const p = [];
+      for (let i = 0; i < 10; i++) {
+        const rr = i % 2 ? r * .55 : r * 1.18, ang = -Math.PI / 2 + i * Math.PI / 5;
+        p.push((rr * Math.cos(ang)).toFixed(1) + ',' + (rr * Math.sin(ang)).toFixed(1));
+      }
+      return `<polygon points="${p.join(' ')}" ${a}/>`;
+    }
+    case 'heart': return `<path d="M0,${r * .95} C${-r * 1.7},${-r * .1} ${-r * .85},${-r * 1.35} 0,${-r * .45} C${r * .85},${-r * 1.35} ${r * 1.7},${-r * .1} 0,${r * .95}Z" ${a}/>`;
+  }
+}
+function bandageSVG(shape, color, r) {
+  const d = r * .24;
+  return shapeSVG(shape, r, color, '#ffffff', r * .12) +
+    shapeSVG(shape, r * .7, 'none', 'rgba(255,255,255,.75)', r * .06, `stroke-dasharray="${r * .14} ${r * .12}" stroke-linecap="round"`) +
+    [[-d, -d], [d, -d], [-d, d], [d, d]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="${r * .07}" fill="rgba(255,255,255,.85)"/>`).join('');
+}
+function mouthD(h) { return `M180,186 Q200,${(186 + (h * 2 - 1) * 16).toFixed(1)} 220,186`; }
+function batSVG(col, { happy = false, id = '' } = {}) {
+  const wing = mix(col, '#5a1a6a', .35), rib = mix(wing, '#000000', .25), belly = mix(col, '#ffffff', .5), ear = mix(col, '#ffffff', .32);
+  const wp = 'M175,140 C140,95 85,80 25,105 C38,122 42,140 38,162 C55,152 72,156 82,176 C96,162 116,165 126,186 C142,174 160,176 172,192 Z';
+  const wingG = `<g class="wing"><path d="${wp}" fill="${wing}"/><path d="M172,150 L42,108 M168,166 L62,154 M166,180 L106,172" stroke="${rib}" stroke-width="3" fill="none" stroke-linecap="round" opacity=".55"/></g>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" class="batsvg" ${id ? `id="${id}"` : ''}>
+    ${wingG}
+    <g transform="translate(400,0) scale(-1,1)">${wingG}</g>
+    <path d="M155,135 L146,70 L190,116 Z" fill="${col}" stroke="${col}" stroke-width="6" stroke-linejoin="round"/>
+    <path d="M159,126 L153,88 L180,116 Z" fill="${ear}"/>
+    <path d="M245,135 L254,70 L210,116 Z" fill="${col}" stroke="${col}" stroke-width="6" stroke-linejoin="round"/>
+    <path d="M241,126 L247,88 L220,116 Z" fill="${ear}"/>
+    <ellipse cx="200" cy="170" rx="60" ry="64" fill="${col}"/>
+    <ellipse cx="200" cy="202" rx="34" ry="27" fill="${belly}" opacity=".8"/>
+    <path d="M186,231 q-5,10 4,13 M214,231 q5,10 -4,13" stroke="${wing}" stroke-width="6" stroke-linecap="round" fill="none"/>
+    <circle cx="164" cy="178" r="9" fill="#ff4f9a" opacity=".45"/>
+    <circle cx="236" cy="178" r="9" fill="#ff4f9a" opacity=".45"/>
+    <g class="eyes-open" style="display:${happy ? 'none' : 'inline'}">
+      <circle cx="180" cy="155" r="13" fill="#fff"/><circle cx="220" cy="155" r="13" fill="#fff"/>
+      <circle cx="182" cy="157" r="7.5" fill="#2a1238"/><circle cx="222" cy="157" r="7.5" fill="#2a1238"/>
+      <circle cx="185" cy="153" r="2.6" fill="#fff"/><circle cx="225" cy="153" r="2.6" fill="#fff"/>
+    </g>
+    <g class="eyes-happy" style="display:${happy ? 'inline' : 'none'}" stroke="#2a1238" stroke-width="5" fill="none" stroke-linecap="round">
+      <path d="M168,158 Q180,143 192,158"/><path d="M208,158 Q220,143 232,158"/>
+    </g>
+    <g class="brows" style="opacity:${happy ? 0 : 1}" stroke="#2a1238" stroke-width="4" stroke-linecap="round">
+      <path d="M168,139 L188,133"/><path d="M232,139 L212,133"/>
+    </g>
+    <path class="mouth" d="${mouthD(happy ? 1 : .1)}" stroke="#2a1238" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <g class="booboo-layer"></g>
+    <g class="bandage-layer"></g>
+  </svg>`;
+}
+function setHappy(h, svg = $('#bat')) {
+  if (!svg) return;
+  svg.querySelector('.mouth').setAttribute('d', mouthD(Math.min(1, h)));
+  svg.querySelector('.brows').style.opacity = h < .5 ? 1 : 0;
+  const hap = h >= 1;
+  svg.querySelector('.eyes-open').style.display = hap ? 'none' : 'inline';
+  svg.querySelector('.eyes-happy').style.display = hap ? 'inline' : 'none';
+}
+const HEART_PATH = 'M50,85 C10,55 0,35 10,20 C20,5 42,8 50,25 C58,8 80,5 90,20 C100,35 90,55 50,85Z';
+const STAR_SMALL = '<svg viewBox="-12 -12 24 24" width="100%" height="100%"><polygon points="0,-11 3,-3 11,-3 5,2 7,10 0,5 -7,10 -5,2 -11,-3 -3,-3" fill="FILL"/></svg>';
+
+/* ================= audio ================= */
+let ac = null, sfxGain = null, voiceGain = null;
+function audio() {
+  if (ac) return ac;
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return null;
+  ac = new AC();
+  sfxGain = ac.createGain(); sfxGain.gain.value = .5; sfxGain.connect(ac.destination);
+  voiceGain = ac.createGain(); voiceGain.gain.value = 1; voiceGain.connect(ac.destination);
+  return ac;
+}
+function unlockAudio() {
+  const a = audio(); if (!a) return;
+  if (a.state !== 'running') a.resume();
+  const b = a.createBuffer(1, 1, 22050), s = a.createBufferSource();
+  s.buffer = b; s.connect(a.destination); s.start(0);
+}
+function tone(f, delay = 0, dur = .2, type = 'sine', vol = .2, f2 = null) {
+  if (!SET.sfx || !ac || ac.state !== 'running') return;
+  const t0 = ac.currentTime + delay, o = ac.createOscillator(), g = ac.createGain();
+  o.type = type; o.frequency.setValueAtTime(f, t0);
+  if (f2) o.frequency.exponentialRampToValueAtTime(f2, t0 + dur);
+  g.gain.setValueAtTime(.0001, t0);
+  g.gain.exponentialRampToValueAtTime(vol, t0 + .02);
+  g.gain.exponentialRampToValueAtTime(.0001, t0 + dur);
+  o.connect(g).connect(sfxGain); o.start(t0); o.stop(t0 + dur + .05);
+}
+const sfx = {
+  pick: () => tone(700, 0, .1, 'sine', .15),
+  match: () => [523, 659, 784].forEach((f, i) => tone(f, i * .09, .25, 'triangle', .22)),
+  soft: () => { tone(392, 0, .18, 'sine', .12); tone(330, .14, .25, 'sine', .12); },
+  chime: n => { tone(660 * Math.pow(1.26, n - 1), 0, .4, 'sine', .22); tone(1320 * Math.pow(1.26, n - 1), 0, .3, 'sine', .06); },
+  yay: () => [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, i * .1, .35, 'triangle', .2)),
+  whoosh: () => tone(220, 0, .5, 'sine', .08, 900),
+  pop: () => tone(990, 0, .1, 'sine', .2, 1400)
+};
+
+/* ================= voice ================= */
+const BUF = {};
+let curSrc = null, voices = [];
+function pickVoice() {
+  if (!('speechSynthesis' in window)) return null;
+  if (!voices.length) voices = speechSynthesis.getVoices();
+  const en = voices.filter(v => /^en(-|_|$)/i.test(v.lang));
+  return en.find(v => /samantha|karen|moira|google us english|female|zira|aria|jenny/i.test(v.name)) ||
+         en.find(v => /en.US/i.test(v.lang)) || en[0] || null;
+}
+if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = () => { voices = speechSynthesis.getVoices(); };
+function stopVoice() {
+  if (curSrc) { try { curSrc.stop(); } catch (e) {} curSrc = null; }
+  if ('speechSynthesis' in window && (speechSynthesis.speaking || speechSynthesis.pending)) speechSynthesis.cancel();
+}
+function say(k) {
+  stopVoice();
+  if (S.paused) return Promise.resolve();
+  return new Promise(res => {
+    let fin = false, to = null;
+    const done = () => { if (fin) return; fin = true; clearTimeout(to); res(); };
+    const buf = BUF[k];
+    if (buf && ac) {
+      const s = ac.createBufferSource();
+      s.buffer = buf; s.connect(voiceGain);
+      s.onended = () => { if (curSrc === s) curSrc = null; done(); };
+      curSrc = s; s.start();
+      to = setTimeout(done, buf.duration * 1000 + 600);
+    } else if (SET.tts && 'speechSynthesis' in window) {
+      const u = new SpeechSynthesisUtterance(LINE[k]);
+      u.lang = 'en-US'; u.rate = .92; u.pitch = 1.2;
+      const v = pickVoice(); if (v) u.voice = v;
+      u.onend = done; u.onerror = done;
+      speechSynthesis.speak(u);
+      to = setTimeout(done, 7000);
+    } else {
+      to = setTimeout(done, 900); // short pause so pacing still feels natural
+    }
+  });
+}
+
+/* ================= storage (IndexedDB) for recordings ================= */
+const DB = {
+  db: null,
+  open() {
+    if (this.db) return Promise.resolve(this.db);
+    return new Promise((res, rej) => {
+      if (!window.indexedDB) return rej(new Error('no indexedDB'));
+      const r = indexedDB.open('bat-doctor', 1);
+      r.onupgradeneeded = () => r.result.createObjectStore('voice');
+      r.onsuccess = () => { this.db = r.result; res(r.result); };
+      r.onerror = () => rej(r.error);
+    });
+  },
+  async tx(mode, fn) {
+    const d = await this.open();
+    return new Promise((res, rej) => {
+      const t = d.transaction('voice', mode), st = t.objectStore('voice');
+      const out = fn(st);
+      t.oncomplete = () => res(out && out.result !== undefined ? out.result : out);
+      t.onerror = () => rej(t.error);
+    });
+  },
+  put(k, v) { return this.tx('readwrite', s => { s.put(v, k); }); },
+  del(k) { return this.tx('readwrite', s => { s.delete(k); }); },
+  async all() {
+    const d = await this.open();
+    return new Promise((res, rej) => {
+      const out = {}, t = d.transaction('voice', 'readonly'), c = t.objectStore('voice').openCursor();
+      c.onsuccess = () => { const cur = c.result; if (cur) { out[cur.key] = cur.value; cur.continue(); } };
+      t.oncomplete = () => res(out); t.onerror = () => rej(t.error);
+    });
+  }
+};
+function decode(ab) {
+  return new Promise((res, rej) => { audio().decodeAudioData(ab.slice(0), res, rej); });
+}
+async function loadVoices() {
+  try {
+    const all = await DB.all();
+    for (const k of Object.keys(all)) { try { BUF[k] = await decode(all[k].ab); } catch (e) {} }
+  } catch (e) {}
+}
+
+/* ================= game state ================= */
+const S = { phase: 'idle', healed: 0, round: null, color: null, wrong: 0, hearts: 0, busy: false, paused: false };
+const tray = $('#tray'), stage = $('#stage'), wrap = $('#batWrap'), floatEl = $('#batFloat');
+
+function renderShelf() {
+  $('#shelf').innerHTML = Array.from({ length: TOTAL }, () => '<div class="slot"></div>').join('');
+}
+function renderHearts() {
+  $('#hearts').innerHTML = [0, 1, 2].map(() => `<svg viewBox="0 0 100 90"><path d="${HEART_PATH}"/></svg>`).join('');
+}
+function makeRound(level) {
+  const n = level === 0 ? 2 : level < 3 ? 3 : 4;
+  const target = { shape: rand(SHAPES), color: rand(COLORS) };
+  const list = [target], used = new Set([target.shape + target.color.n]);
+  let guard = 0;
+  while (list.length < n && guard++ < 300) {
+    const hard = level >= 3 && list.length === 1; // later bats: one bandage with the same colour but a different shape
+    const shape = rand(SHAPES.filter(s => s !== target.shape));
+    const color = hard ? target.color : rand(COLORS.filter(c => c !== target.color));
+    const key = shape + color.n;
+    if (used.has(key) || (!hard && list.some(t => t.shape === shape))) continue;
+    used.add(key); list.push({ shape, color });
+  }
+  return { target, tools: shuffle(list), spot: rand(SPOTS) };
+}
+function batAnim(name) {
+  const b = $('#bat'); if (!b) return;
+  b.classList.remove('sad', 'hmm', 'bounce', 'flip', 'hint');
+  void b.getBoundingClientRect();
+  b.classList.add(name);
+  b.addEventListener('animationend', () => b.classList.remove(name), { once: true });
+}
+function putBooboo() {
+  const { spot, target: t } = S.round;
+  $('#bat .booboo-layer').innerHTML =
+    `<g transform="translate(${spot.x},${spot.y})"><g class="booboo-pulse">
+      <circle r="31" fill="#ff3b6b" opacity=".2"/>
+      ${shapeSVG(t.shape, 24, t.color.c + '55', t.color.c, 5, 'stroke-dasharray="7 5"')}
+      <path d="M-12,3 l6,-6 l6,6 l6,-6 l6,6" stroke="#e5304f" stroke-width="4.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    </g></g>`;
+}
+function putBandage() {
+  const { spot, target: t } = S.round;
+  $('#bat .booboo-layer').style.opacity = 0;
+  $('#bat .bandage-layer').innerHTML =
+    `<g transform="translate(${spot.x},${spot.y})"><g class="stick">${bandageSVG(t.shape, t.color.c, 27)}</g></g>`;
+}
+const boobooRect = () => $('#bat .booboo-layer > g').getBoundingClientRect();
+
+function renderTools(list) {
+  tray.innerHTML = '';
+  list.forEach((t, i) => {
+    const el = document.createElement('div');
+    el.className = 'tool'; el._t = t;
+    el.setAttribute('aria-label', `${t.color.n} ${t.shape} bandage`);
+    el.innerHTML = `<svg viewBox="-60 -60 120 120" class="pop" style="animation-delay:${i * .12}s">${bandageSVG(t.shape, t.color.c, 42)}</svg>`;
+    const svg = el.firstElementChild;
+    svg.addEventListener('animationend', () => svg.classList.remove('pop', 'wiggle'));
+    attachDrag(el, t);
+    tray.appendChild(el);
+  });
+}
+function hintTool() {
+  const el = [...tray.children].find(x => x._t === S.round.target);
+  const svg = el && el.firstElementChild; if (!svg) return;
+  svg.classList.remove('wiggle'); void svg.getBoundingClientRect(); svg.classList.add('wiggle');
+}
+
+/* ================= idle hints ================= */
+let idleT = null;
+const clearIdle = () => clearTimeout(idleT);
+function armIdle() {
+  clearIdle();
+  idleT = setTimeout(() => {
+    if (!S.paused) {
+      if (S.phase === 'matching') { hintTool(); say('find'); }
+      else if (S.phase === 'healing') { batAnim('hint'); say('tap'); }
+    }
+    if (S.phase === 'matching' || S.phase === 'healing') armIdle();
+  }, 9000);
+}
+
+/* ================= drag & drop ================= */
+function attachDrag(el, t) {
+  let d = null;
+  el.addEventListener('pointerdown', e => {
+    if (S.phase !== 'matching' || S.busy || S.paused || d) return;
+    e.preventDefault();
+    try { el.setPointerCapture(e.pointerId); } catch (err) {}
+    d = { id: e.pointerId, x0: e.clientX, y0: e.clientY, moved: false, home: el.getBoundingClientRect() };
+    el.classList.add('dragging');
+    el.style.transition = 'transform .12s'; el.style.transform = 'scale(1.12)';
+    sfx.pick(); armIdle();
+  });
+  el.addEventListener('pointermove', e => {
+    if (!d || e.pointerId !== d.id) return;
+    const dx = e.clientX - d.x0, dy = e.clientY - d.y0;
+    if (!d.moved && Math.hypot(dx, dy) > 12) { d.moved = true; el.style.transition = 'none'; }
+    if (d.moved) el.style.transform = `translate(${dx}px,${dy}px) scale(1.12)`;
+  });
+  const end = e => {
+    if (!d || e.pointerId !== d.id) return;
+    const info = d; d = null;
+    if (e.type === 'pointercancel') { returnHome(el); return; }
+    drop(el, t, info, e.clientX, e.clientY);
+  };
+  el.addEventListener('pointerup', end);
+  el.addEventListener('pointercancel', end);
+}
+function returnHome(el) {
+  el.style.transition = 'transform .45s cubic-bezier(.3,1.4,.5,1)';
+  el.style.transform = '';
+  setTimeout(() => el.classList.remove('dragging'), 460);
+}
+async function drop(el, t, info, x, y) {
+  const bb = boobooRect(), bc = center(bb), hc = center(info.home);
+  S.busy = true;
+  if (!info.moved) {
+    // a simple tap also works: the bandage flies to the booboo
+    el.style.transition = 'transform .45s cubic-bezier(.3,.8,.4,1)';
+    el.style.transform = `translate(${bc.x - hc.x}px,${bc.y - hc.y}px) scale(.9)`;
+    await wait(460);
+  } else {
+    const br = $('#bat').getBoundingClientRect();
+    const near = Math.hypot(x - bc.x, y - bc.y) < Math.max(120, info.home.width * .9);
+    const onBat = x > br.left && x < br.right && y > br.top && y < br.bottom;
+    if (!near && !onBat) { returnHome(el); S.busy = false; return; }
+  }
+  if (t === S.round.target) await correct(el, info.home, bb);
+  else await wrong(el);
+  S.busy = false;
+}
+async function correct(el, home, bb) {
+  S.phase = 'healing'; clearIdle();
+  const bc = center(bb), hc = center(home);
+  const s = (bb.width * 54 / 62) / (home.width * 84 / 120);
+  el.style.transition = 'transform .25s ease-out';
+  el.style.transform = `translate(${bc.x - hc.x}px,${bc.y - hc.y}px) scale(${s})`;
+  await wait(260);
+  el.style.visibility = 'hidden';
+  putBandage(); sfx.match(); sparkle(bc.x, bc.y, 10); vibrate(20);
+  [...tray.children].forEach(x => x !== el && x.classList.add('gone'));
+  setHappy(.4); batAnim('bounce');
+  $('#hearts').classList.add('show');
+  armIdle();
+  await say('match');
+  if (S.phase === 'healing' && S.hearts === 0) say('tap');
+}
+async function wrong(el) {
+  S.wrong++;
+  sfx.soft(); returnHome(el); batAnim('hmm'); say('wrong');
+  if (S.wrong >= 2) setTimeout(hintTool, 500);
+  armIdle();
+  await wait(350);
+}
+
+/* ================= healing taps ================= */
+stage.addEventListener('pointerdown', e => {
+  if (S.phase !== 'healing' || S.paused || S.hearts >= 3) return;
+  armIdle();
+  S.hearts++;
+  $$('#hearts svg')[S.hearts - 1].classList.add('on');
+  sparkle(e.clientX, e.clientY, 7); sfx.chime(S.hearts); vibrate(12);
+  setHappy(.4 + .2 * S.hearts); batAnim('bounce');
+  if (S.hearts === 3) healDone();
+});
+async function healDone() {
+  S.phase = 'done'; clearIdle();
+  await wait(250);
+  const bc = center(boobooRect());
+  sparkle(bc.x, bc.y, 16);
+  const band = $('#bat .bandage-layer .stick'); if (band) band.classList.add('melt');
+  sfx.yay(); setHappy(1);
+  await wait(650);
+  $('#bat .bandage-layer').innerHTML = ''; $('#bat .booboo-layer').innerHTML = '';
+  batAnim('flip');
+  await say('healed');
+  await wait(200);
+  $('#hearts').classList.remove('show');
+  await flyToSlot(S.healed);
+  const slot = $$('.slot')[S.healed];
+  slot.classList.add('filled'); slot.innerHTML = batSVG(S.color, { happy: true });
+  sfx.pop();
+  S.healed++;
+  if (S.healed >= TOTAL) party();
+  else { await wait(600); nextBat(); }
+}
+async function flyToSlot(i) {
+  const slot = $$('.slot')[i];
+  const br = wrap.getBoundingClientRect(), sr = slot.getBoundingClientRect();
+  const a = center(br), b = center(sr);
+  wrap.classList.add('flying'); sfx.whoosh();
+  wrap.style.transition = 'transform 1.1s cubic-bezier(.5,-0.25,.5,1), opacity .3s ease .85s';
+  wrap.style.transform = `translate(${b.x - a.x}px,${b.y - a.y}px) scale(${sr.width / br.width})`;
+  wrap.style.opacity = '0';
+  await wait(1150);
+  wrap.classList.remove('flying');
+}
+
+/* ================= flow ================= */
+async function nextBat() {
+  S.phase = 'entering'; S.wrong = 0; S.hearts = 0; S.busy = false;
+  S.color = BAT_COLORS[S.healed % BAT_COLORS.length];
+  S.round = makeRound(S.healed);
+  renderHearts(); tray.innerHTML = '';
+  floatEl.innerHTML = batSVG(S.color, { id: 'bat' });
+  putBooboo(); setHappy(.1);
+  wrap.style.transition = 'none'; wrap.style.opacity = '1'; wrap.style.transform = 'translateX(110vw)';
+  void wrap.getBoundingClientRect();
+  wrap.classList.add('flying'); sfx.whoosh();
+  wrap.style.transition = 'transform 1s cubic-bezier(.2,.9,.3,1.05)';
+  wrap.style.transform = 'none';
+  await wait(1000);
+  wrap.classList.remove('flying');
+  batAnim('sad');
+  await say('ohno');
+  renderTools(S.round.tools);
+  S.phase = 'matching';
+  say('find'); armIdle();
+}
+async function party() {
+  S.phase = 'party';
+  document.body.classList.add('party');
+  confetti(60); sfx.yay();
+  $$('.slot').forEach((s, i) => { s.style.animationDelay = (i * .12) + 's'; s.classList.add('dance'); });
+  await say('party');
+  await wait(900);
+  $('#again').classList.add('show');
+}
+function restart() {
+  $('#again').classList.remove('show');
+  document.body.classList.remove('party');
+  S.healed = 0; renderShelf(); nextBat();
+}
+$('#again').addEventListener('click', () => { unlockAudio(); restart(); });
+
+/* ================= effects ================= */
+function sparkle(x, y, n = 8) {
+  const cols = ['#ffe066', '#ffffff', '#ff8fc7', '#ffc2e2'];
+  for (let i = 0; i < n; i++) {
+    const el = document.createElement('div');
+    el.className = 'spark';
+    const ang = (i / n) * Math.PI * 2 + Math.random() * .5, dist = 50 + Math.random() * 60;
+    el.style.setProperty('--x0', x + 'px'); el.style.setProperty('--y0', y + 'px');
+    el.style.setProperty('--dx', (Math.cos(ang) * dist).toFixed(0) + 'px');
+    el.style.setProperty('--dy', (Math.sin(ang) * dist).toFixed(0) + 'px');
+    el.innerHTML = STAR_SMALL.replace('FILL', rand(cols));
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 950);
+  }
+}
+function confetti(n) {
+  for (let i = 0; i < n; i++) {
+    const el = document.createElement('div');
+    el.className = 'conf';
+    const size = 18 + Math.random() * 22;
+    el.style.left = (Math.random() * 100) + 'vw';
+    el.style.width = el.style.height = size + 'px';
+    el.style.setProperty('--d', (2.4 + Math.random() * 2.2) + 's');
+    el.style.setProperty('--r', (Math.random() * 720 - 360) + 'deg');
+    el.style.animationDelay = (Math.random() * 1.6) + 's';
+    el.innerHTML = Math.random() < .5
+      ? `<svg viewBox="0 0 100 90" width="100%" height="100%"><path d="${HEART_PATH}" fill="${rand(['#ff4f9a', '#ff8fc7', '#ffc2e2'])}"/></svg>`
+      : STAR_SMALL.replace('FILL', rand(['#ffe066', '#ffffff', '#ff8fc7']));
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 6500);
+  }
+}
+const vibrate = ms => { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} };
+
+/* ================= grown-up panel ================= */
+let rec = null, recKey = null, recTimer = null;
+const canRecord = !!(window.isSecureContext && navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
+function renderPanel() {
+  $('#micNote').style.display = canRecord ? 'none' : 'block';
+  $('#optTts').checked = SET.tts; $('#optSfx').checked = SET.sfx;
+  const box = $('#lines'); box.innerHTML = '';
+  LINES.forEach(l => {
+    const isRec = rec && recKey === l.k;
+    const row = document.createElement('div'); row.className = 'row';
+    row.innerHTML = `<div class="txt"><b></b><small>${BUF[l.k] ? '✓ Your voice' : (SET.tts ? 'Robot voice' : 'Silent')}</small></div>
+      <button class="rec ${isRec ? 'on' : ''}" ${canRecord && (!rec || isRec) ? '' : 'disabled'}>${isRec ? '■ Stop' : '● Record'}</button>
+      <button class="play" aria-label="Play">▶</button>
+      <button class="del" aria-label="Delete recording" ${BUF[l.k] && !rec ? '' : 'disabled'}>✕</button>`;
+    row.querySelector('b').textContent = l.t;
+    row.querySelector('.rec').onclick = () => isRec ? stopRec() : startRec(l.k);
+    row.querySelector('.play').onclick = () => { unlockAudio(); const p = S.paused; S.paused = false; say(l.k); S.paused = p; };
+    row.querySelector('.del').onclick = async () => { delete BUF[l.k]; try { await DB.del(l.k); } catch (e) {} renderPanel(); };
+    box.appendChild(row);
+  });
+}
+async function startRec(k) {
+  if (rec) return;
+  stopVoice(); unlockAudio();
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+    const chunks = [];
+    const mr = new MediaRecorder(stream);
+    rec = mr; recKey = k;
+    mr.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+    mr.onstop = async () => {
+      stream.getTracks().forEach(t => t.stop());
+      clearTimeout(recTimer);
+      const blob = new Blob(chunks, { type: mr.mimeType || chunks[0]?.type || 'audio/mp4' });
+      rec = null;
+      try {
+        const ab = await blob.arrayBuffer();
+        BUF[k] = await decode(ab);
+        try { await DB.put(k, { ab, type: blob.type }); } catch (e) {}
+      } catch (e) { alert('Sorry, that recording could not be used. Please try again.'); }
+      renderPanel();
+    };
+    mr.start();
+    recTimer = setTimeout(stopRec, 12000); // safety stop
+    renderPanel();
+  } catch (err) {
+    rec = null;
+    alert('Microphone is not available: ' + (err && err.message ? err.message : err));
+    renderPanel();
+  }
+}
+function stopRec() { if (rec && rec.state !== 'inactive') rec.stop(); }
+function openPanel() {
+  S.paused = true; stopVoice(); clearIdle();
+  renderPanel(); $('#panel').classList.add('show');
+}
+function closePanel() {
+  stopRec();
+  $('#panel').classList.remove('show');
+  S.paused = false;
+  if (S.phase === 'matching' || S.phase === 'healing') armIdle();
+}
+$('#closePanel').onclick = closePanel;
+$('#optTts').onchange = e => { SET.tts = e.target.checked; saveSet(); renderPanel(); };
+$('#optSfx').onchange = e => { SET.sfx = e.target.checked; saveSet(); };
+
+// press-and-hold so little fingers don't open it by accident
+(() => {
+  const g = $('#gear'); let t = null;
+  const cancel = () => { clearTimeout(t); g.classList.remove('holding'); };
+  g.addEventListener('pointerdown', e => {
+    e.preventDefault(); g.classList.add('holding');
+    t = setTimeout(() => { cancel(); openPanel(); }, 1500);
+  });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => g.addEventListener(ev, cancel));
+})();
+
+/* ================= start ================= */
+$('#startBat').innerHTML = batSVG(BAT_COLORS[0], { happy: true });
+$('#play').addEventListener('click', async () => {
+  unlockAudio();
+  try { if (navigator.wakeLock) navigator.wakeLock.request('screen').catch(() => {}); } catch (e) {}
+  $('#start').remove();
+  renderShelf(); renderHearts();
+  say('welcome');               // started inside the tap so iOS allows speech
+  await wait(2600);
+  nextBat();
+});
+
+// keep the page still on tablets
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('gesturestart', e => e.preventDefault());
+document.addEventListener('dblclick', e => e.preventDefault());
+document.addEventListener('visibilitychange', () => { if (document.hidden) stopVoice(); });
+
+// home-screen icon, drawn from the same bat
+(() => {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><rect width="400" height="400" fill="#3a1a52"/>` +
+    batSVG(BAT_COLORS[0], { happy: true }).replace('<svg ', '<svg x="0" y="45" width="400" height="300" ') + '</svg>';
+  const img = new Image();
+  img.onload = () => {
+    try {
+      const c = document.createElement('canvas'); c.width = c.height = 180;
+      c.getContext('2d').drawImage(img, 0, 0, 180, 180);
+      const url = c.toDataURL('image/png');
+      $('#touchIcon').href = url; $('#favIcon').href = url;
+    } catch (e) {}
+  };
+  img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+})();
+
+audio();
+loadVoices();
+})();
+</script>
+</body>
+</html>

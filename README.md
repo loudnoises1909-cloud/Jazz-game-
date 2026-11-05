@@ -1,0 +1,13 @@
+# Bat Doctor
+
+A toddler game: a pink bat has a booboo. Drag (or tap) the bandage that matches
+the booboo's shape and colour, then tap the bat 3 times to heal it. Heal 5 bats
+to fill the shelf and start the party.
+
+- Single file: `index.html` (no build, no internet needed once loaded).
+- Made for tablets and phones (touch), works with a mouse too.
+- Voice: grown-ups press and hold the ⚙︎ button (top right) for ~2 seconds to
+  record each line in their own voice. Recordings are stored on that device only
+  (IndexedDB). Lines without a recording use the device's built-in voice.
+- Recording needs the page served over `https://` (browsers block the microphone
+  on files opened directly).
