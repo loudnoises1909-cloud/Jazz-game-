@@ -267,6 +267,7 @@
     <p>Settings for grown-ups.</p>
     <div class="opts">
       <label><input type="checkbox" id="optTts"> Device voice for any line without a recording</label>
+      <label><input type="checkbox" id="optMusic"> Music</label>
       <label><input type="checkbox" id="optSfx"> Sound effects</label>
       <label>Postcards: <select id="optTheme"></select></label>
     </div>
@@ -352,7 +353,7 @@ const LINES = [
 const LINE = Object.fromEntries(LINES.map(l => [l.k, l.t]));
 
 /* ================= settings ================= */
-const SET = { tts: true, sfx: true, theme: 'auto' };
+const SET = { tts: true, sfx: true, music: true, theme: 'auto' };
 try { Object.assign(SET, JSON.parse(localStorage.getItem('batdoctor.settings') || '{}')); } catch (e) {}
 const saveSet = () => { try { localStorage.setItem('batdoctor.settings', JSON.stringify(SET)); } catch (e) {} };
 
@@ -627,6 +628,48 @@ const present = (x, y, w, h, c, rib) => `<g transform="translate(${x},${y})"><re
 const burst = (cx, cy, r, c) => `<g transform="translate(${cx},${cy})">${Array.from({ length: 12 }, (_, i) => { const a = i * Math.PI / 6; return `<path d="M${(Math.cos(a) * r * .3).toFixed(1)},${(Math.sin(a) * r * .3).toFixed(1)} L${(Math.cos(a) * r).toFixed(1)},${(Math.sin(a) * r).toFixed(1)}" stroke="${c}" stroke-width="4" stroke-linecap="round"/>`; }).join('')}<circle r="4" fill="${c}"/></g>`;
 const bunting = cols => `<path d="M0,22 Q200,40 400,22" stroke="${INK}" stroke-width="2.5" fill="none"/>` + Array.from({ length: 14 }, (_, i) => { const x = 14 + i * 28, y = 24 + Math.sin(i / 13 * Math.PI) * 9; return `<polygon points="${x - 10},${y} ${x + 10},${y} ${x},${y + 18}" fill="${cols[i % cols.length]}" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>`; }).join('');
 
+// A cute (very alive) turkey. Its feather colours are placeholders that each postcard variant swaps.
+const turkey = (x, y, s) => `<g transform="translate(${x},${y}) scale(${s})">
+  ${[-3, -2, -1, 0, 1, 2, 3].map(i => `<ellipse cx="0" cy="-30" rx="10" ry="26" transform="rotate(${i * 24})" fill="${['#a1b2c1', '#a1b2c2', '#a1b2c3'][(i + 3) % 3]}" ${sw}/>`).join('')}
+  <path d="M-8,18 v10 l-5,4 M-8,28 l4,4 M8,18 v10 l-5,4 M8,28 l4,4" stroke="#e07a2a" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <ellipse cx="0" cy="2" rx="19" ry="21" fill="#8a5a32" ${sw}/><path d="M-10,6 q10,8 20,0" stroke="#6b4226" stroke-width="3" fill="none"/>
+  <circle cx="0" cy="-20" r="11" fill="#a8743a" ${sw}/>
+  <circle cx="-4" cy="-23" r="2.6" fill="${INK}"/><circle cx="4" cy="-23" r="2.6" fill="${INK}"/>
+  <polygon points="-4,-18 4,-18 0,-11" fill="#e3b23c" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M3,-15 q4,6 0,11 q-3,-5 0,-11 Z" fill="#c42a2a" stroke="${INK}" stroke-width="1.5"/></g>`;
+
+// Colour variants per theme: each entry swaps a set of colours [from...] for one of the listed sets.
+// A postcard picks variant i, and may also be mirrored, so cards with the same theme still look different.
+const PC_VARIANTS = {
+  halloween: [[['#2d2442', '#e9a03a'], [['#2d2442', '#e9a03a'], ['#1f3047', '#f3e9d2'], ['#3a2a1f', '#e3b23c'], ['#23352a', '#e07a2a']]]],
+  thanksgiving: [
+    [['#d08a3a', '#c97a2e'], [['#d08a3a', '#c97a2e'], ['#8a5a32', '#7a4e2d'], ['#6b7a3a', '#5c6a30'], ['#b5432f', '#9c3a28']]],
+    [['#a1b2c1', '#a1b2c2', '#a1b2c3'], [['#c2452f', '#e0a930', '#e07a2a'], ['#3f6fa8', '#5f8f3a', '#e0a930'], ['#7a4e2d', '#c2452f', '#f3e9d2'], ['#5f9ea0', '#e3b23c', '#b5432f']]]],
+  christmas: [[['#3d5a3a', '#476a43'], [['#3d5a3a', '#476a43'], ['#7a2f2a', '#8a3a33'], ['#22364f', '#2c4562'], ['#5a3a22', '#6b4529']]]],
+  newyear: [[['#1f2f4a', '#2b2238'], [['#1f2f4a', '#2b2238'], ['#2d2442', '#1d1729'], ['#14302a', '#0f2420'], ['#3a1f2a', '#2a1520']]]],
+  easter: [[['#a9d3e0', '#6b9a3a'], [['#a9d3e0', '#6b9a3a'], ['#f3d9a0', '#7fae4a'], ['#c9e4c5', '#5f8f3a'], ['#e8d0e0', '#8ab04f']]]],
+  july4: [[['#1f2f4a', '#2b3b2a'], [['#1f2f4a', '#2b3b2a'], ['#2a2340', '#1d2a1d'], ['#123047', '#23352a'], ['#2b2b3d', '#2b3b2a']]]],
+  beach: [[['#9fd0e0', '#3f6fa8'], [['#9fd0e0', '#3f6fa8'], ['#f3c98a', '#2f7a8a'], ['#b9e0d8', '#4a5fa0'], ['#d6c3e8', '#3a8a9a']]]],
+  camping: [[['#1f2f4a', '#6b7a3a'], [['#1f2f4a', '#6b7a3a'], ['#2a2340', '#b5432f'], ['#123047', '#e0a930'], ['#2b2b3d', '#3f6fa8']]]],
+  picnic: [[['#a9d3e0', '#c2452f'], [['#a9d3e0', '#c2452f'], ['#f3d9a0', '#3f6fa8'], ['#c9e4c5', '#5f8f3a'], ['#e8d0e0', '#e0a930']]]],
+  snow: [[['#b9d6e6'], [['#b9d6e6'], ['#d9c7e0'], ['#f0d0b0'], ['#c9d9c0']]]],
+  birthday: [[['#2f4a6d', '#3b5a80'], [['#2f4a6d', '#3b5a80'], ['#7a2f2a', '#8a3d36'], ['#3d5a3a', '#4a6b46'], ['#5a3a22', '#6b4a30']]]],
+  museum: [[['#d9c7a0', '#c4ae82'], [['#d9c7a0', '#c4ae82'], ['#c9d6c0', '#b0c0a4'], ['#e0c9b0', '#c9ad90'], ['#c8d0dc', '#aeb8c8']]]],
+  stars: [[['#17233a'], [['#17233a'], ['#241a3a'], ['#102a2a'], ['#2a1a24']]]],
+  rain: [[['#8fa6b8', '#c2452f'], [['#8fa6b8', '#c2452f'], ['#a0a8b8', '#3f6fa8'], ['#8fb0a8', '#e0a930'], ['#a8a0b0', '#5f8f3a']]]]
+};
+const NO_MIRROR = new Set(['museum']); // has a written sign
+function applyVariant(markup, theme, i) {
+  let out = markup;
+  for (const [from, sets] of PC_VARIANTS[theme] || []) {
+    const to = sets[((i % sets.length) + sets.length) % sets.length];
+    // two passes through unique tokens so swapped colours never get swapped again
+    from.forEach((c, j) => { out = out.split(c).join(`@@${j}@@`); });
+    from.forEach((c, j) => { out = out.split(`@@${j}@@`).join(to[j]); });
+  }
+  return out;
+}
+
 const SCENES = {
   christmas: () => ({ cap: 'Merry Christmas!', adults: [H_SANTA, H_SANTA],
     bg: `<rect width="400" height="260" fill="#3d5a3a"/><path d="M0,0 V260 M40,0 V260 M80,0 V260 M120,0 V260 M160,0 V260 M200,0 V260 M240,0 V260 M280,0 V260 M320,0 V260 M360,0 V260" stroke="#476a43" stroke-width="14"/>
@@ -644,7 +687,8 @@ const SCENES = {
     fg: `<rect x="0" y="216" width="400" height="44" fill="#7a4e2d" ${sw}/><rect x="0" y="210" width="400" height="12" fill="${CREAM}" ${sw}/>
       ${pumpkin(70, 196, .9, false)}
       <g transform="translate(200,206)"><ellipse rx="44" ry="12" fill="#dfe2e6" ${sw}/><ellipse cy="-6" rx="34" ry="10" fill="#d9a35a" ${sw}/><path d="M-24,-8 L20,-2 M-14,-14 L28,-8 M-22,-2 L-6,-14 M-4,0 L12,-15" stroke="#a8743a" stroke-width="3"/></g>
-      <g transform="translate(320,196) rotate(-20)"><ellipse rx="11" ry="24" fill="#e3b23c" ${sw}/><path d="M-6,-14 h12 M-7,-4 h14 M-7,6 h14" stroke="#c49020" stroke-width="2"/><path d="M0,22 Q-18,10 -14,-12 Q-6,8 0,22 Q18,10 14,-12 Q6,8 0,22 Z" fill="#6b7a3a" ${sw}/></g>` }),
+      ${turkey(330, 196, .8)}
+      <g transform="translate(122,200) rotate(-20) scale(.75)"><ellipse rx="11" ry="24" fill="#e3b23c" ${sw}/><path d="M-6,-14 h12 M-7,-4 h14 M-7,6 h14" stroke="#c49020" stroke-width="2"/><path d="M0,22 Q-18,10 -14,-12 Q-6,8 0,22 Q18,10 14,-12 Q6,8 0,22 Z" fill="#6b7a3a" ${sw}/></g>` }),
   halloween: () => ({ cap: 'Happy Halloween!', adults: [H_WITCH, null],
     bg: `<rect width="400" height="260" fill="#2d2442"/>${dots(30, CREAM, 14, 140, 1.6, 3)}<circle cx="320" cy="80" r="44" fill="#e9a03a" stroke="${INK}" stroke-width="4"/>
       <path d="M0,214 Q100,196 200,212 Q300,226 400,206 V260 H0 Z" fill="#1d1729" ${sw}/>`,
@@ -743,8 +787,11 @@ let pcCount = 0;
 function nestBat(col, hat, x, y, w) {
   return batSVG(col, { happy: true, hat }).replace('class="batsvg"', '').replace('<svg ', `<svg x="${x}" y="${y}" width="${w}" height="${w * .75}" `);
 }
-function postcardSVG(bat, theme) {
+function postcardSVG(bat, theme, v = { i: 0, flip: false }) {
   const sc = SCENES[theme](), id = 'pcclip' + (pcCount++);
+  const flip = v.flip && !NO_MIRROR.has(theme);
+  const wrapM = m => flip ? `<g transform="translate(400,0) scale(-1,1)">${m}</g>` : m;
+  sc.bg = wrapM(applyVariant(sc.bg, theme, v.i)); sc.fg = wrapM(applyVariant(sc.fg || '', theme, v.i));
   const A = mix(bat.color, '#b0506e', .28), B = mix(bat.color, '#ffffff', .15);
   const size = sc.cap.length <= 12 ? 30 : sc.cap.length <= 16 ? 26 : 22;
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 260" class="pcsvg">
@@ -819,7 +866,8 @@ function say(k) {
   if (S.paused) return Promise.resolve();
   return new Promise(res => {
     let fin = false, to = null;
-    const done = () => { if (fin) return; fin = true; clearTimeout(to); res(); };
+    const done = () => { if (fin) return; fin = true; clearTimeout(to); duckMusic(false); res(); };
+    duckMusic(true);
     const buf = BUF[k];
     if (buf && ac) {
       const s = ac.createBufferSource();
@@ -895,6 +943,114 @@ Object.assign(sfx, {
   grumble: () => { tone(110, 0, .5, 'sawtooth', .04, 80); tone(90, .3, .5, 'sawtooth', .04, 120); }
 });
 
+/* ================= music: a bouncy little "vampire" tune on xylophone and marimba ================= */
+// Original 16-bar loop in D minor with a swing. Pass 1: xylophone melody. Pass 2: marimba melody an octave
+// lower, xylophone sparkles, and a tiny theremin "ooo" at the end. The party plays it in D major, faster.
+function noteHz(n) {
+  const m = /^([A-G])([#b]?)(\d)$/.exec(n);
+  const base = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }[m[1]] + (m[2] === '#' ? 1 : m[2] === 'b' ? -1 : 0);
+  return 440 * Math.pow(2, (12 * (+m[3] + 1) + base - 69) / 12);
+}
+const toMajor = s => s.replace(/F(?!#)/g, 'F#').replace(/Bb/g, 'B');
+const TUNE = {
+  mel: ['D5 . F5 A5 . F5 D5 .', 'E5 F5 E5 D5 C#5 . A4 .', 'G5 . Bb5 D6 . Bb5 G5 .', 'A5 G5 F5 E5 C#5 . E5 .',
+        'D5 . F5 A5 D6 . A5 .', 'Bb5 A5 G5 F5 D5 . F5 .', 'G5 . Bb5 . A5 . C#6 .', 'D6 . A5 . D5 . . .'],
+  bass: ['D3 . . . A3 . . .', 'D3 . . . A3 . F3 .', 'G3 . . . D3 . . .', 'A3 . . . E3 . C#3 .',
+         'D3 . . . A3 . . .', 'Bb3 . . . F3 . . .', 'G3 . . . A3 . . .', 'D3 . A3 . D3 . . .'],
+  // soft chord "pah"s on beats 2 and 4: [beat 2 chord, beat 4 chord]
+  stab: [['D4 F4 A4', 'D4 F4 A4'], ['D4 F4 A4', 'C#4 E4 A4'], ['G4 Bb4 D4', 'G4 Bb4 D4'], ['C#4 E4 G4', 'C#4 E4 A4'],
+         ['D4 F4 A4', 'D4 F4 A4'], ['Bb3 D4 F4', 'Bb3 D4 F4'], ['G4 Bb4 D4', 'C#4 E4 G4'], ['D4 F4 A4', 'D4 F4 A4']]
+};
+const SONGS = {};
+function buildSong(name, major, bpm) {
+  const f = major ? toMajor : (s => s);
+  const grid = s => f(s).split(/\s+/).map(x => x === '.' ? null : noteHz(x));
+  SONGS[name] = {
+    bpm, mel: TUNE.mel.map(grid), bass: TUNE.bass.map(grid),
+    stab: TUNE.stab.map(([a, b]) => [f(a).split(' ').map(noteHz), f(b).split(' ').map(noteHz)])
+  };
+}
+buildSong('main', false, 112);
+buildSong('party', true, 126);
+
+let musicGain = null;
+const MUSIC_LEVEL = .32, MUSIC_DUCKED = .1;
+function musicBus() {
+  if (!ac) return null;
+  if (!musicGain) { musicGain = ac.createGain(); musicGain.gain.value = MUSIC_LEVEL; musicGain.connect(ac.destination); }
+  return musicGain;
+}
+// mallet voice: a sine plus one inharmonic partial (marimba ~4x, xylophone ~3x) with a fast decay
+function mallet(f, t, { vol = .3, dur = .6, xylo = false } = {}) {
+  const bus = musicBus(); if (!bus) return;
+  const g = ac.createGain(); g.connect(bus);
+  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .004); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  const o1 = ac.createOscillator(); o1.type = 'sine'; o1.frequency.value = f; o1.connect(g);
+  const o2 = ac.createOscillator(), g2 = ac.createGain(); o2.type = 'sine'; o2.frequency.value = f * (xylo ? 3 : 3.93);
+  g2.gain.setValueAtTime(xylo ? .4 : .2, t); g2.gain.exponentialRampToValueAtTime(.001, t + dur * (xylo ? .3 : .2));
+  o2.connect(g2).connect(g);
+  o1.start(t); o2.start(t); o1.stop(t + dur + .05); o2.stop(t + dur + .05);
+}
+function tock(t, vol = .05) { // soft woodblock tick
+  const bus = musicBus(); if (!bus) return;
+  const o = ac.createOscillator(), g = ac.createGain(); o.type = 'triangle'; o.frequency.setValueAtTime(1150, t); o.frequency.exponentialRampToValueAtTime(700, t + .04);
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + .05); o.connect(g).connect(bus); o.start(t); o.stop(t + .07);
+}
+function theremin(f1, f2, t, dur = 1.3) { // a cute spooky "ooo"
+  const bus = musicBus(); if (!bus) return;
+  const o = ac.createOscillator(), g = ac.createGain(), lfo = ac.createOscillator(), lg = ac.createGain();
+  o.type = 'sine'; o.frequency.setValueAtTime(f1, t); o.frequency.exponentialRampToValueAtTime(f2, t + dur * .55);
+  lfo.frequency.value = 6; lg.gain.value = f2 * .012; lfo.connect(lg).connect(o.frequency);
+  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.07, t + .15); g.gain.setValueAtTime(.07, t + dur * .7); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  o.connect(g).connect(bus); o.start(t); lfo.start(t); o.stop(t + dur + .05); lfo.stop(t + dur + .05);
+}
+const MUS = { song: 'main', step: 0, next: 0, timer: null };
+function playStep(step, t) {
+  const sg = SONGS[MUS.song], bar = Math.floor(step / 8) % 16, slot = step % 8, pass = bar >> 3, b = bar % 8;
+  const m = sg.mel[b][slot], bs = sg.bass[b][slot];
+  if (m) {
+    if (pass === 0) mallet(m, t, { vol: .2, dur: .4, xylo: true });
+    else mallet(m / 2, t, { vol: .24, dur: .7 });
+  }
+  if (pass === 1 && slot === 7 && b % 2 === 1) mallet(sg.stab[b][1][0] * 4, t, { vol: .09, dur: .3, xylo: true });
+  if (bs) mallet(bs, t, { vol: .3, dur: .9 });
+  if (slot === 2 || slot === 6) sg.stab[b][slot === 2 ? 0 : 1].forEach(f => mallet(f, t, { vol: .055, dur: .28 }));
+  if (slot === 0 || slot === 4) tock(t, slot === 0 ? .05 : .035);
+  if (MUS.song === 'main' && pass === 1 && b === 7 && slot === 4) theremin(noteHz('A4'), noteHz('D5'), t);
+}
+function musicTick() {
+  if (!ac) return;
+  if (!SET.music || ac.state !== 'running') { MUS.next = ac.currentTime + .1; return; }
+  const eighth = 60 / SONGS[MUS.song].bpm / 2;
+  while (MUS.next < ac.currentTime + .15) {
+    playStep(MUS.step, MUS.next);
+    MUS.next += MUS.step % 2 === 0 ? eighth * 1.18 : eighth * .82; // swing
+    MUS.step++;
+  }
+}
+function musicPlay(song) {
+  if (!audio()) return;
+  musicBus();
+  if (song !== MUS.song) { MUS.song = song; MUS.step = 0; }
+  if (!MUS.timer) { MUS.step = 0; MUS.next = ac.currentTime + .1; MUS.timer = setInterval(musicTick, 25); }
+}
+function duckMusic(on) {
+  if (!musicGain || !ac) return;
+  musicGain.gain.setTargetAtTime(on ? MUSIC_DUCKED : MUSIC_LEVEL, ac.currentTime, .12);
+}
+
+/* ---------- bat squeaks ---------- */
+function squeak(n = 2, pitch = 1, vol = .07) {
+  if (!SET.sfx || !ac || ac.state !== 'running') return;
+  for (let i = 0; i < n; i++) {
+    const t = ac.currentTime + i * .1, o = ac.createOscillator(), g = ac.createGain();
+    const f = (2400 + Math.random() * 500) * pitch;
+    o.type = 'sine'; o.frequency.setValueAtTime(f, t); o.frequency.exponentialRampToValueAtTime(f * 1.45, t + .03); o.frequency.exponentialRampToValueAtTime(f * .85, t + .07);
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .008); g.gain.exponentialRampToValueAtTime(.0001, t + .08);
+    o.connect(g).connect(sfxGain); o.start(t); o.stop(t + .1);
+  }
+}
+
 /* ================= game state ================= */
 const S = { phase: 'idle', healed: 0, cur: null, round: null, spot: null, step: null, wrong: 0, taps: 0, busy: false, paused: false };
 const tray = $('#tray'), stage = $('#stage'), wrap = $('#batWrap'), floatEl = $('#batFloat');
@@ -906,7 +1062,9 @@ function newRoster() {
   const forced = SET.theme && SET.theme !== 'auto' ? SET.theme : null;
   const holiday = forced || holidayFor(new Date());
   const themes = holiday ? Array(TOTAL).fill(holiday) : shuffle(EVERYDAY.slice());
-  roster = shuffle(BATS.slice()).map((b, i) => ({ ...b, problem: probs[i], theme: themes[i] }));
+  const off = Math.floor(Math.random() * 4), flipOff = Math.random() < .5 ? 1 : 0;
+  roster = shuffle(BATS.slice()).map((b, i) => ({ ...b, problem: probs[i], theme: themes[i],
+    pcVar: { i: off + i, flip: ((i + flipOff) % 2 === 1) !== (i >= 4) } }));
 }
 const layer = n => $(`#bat .${n}-layer`);
 function svgRect(x, y, r) { // a square target around a point in bat coordinates, in screen pixels
@@ -1265,10 +1423,15 @@ function stepHeal() {
 /* ================= healing taps ================= */
 stage.addEventListener('pointerdown', e => {
   if (S.phase !== 'healing' || S.paused || S.taps >= 3) return;
+  const onBat = e.target.closest && e.target.closest('#bat .bat-body, #bat .bandage-layer, #bat .care-layer');
+  if (!onBat) { // gentle nudge: the bat wiggles to show where to tap
+    if (!S.missAt || Date.now() - S.missAt > 1200) { S.missAt = Date.now(); batAnim('hint'); squeak(1, .9, .04); }
+    return;
+  }
   armIdle();
   S.taps++;
   $$('#meter svg')[S.taps - 1].classList.add('on');
-  sparkle(e.clientX, e.clientY, 7); sfx.chime(S.taps); vibrate(12);
+  sparkle(e.clientX, e.clientY, 7); sfx.chime(S.taps); squeak(1, 1 + S.taps * .12, .05); vibrate(12);
   setHappy(.4 + .2 * S.taps); batAnim('bounce');
   if (S.taps === 3) healDone();
 });
@@ -1287,7 +1450,7 @@ async function healDone() {
   ['bandage', 'booboo', 'care', 'tools', 'fx'].forEach(n => { layer(n).innerHTML = ''; });
   $('#bat').classList.remove('inbox');
   setHappy(1);
-  batAnim('flip');
+  batAnim('flip'); squeak(3, 1.15);
   await say('healed');
   await wait(200);
   $('#meter').classList.remove('show');
@@ -1321,11 +1484,12 @@ async function flyHome() {
   n.innerHTML = `<div class="moonbig"></div>${nightTrees()}<div class="flyer flying">${batSVG(S.cur.color, { happy: true, hat: S.cur.hat })}</div>`;
   n.classList.add('show');
   wrap.style.transition = 'opacity .4s'; wrap.style.opacity = '0';
-  sfx.whoosh();
+  sfx.whoosh(); squeak(2, 1.1);
+  setTimeout(() => squeak(2, 1.2, .045), 1400);
   await wait(3000);
-  pc.innerHTML = postcardSVG(S.cur, S.cur.theme);
+  pc.innerHTML = postcardSVG(S.cur, S.cur.theme, S.cur.pcVar);
   pc.style.transition = ''; pc.style.transform = '';
-  pc.classList.add('show'); sfx.yay();
+  pc.classList.add('show'); sfx.yay(); setTimeout(() => squeak(3, .85, .06), 300);
   say('home');
   await wait(650);
   await tapToGo(600);
@@ -1337,7 +1501,7 @@ async function flyHome() {
   sfx.whoosh();
   await wait(920);
   slot.classList.add('filled');
-  slot.innerHTML = postcardSVG(S.cur, S.cur.theme) + `<span class="nm">${S.cur.name}</span>`;
+  slot.innerHTML = postcardSVG(S.cur, S.cur.theme, S.cur.pcVar) + `<span class="nm">${S.cur.name}</span>`;
   pc.classList.remove('show'); pc.style.transition = 'none'; pc.style.transform = ''; pc.innerHTML = '';
   sfx.pop();
 }
@@ -1373,7 +1537,7 @@ async function nextBat() {
   wrap.style.transform = 'none';
   await wait(1000);
   wrap.classList.remove('flying');
-  if (p === 'hungry') sfx.grumble(); else batAnim('sad');
+  if (p === 'hungry') { sfx.grumble(); squeak(1, .8, .05); } else { batAnim('sad'); squeak(2); }
   await say('n_' + S.cur.key);
   stepListen();
 }
@@ -1381,7 +1545,7 @@ async function party() {
   S.phase = 'party';
   document.body.classList.add('party');
   $('#steps').innerHTML = '';
-  confetti(55); sfx.yay();
+  confetti(55); sfx.yay(); musicPlay('party'); squeak(4, 1.1);
   $$('.slot').forEach((s, i) => { s.style.animationDelay = (i * .12) + 's'; s.classList.add('dance'); });
   await say('party');
   await wait(900);
@@ -1391,6 +1555,7 @@ function startRound() { newRoster(); S.healed = 0; renderShelf(); nextBat(); }
 function restart() {
   $('#again').classList.remove('show');
   document.body.classList.remove('party');
+  musicPlay('main');
   startRound();
 }
 $('#again').addEventListener('click', () => { unlockAudio(); restart(); });
@@ -1429,7 +1594,7 @@ const vibrate = ms => { try { navigator.vibrate && navigator.vibrate(ms); } catc
 
 /* ================= grown-up panel (settings only; the voice ships with the app) ================= */
 function renderPanel() {
-  $('#optTts').checked = SET.tts; $('#optSfx').checked = SET.sfx;
+  $('#optTts').checked = SET.tts; $('#optSfx').checked = SET.sfx; $('#optMusic').checked = SET.music;
   const hol = holidayFor(new Date());
   $('#optTheme').innerHTML = `<option value="auto">Automatic${hol ? ' (now: ' + THEME_NAMES[hol] + ')' : ' (holidays when close)'}</option>` +
     Object.keys(THEME_NAMES).map(k => `<option value="${k}">${THEME_NAMES[k]}</option>`).join('');
@@ -1447,6 +1612,7 @@ function closePanel() {
 $('#closePanel').onclick = closePanel;
 $('#optTts').onchange = e => { SET.tts = e.target.checked; saveSet(); };
 $('#optSfx').onchange = e => { SET.sfx = e.target.checked; saveSet(); };
+$('#optMusic').onchange = e => { SET.music = e.target.checked; saveSet(); };
 $('#optTheme').onchange = e => { SET.theme = e.target.value; saveSet(); };
 
 // press-and-hold so little fingers don't open it by accident
@@ -1478,6 +1644,7 @@ $('#play').addEventListener('click', async () => {
   try { if (navigator.wakeLock) navigator.wakeLock.request('screen').catch(() => {}); } catch (e) {}
   $('#start').remove();
   say('welcome');               // started inside the tap so iOS allows speech
+  musicPlay('main');
   await wait(2600);
   startRound();
 });
@@ -1486,7 +1653,10 @@ $('#play').addEventListener('click', async () => {
 document.addEventListener('contextmenu', e => e.preventDefault());
 document.addEventListener('gesturestart', e => e.preventDefault());
 document.addEventListener('dblclick', e => e.preventDefault());
-document.addEventListener('visibilitychange', () => { if (document.hidden) stopVoice(); });
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) { stopVoice(); if (ac) ac.suspend(); }
+  else if (ac && MUS.timer) ac.resume();
+});
 
 // home-screen icon, drawn from the same bat
 (() => {
