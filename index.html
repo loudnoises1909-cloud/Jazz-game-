@@ -150,6 +150,10 @@
   #previewTag{position:fixed;left:calc(env(safe-area-inset-left) + 10px);bottom:calc(env(safe-area-inset-bottom) + 8px);z-index:460;pointer-events:none;
      background:var(--mustard);color:var(--ink);border:3px solid var(--ink);border-radius:10px;padding:4px 10px;font-weight:800;font-size:13px}
   .opts select{font:inherit;padding:6px 8px;border:3px solid var(--ink);border-radius:8px;background:var(--cream);color:var(--ink)}
+  .soundcheck{display:flex;align-items:center;gap:12px;margin-top:6px}
+  .soundcheck button{border:3px solid var(--ink);border-radius:10px;padding:8px 12px;font-size:15px;font-weight:800;background:var(--mustard);color:var(--ink);min-height:44px;font-family:inherit}
+  #soundState{font-size:13px;opacity:.8}
+  #panel .hint{font-size:13px;opacity:.75;margin:8px 0}
   .panelBtns{display:flex;gap:10px;justify-content:flex-end;margin-top:8px}
   .panelBtns button.primary{background:var(--navy2);color:var(--cream)}
   .note{background:#f5d98a;border:2px solid var(--ink);border-radius:8px;padding:8px 10px;font-size:13px;margin-bottom:8px;display:none}
@@ -271,6 +275,8 @@
       <label><input type="checkbox" id="optSfx"> Sound effects</label>
       <label>Postcards: <select id="optTheme"></select></label>
     </div>
+    <div class="soundcheck"><button id="soundCheck">🔊 Sound check</button><span id="soundState"></span></div>
+    <p class="hint">No sound on an iPad or iPhone? Turn the volume up and check that silent mode is off (the bell in Control Center or the side switch).</p>
     <div class="panelBtns"><button class="primary" id="closePanel">Done</button></div>
   </div>
 </div>
@@ -820,8 +826,23 @@ function audio() {
   voiceGain = ac.createGain(); voiceGain.gain.value = 1; voiceGain.connect(ac.destination);
   return ac;
 }
+let unlockEl = null;
+function silentWavURL() {
+  const n = 4000, ab = new ArrayBuffer(44 + n * 2), v = new DataView(ab);
+  const w = (o, t) => { for (let j = 0; j < t.length; j++) v.setUint8(o + j, t.charCodeAt(j)); };
+  w(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); w(8, 'WAVE'); w(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, 8000, true); v.setUint32(28, 16000, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, 'data'); v.setUint32(40, n * 2, true);
+  return URL.createObjectURL(new Blob([ab], { type: 'audio/wav' }));
+}
 function unlockAudio() {
   const a = audio(); if (!a) return;
+  // Safari 16.4+: treat this as media playback, so the silent switch doesn't mute the game
+  try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {}
+  // older iOS: a silent looping <audio> element switches the page to playback mode the same way
+  try {
+    if (!unlockEl) { unlockEl = new Audio(silentWavURL()); unlockEl.loop = true; unlockEl.setAttribute('playsinline', ''); unlockEl.volume = .01; }
+    const pr = unlockEl.play(); if (pr && pr.catch) pr.catch(() => {});
+  } catch (e) {}
   if (a.state !== 'running') a.resume();
   const b = a.createBuffer(1, 1, 22050), s = a.createBufferSource();
   s.buffer = b; s.connect(a.destination); s.start(0);
@@ -974,7 +995,7 @@ buildSong('main', false, 112);
 buildSong('party', true, 126);
 
 let musicGain = null;
-const MUSIC_LEVEL = .32, MUSIC_DUCKED = .1;
+const MUSIC_LEVEL = .6, MUSIC_DUCKED = .2;
 function musicBus() {
   if (!ac) return null;
   if (!musicGain) { musicGain = ac.createGain(); musicGain.gain.value = MUSIC_LEVEL; musicGain.connect(ac.destination); }
@@ -1051,11 +1072,44 @@ function squeak(n = 2, pitch = 1, vol = .07) {
   }
 }
 
+/* ---------- heartbeat: a real "lub-dub" ---------- */
+// Each half is a low knock (a sine that drops in pitch) plus a short burst of filtered noise, gently
+// saturated so small tablet speakers, which can't play deep bass, still carry the thump.
+let noiseBuf = null;
+function heartbeatAt(ctx, dest, t, weak = false) {
+  if (!noiseBuf || noiseBuf.sampleRate !== ctx.sampleRate) {
+    noiseBuf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * .3), ctx.sampleRate);
+    const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  }
+  const shaper = ctx.createWaveShaper(), curve = new Float32Array(1024);
+  for (let i = 0; i < 1024; i++) { const x = i / 511.5 - 1; curve[i] = Math.tanh(x * 3) / Math.tanh(3); }
+  shaper.curve = curve;
+  const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 650; lp.Q.value = .7;
+  const out = ctx.createGain(); out.gain.value = weak ? .38 : .8;
+  shaper.connect(lp).connect(out).connect(dest);
+  const knock = (at, f0, f1, len, vol) => {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(f0, at); o.frequency.exponentialRampToValueAtTime(f1, at + len);
+    g.gain.setValueAtTime(.0001, at); g.gain.exponentialRampToValueAtTime(vol, at + .008); g.gain.exponentialRampToValueAtTime(.0001, at + len);
+    o.connect(g).connect(shaper); o.start(at); o.stop(at + len + .02);
+    const n = ctx.createBufferSource(), bp = ctx.createBiquadFilter(), ng = ctx.createGain();
+    n.buffer = noiseBuf; bp.type = 'bandpass'; bp.frequency.value = f0 * 2.2; bp.Q.value = 1.2;
+    ng.gain.setValueAtTime(.0001, at); ng.gain.exponentialRampToValueAtTime(vol * .9, at + .005); ng.gain.exponentialRampToValueAtTime(.0001, at + len * .6);
+    n.connect(bp).connect(ng).connect(shaper); n.start(at); n.stop(at + len);
+  };
+  knock(t, 120, 48, .16, .9);                       // lub
+  knock(t + (weak ? .3 : .24), 150, 60, .12, .65);  // dub
+}
+function heartbeat(weak) {
+  if (!SET.sfx || !ac || ac.state !== 'running') return;
+  heartbeatAt(ac, ac.destination, ac.currentTime + .02, weak);
+}
+
 /* ================= game state ================= */
 const S = { phase: 'idle', healed: 0, cur: null, round: null, spot: null, step: null, wrong: 0, taps: 0, busy: false, paused: false };
 const tray = $('#tray'), stage = $('#stage'), wrap = $('#batWrap'), floatEl = $('#batFloat');
 let roster = [];
-if (location.hash === '#test') window.__bd = { S, BUF };
+if (location.hash === '#test') window.__bd = { S, BUF, MUS, get ac() { return ac; } };
 
 function newRoster() {
   const probs = shuffle(['scrape', 'bump', 'splinter', 'hungry', 'scrape']);
@@ -1275,7 +1329,9 @@ function stepListen() {
       const c = weak ? '#c9a3ae' : '#d23b3b', sc = weak ? .7 : 1;
       layer('fx').innerHTML = `<g transform="translate(322,74)"><circle r="40" fill="${CREAM}" ${sw}/>
         <g class="beat" style="animation-duration:${weak ? 1.1 : .65}s"><path transform="scale(${sc * .55}) translate(-50,-48)" d="M50,85 C10,55 0,35 10,20 C20,5 42,8 50,25 C58,8 80,5 90,20 C100,35 90,55 50,85Z" fill="${c}" stroke="${INK}" stroke-width="7" stroke-linejoin="round"/></g></g>`;
-      for (let i = 0; i < (weak ? 3 : 4); i++) { sfx.thump(weak); await wait(weak ? 1100 : 650); }
+      duckMusic(true);
+      for (let i = 0; i < (weak ? 3 : 4); i++) { heartbeat(weak); await wait(weak ? 1150 : 760); }
+      duckMusic(false);
       await say(weak ? 'heartWeak' : 'heartOk');
       layer('tools').innerHTML = ''; layer('fx').innerHTML = '';
       stepTemp();
@@ -1610,6 +1666,16 @@ function closePanel() {
   if (S.phase === 'tool' || S.phase === 'healing') armIdle();
 }
 $('#closePanel').onclick = closePanel;
+$('#soundCheck').onclick = () => {
+  unlockAudio();
+  setTimeout(() => {
+    const st = ac ? ac.state : 'unavailable';
+    $('#soundState').textContent = st === 'running' ? 'Sound is on. You should hear a chime, a squeak and a heartbeat.' : 'Sound is blocked (' + st + '). Tap again.';
+    const was = SET.sfx; SET.sfx = true;
+    sfx.match(); setTimeout(() => squeak(2), 450); setTimeout(() => heartbeat(false), 900);
+    SET.sfx = was;
+  }, 120);
+};
 $('#optTts').onchange = e => { SET.tts = e.target.checked; saveSet(); };
 $('#optSfx').onchange = e => { SET.sfx = e.target.checked; saveSet(); };
 $('#optMusic').onchange = e => { SET.music = e.target.checked; saveSet(); };
