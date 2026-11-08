@@ -1,4 +1,17 @@
-# Bat Doctor
+# Bat Cave
+
+A small collection of toddler games. The start screen is a menu; in a game,
+press and hold the 🏠 button (top left) for a second to come back to it.
+
+## Shadow Shelf
+
+Tidy up Tooby's workshop: a pegboard tool wall shows painted shadows, and each
+tool or toy goes on its matching shadow (drag it; tapping it makes its shadow
+glow). Five walls get gradually harder: two shadows, then three, then four, and
+a last wall of bats that you tell apart by their hats. Items include a hammer,
+wrench, screwdriver, gear, T-Rex toy, ball, moon, pumpkin, star and doctor tools.
+
+## Bat Doctor
 
 A toddler game. Five pink bats (Doowy, Hoowy, Tooby, Boopy, Zoomy) each need the
 doctor. Every visit follows the same routine:

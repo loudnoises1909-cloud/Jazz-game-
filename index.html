@@ -91,7 +91,7 @@
   #meter .on{animation:popIn .4s ease-out}
 
   /* bandages sit on a wooden doctor's shelf */
-  #tray{position:relative;display:flex;justify-content:center;align-items:center;gap:clamp(14px,4vw,52px);
+  #tray, .tray{position:relative;display:flex;justify-content:center;align-items:center;gap:clamp(14px,4vw,52px);
         padding:clamp(10px,2vh,18px) 16px calc(clamp(12px,2.6vh,28px) + env(safe-area-inset-bottom));
         min-height:calc(var(--tool) + 36px);
         background:
@@ -114,7 +114,6 @@
   #start > *{position:relative}
   #start h1{margin:0;font-family:var(--display);font-weight:400;font-size:clamp(44px,10vmin,110px);line-height:1;color:var(--mustard);
             -webkit-text-stroke:3px var(--ink);text-shadow:5px 6px 0 var(--brick), 8px 10px 0 var(--ink);letter-spacing:2px;transform:rotate(-3deg)}
-  #startBat .batsvg{width:min(72vw,46vh,520px);animation:bob 3s ease-in-out infinite}
   .bigBtn{width:clamp(110px,19vmin,170px);height:clamp(110px,19vmin,170px);border-radius:50%;border:6px solid var(--ink);
           background:var(--brick);box-shadow:0 9px 0 var(--ink);display:grid;place-items:center;
           animation:breathe 1.6s ease-in-out infinite;touch-action:manipulation;cursor:pointer;padding:0}
@@ -201,6 +200,68 @@
             transform:translate(-50%,-50%) scale(0) rotate(-14deg);filter:drop-shadow(8px 10px 0 rgba(0,0,0,.45))}
   #postcard.show{transition:transform .6s cubic-bezier(.3,1.5,.5,1);transform:translate(-50%,-50%) scale(1) rotate(-3deg)}
   #postcard svg{width:100%;height:auto;display:block}
+  /* ---------- Bat Cave menu ---------- */
+  .games{display:flex;gap:clamp(16px,4vw,48px);flex-wrap:wrap;justify-content:center;max-width:100%}
+  .gamecard{position:relative;width:min(40vw,42vh,340px);aspect-ratio:1/1.1;background:var(--paper);border:6px solid var(--ink);border-radius:22px;
+            box-shadow:0 10px 0 var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:4px;padding:12px 10px 14px;
+            cursor:pointer;touch-action:manipulation;font:inherit;color:var(--ink);animation:breathe 2.4s ease-in-out infinite}
+  .gamecard:nth-child(2){animation-delay:1.2s}
+  .gamecard:active{transform:translateY(6px);box-shadow:0 4px 0 var(--ink)}
+  .gamecard:focus-visible{outline:5px solid var(--mustard);outline-offset:4px}
+  .gamecard .art{position:relative;width:100%;flex:1;display:grid;place-items:center;min-height:0}
+  .gamecard .art .batsvg{width:96%;height:auto}
+  .gamecard .art .mini-stetho{position:absolute;right:4%;bottom:0;width:34%}
+  .gamecard .label{font-family:var(--display);font-size:clamp(17px,3.4vmin,30px);color:var(--brick);letter-spacing:1px;line-height:1}
+  .minipeg{width:90%;aspect-ratio:1.5;display:grid;grid-template-columns:repeat(3,1fr);gap:6%;padding:8%;align-items:center;border:7px solid var(--wood);border-radius:8px;
+           background-color:#d6b483;background-image:radial-gradient(circle, rgba(60,36,18,.55) 0 1.5px, transparent 2px);background-size:12px 12px;box-shadow:0 0 0 3px var(--ink)}
+  .minipeg svg{width:100%;height:auto}
+  .shadow{filter:brightness(0) opacity(.42)}
+
+  /* hold-to-go-home button (top left), shown once a game is running */
+  #home{position:fixed;top:calc(env(safe-area-inset-top) + 10px);left:calc(env(safe-area-inset-left) + 10px);z-index:400;
+        width:48px;height:48px;border-radius:50%;border:0;background:rgba(243,233,210,.1);display:none;place-items:center;
+        opacity:.5;touch-action:none;overflow:hidden;padding:0}
+  body.playing #home{display:grid}
+  #home svg{width:26px;height:26px;position:relative;z-index:1}
+  #home::after{content:"";position:absolute;inset:0;border-radius:50%;background:var(--brick);transform:scale(0)}
+  #home.holding::after{animation:holdfill 1s linear forwards}
+
+  /* ---------- Shadow Shelf ---------- */
+  #shelfGame{position:fixed;inset:0;z-index:1;display:none;grid-template-rows:auto 1fr auto;
+             padding:env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left)}
+  body.shelf #shelfGame{display:grid}
+  body.shelf #app{display:none}
+  #shProg{display:flex;justify-content:center;gap:clamp(8px,1.6vmin,14px);padding:clamp(12px,2.4vmin,22px) 72px 0}
+  #shProg svg{width:clamp(34px,6.5vmin,58px);height:auto;overflow:visible}
+  #shProg path{fill:rgba(243,233,210,.1);stroke:var(--cream)}
+  #shProg .on path{fill:var(--mustard);stroke:var(--ink)}
+  #shProg .on:last-of-type, #shProg .on{animation:spinOnce .9s ease-out}
+  #shStage{position:relative;display:grid;place-items:center;min-height:0}
+  #shBoard{--n:3;--sl:min(19vw,27vh,190px);position:relative;z-index:2;display:grid;grid-template-columns:repeat(var(--n),var(--sl));
+           gap:clamp(12px,2.4vw,28px);padding:clamp(16px,3vmin,30px);border:12px solid var(--wood);border-radius:10px;
+           background-color:#d6b483;background-image:radial-gradient(circle, rgba(60,36,18,.55) 0 2.5px, transparent 3px);background-size:22px 22px;
+           box-shadow:0 0 0 4px var(--ink), inset 0 0 0 3px var(--ink), 0 10px 0 4px var(--ink)}
+  #shBoard.in{animation:boardIn .55s cubic-bezier(.3,1.3,.5,1)}
+  #shBoard.out{animation:boardOut .45s ease-in forwards}
+  #shBoard.cheer{animation:bounce .5s ease-out 2}
+  .spot{position:relative;width:var(--sl);height:var(--sl);border:3px dashed rgba(35,26,20,.45);border-radius:14px;display:grid;place-items:center}
+  .spot svg{width:86%;height:86%;overflow:visible}
+  .spot .peg{position:absolute;top:7px;left:50%;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:#9aa3ad;border:2px solid var(--ink);z-index:1}
+  .spot.filled{border-style:solid;border-color:rgba(35,26,20,.22)}
+  .spot svg.placed{animation:popIn .35s ease-out}
+  .spot.glow{animation:spotGlow 1.2s ease-in-out}
+  .spot.nope{animation:shiver .45s ease-in-out 2}
+  #shHelper{position:absolute;left:max(6px,1.5vw);bottom:1%;width:min(22vw,28vh,220px);z-index:1;pointer-events:none}
+  #shHelper .batsvg{width:100%;height:auto;animation:bob 3s ease-in-out infinite}
+  #shHelper.hmm{animation:hmm .8s ease-in-out}
+  #shHelper.bounce{animation:bounce .35s ease-out}
+  #shHelper.flip{animation:flip .9s ease-in-out}
+  #shAgain{position:fixed;left:50%;top:60%;transform:translate(-50%,-50%) scale(0);z-index:250;transition:transform .4s cubic-bezier(.3,1.6,.5,1)}
+  #shAgain.show{transform:translate(-50%,-50%) scale(1)}
+  @keyframes boardIn{from{transform:translateX(105vw) rotate(4deg)}}
+  @keyframes boardOut{to{transform:translateX(-105vw) rotate(-4deg)}}
+  @keyframes spotGlow{0%,100%{box-shadow:0 0 0 0 rgba(224,169,48,0)}50%{box-shadow:0 0 0 9px rgba(224,169,48,.95);background:rgba(224,169,48,.25)}}
+  @keyframes spinOnce{from{transform:rotate(-180deg) scale(.6)}to{transform:none}}
   @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
   @keyframes flap{0%,100%{transform:scaleY(1) rotate(0)}50%{transform:scaleY(.78) rotate(-9deg)}}
   @keyframes prop{0%,100%{transform:scaleX(1)}50%{transform:scaleX(.06)}}
@@ -248,19 +309,29 @@
   <div id="tray"></div>
 </div>
 
+<div id="shelfGame">
+  <div id="shProg"></div>
+  <div id="shStage"><div id="shHelper"></div><div id="shBoard"></div></div>
+  <div id="shTray" class="tray"></div>
+</div>
+<button id="shAgain" class="bigBtn" aria-label="Play again">
+  <svg viewBox="0 0 100 100"><path d="M74,30 A30,30 0 1,0 80,56" fill="none" stroke="#f3e9d2" stroke-width="12" stroke-linecap="round"/><path d="M60,22 L84,26 L78,48 Z" fill="#f3e9d2" stroke="#f3e9d2" stroke-width="6" stroke-linejoin="round"/></svg>
+</button>
+
 <button id="again" class="bigBtn" aria-label="Play again">
   <svg viewBox="0 0 100 100"><path d="M74,30 A30,30 0 1,0 80,56" fill="none" stroke="#f3e9d2" stroke-width="12" stroke-linecap="round"/><path d="M60,22 L84,26 L78,48 Z" fill="#f3e9d2" stroke="#f3e9d2" stroke-width="6" stroke-linejoin="round"/></svg>
 </button>
 
 <div id="start" class="overlay">
-  <h1>Bat Doctor</h1>
-  <div id="startBat"></div>
-  <button id="play" class="bigBtn" aria-label="Play">
-    <svg viewBox="0 0 100 100"><path d="M36,22 L80,50 L36,78 Z" fill="#f3e9d2" stroke="#f3e9d2" stroke-width="10" stroke-linejoin="round"/></svg>
-  </button>
-  <small>Grown-ups: press and hold ⚙︎ (top right) for 2 seconds for settings.</small>
+  <h1>Bat Cave</h1>
+  <div class="games">
+    <button id="play" class="gamecard" aria-label="Play Bat Doctor"><div class="art" id="artDoctor"></div><span class="label">Bat Doctor</span></button>
+    <button id="playShelf" class="gamecard" aria-label="Play Shadow Shelf"><div class="art" id="artShelf"></div><span class="label">Shadow Shelf</span></button>
+  </div>
+  <small>Grown-ups: press and hold ⚙︎ (top right) for 2 seconds for settings. In a game, hold 🏠 (top left) to come back here.</small>
 </div>
 
+<button id="home" aria-label="Back to the Bat Cave (press and hold)"><svg viewBox="0 0 24 24" fill="none" stroke="#f3e9d2" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 9.5V21h5v-6h4v6h5V9.5"/></svg></button>
 <button id="gear" aria-label="Grown-up settings (press and hold)">
   <svg viewBox="0 0 24 24" fill="none" stroke="#f3e9d2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
 </button>
@@ -354,7 +425,15 @@ const LINES = [
   { k: 'tap',       t: 'Now tap the bat to help it heal.' },
   { k: 'healed',    t: 'Yay! All better!' },
   { k: 'home',      t: 'Back home with the family!' },
-  { k: 'party',     t: 'You healed all the bats! Thank you, Doctor!' }
+  { k: 'party',     t: 'You healed all the bats! Thank you, Doctor!' },
+  { k: 's_intro',   t: "Let's tidy up Tooby's workshop! Put each thing on its shadow." },
+  { k: 's_good1',   t: "That's its spot!" },
+  { k: 's_good2',   t: 'Perfect fit!' },
+  { k: 's_wrong',   t: 'Hmm, that shadow is a different shape. Try another spot!' },
+  { k: 's_done',    t: 'All tidy! Great job!' },
+  { k: 's_next',    t: 'Here comes another wall!' },
+  { k: 's_bats',    t: 'Now match each bat to its shadow. Look at the hats!' },
+  { k: 's_party',   t: "Every wall is tidy! You're a super organizer!" }
 ];
 const LINE = Object.fromEntries(LINES.map(l => [l.k, l.t]));
 
@@ -1648,6 +1727,202 @@ function confetti(n) {
 }
 const vibrate = ms => { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} };
 
+/* ================= game 2: Shadow Shelf (tidy up Tooby's workshop pegboard) ================= */
+const gearD = (R, ri, t, hole) => {
+  const pts = [];
+  for (let i = 0; i < t; i++) {
+    const a = i * 2 * Math.PI / t, w = Math.PI / t;
+    [[a - w, ri], [a - w * .55, R], [a + w * .55, R], [a + w, ri]].forEach(([g, r]) => pts.push((r * Math.cos(g)).toFixed(1) + ',' + (r * Math.sin(g)).toFixed(1)));
+  }
+  return `M${pts.join(' L')} Z M${hole},0 A${hole},${hole} 0 1,0 ${-hole},0 A${hole},${hole} 0 1,0 ${hole},0 Z`;
+};
+const SH_ITEMS = {
+  hammer: `<g transform="rotate(-35)"><rect x="-6" y="-24" width="12" height="74" rx="5" fill="#a8743a" ${sw}/><path d="M-4,10 h8 M-4,24 h8 M-4,38 h8" stroke="#7a4e2d" stroke-width="2"/>
+    <rect x="-30" y="-46" width="52" height="24" rx="5" fill="#9aa3ad" ${sw}/><rect x="20" y="-42" width="14" height="16" rx="3" fill="#7d8690" ${sw}/></g>`,
+  wrench: `<g transform="rotate(-40)"><rect x="-7" y="-20" width="14" height="70" rx="7" fill="#9aa3ad" ${sw}/>
+    <path d="M-9,-58 L-9,-42 L9,-42 L9,-58 A22,22 0 1,1 -9,-58 Z" fill="#9aa3ad" ${sw}/><circle cx="0" cy="40" r="4" fill="#7d8690"/></g>`,
+  screwdriver: `<g transform="rotate(35)"><rect x="-4" y="-8" width="8" height="50" fill="#9aa3ad" ${sw}/><path d="M-4,42 L0,54 L4,42 Z" fill="#9aa3ad" ${sw}/>
+    <rect x="-13" y="-54" width="26" height="46" rx="10" fill="#c2452f" ${sw}/><path d="M-6,-46 v30 M0,-46 v30 M6,-46 v30" stroke="#9c3a28" stroke-width="2"/></g>`,
+  gear: `<path d="${gearD(50, 39, 8, 13)}" fill="#e0a930" fill-rule="evenodd" ${sw}/><circle r="24" fill="none" stroke="#c49020" stroke-width="4"/>`,
+  trex: `<g transform="translate(-2,4)">
+    <path d="M-58,10 Q-36,-4 -14,-6 L-12,14 Q-34,18 -58,10 Z" fill="#5f8f3a" ${sw}/>
+    <path d="M-12,22 L-12,46 L2,46 L-1,22 Z" fill="#4c7330" ${sw}/><path d="M8,22 L8,46 L22,46 L19,22 Z" fill="#4c7330" ${sw}/>
+    <polygon points="-32,-6 -26,-18 -20,-6" fill="#e0a930" ${sw}/><polygon points="-18,-12 -11,-25 -4,-12" fill="#e0a930" ${sw}/><polygon points="-2,-14 5,-27 12,-14" fill="#e0a930" ${sw}/>
+    <ellipse cx="0" cy="8" rx="26" ry="22" fill="#5f8f3a" ${sw}/><ellipse cx="4" cy="14" rx="13" ry="11" fill="#a9c97a"/>
+    <path d="M10,-8 Q12,-36 32,-40 Q56,-42 58,-26 Q58,-14 44,-12 L26,-10 Z" fill="#5f8f3a" ${sw}/>
+    <path d="M24,-10 L54,-12 Q52,-2 34,0 Q26,0 24,-10 Z" fill="#5f8f3a" ${sw}/>
+    <path d="M30,-11 l3,5 l3,-5 l3,5 l3,-5 l3,5 l3,-5 Z" fill="#fffaf0" stroke="${INK}" stroke-width="1.5" stroke-linejoin="round"/>
+    <circle cx="40" cy="-29" r="5.5" fill="#fffaf0" stroke="${INK}" stroke-width="2"/><circle cx="41.5" cy="-29" r="2.6" fill="${INK}"/>
+    <path d="M20,4 l9,4 M20,10 l8,5" stroke="${INK}" stroke-width="3.5" stroke-linecap="round"/></g>`,
+  ball: `<circle r="42" fill="${CREAM}" ${sw}/><path d="M0,-42 Q-26,0 0,42 Q-42,0 0,-42 Z" fill="#c2452f"/><path d="M0,-42 Q26,0 0,42 Q42,0 0,-42 Z" fill="#3f6fa8"/>
+    <circle r="42" fill="none" ${sw}/><circle cx="-16" cy="-18" r="6" fill="#fff" opacity=".6"/>`,
+  moon: `<path d="M14,-46 A46,46 0 0,0 14,46 A24,46 0 0,1 14,-46 Z" fill="${CREAM}" ${sw}/><circle cx="-18" cy="-8" r="5" fill="#d9cdb0"/><circle cx="-12" cy="18" r="4" fill="#d9cdb0"/>`,
+  pumpkin: pumpkin(0, 8, 1.5, true),
+  star: TOOL_ICON.star,
+  stetho: TOOL_ICON.stetho,
+  thermo: TOOL_ICON.thermo,
+  icebag: TOOL_ICON.icebag,
+  bottle: TOOL_ICON.bottle,
+  tweezers: TOOL_ICON.tweezers
+};
+const SH_STICKS = new Set(['thermo', 'screwdriver', 'tweezers']); // thin diagonal shapes look alike
+const SH_ROUNDS = 5;
+const SH = { round: 0, keys: [], done: 0, wrongs: 0, busy: false, wrongSaid: false, idleT: null, phase: 'idle', used: new Set() };
+if (location.hash === '#test') { window.__sh = SH; window.__shItem = k => shItemSVG(k); }
+
+// bats are cropped to head, ears and hat so the hat outlines are big enough to compare
+const shBat = hat => batSVG('#f290ae', { happy: true, hat }).replace('class="batsvg"', '').replace('viewBox="0 0 400 300"', 'viewBox="80 22 240 228"')
+  .replace('<svg ', '<svg x="-60" y="-57" width="120" height="114" style="overflow:hidden" ');
+function shItemSVG(k) { return k.startsWith('bat') ? shBat(+k.slice(3)) : SH_ITEMS[k]; }
+function shPick(r) {
+  if (r === SH_ROUNDS - 1) return shuffle([0, 5, 2, 7, 9, 6]).slice(0, 3).map(h => 'bat' + h); // last wall: bats told apart by their hats
+  const n = r === 0 ? 2 : r < 3 ? 3 : 4, maxSticks = r >= 3 ? 2 : 1;
+  const out = []; let sticks = 0;
+  const take = keys => { for (const k of keys) { if (out.length >= n) break; if (out.includes(k)) continue; if (SH_STICKS.has(k)) { if (sticks >= maxSticks) continue; sticks++; } out.push(k); } };
+  take(shuffle(Object.keys(SH_ITEMS).filter(k => !SH.used.has(k))));
+  if (out.length < n) take(shuffle(Object.keys(SH_ITEMS)));
+  out.forEach(k => SH.used.add(k));
+  return out;
+}
+function shHelper(name) {
+  const h = $('#shHelper'); if (!h) return;
+  h.classList.remove('hmm', 'bounce', 'flip'); void h.offsetWidth; h.classList.add(name);
+}
+function shRenderProgress() {
+  $('#shProg').innerHTML = Array.from({ length: SH_ROUNDS }, (_, i) =>
+    `<svg viewBox="-56 -56 112 112" class="${i < SH.round ? 'on' : ''}"><path d="${gearD(50, 39, 8, 13)}" fill-rule="evenodd" stroke-width="7" stroke-linejoin="round"/></svg>`).join('');
+}
+function shRender() {
+  const b = $('#shBoard');
+  b.style.setProperty('--n', SH.keys.length);
+  b.innerHTML = shuffle(SH.keys.slice()).map(k =>
+    `<div class="spot" data-k="${k}"><span class="peg"></span><svg viewBox="-60 -60 120 120" class="shadow">${shItemSVG(k)}</svg></div>`).join('');
+  const tr = $('#shTray'); tr.innerHTML = '';
+  shuffle(SH.keys.slice()).forEach((k, i) => {
+    const el = document.createElement('div');
+    el.className = 'tool'; el.dataset.k = k; el.setAttribute('aria-label', k);
+    el.innerHTML = `<svg viewBox="-60 -60 120 120" class="pop" style="animation-delay:${i * .12}s">${shItemSVG(k)}</svg>`;
+    const svg = el.firstElementChild;
+    svg.addEventListener('animationend', () => svg.classList.remove('pop', 'wiggle'));
+    shDrag(el, k);
+    tr.appendChild(el);
+  });
+}
+function shHint(k) {
+  const spot = $(`#shBoard .spot[data-k="${k}"]:not(.filled)`), item = $(`#shTray .tool[data-k="${k}"] svg`);
+  if (spot) { spot.classList.remove('glow'); void spot.offsetWidth; spot.classList.add('glow'); }
+  if (item) { item.classList.remove('wiggle'); void item.getBoundingClientRect(); item.classList.add('wiggle'); }
+}
+function shArm() {
+  clearTimeout(SH.idleT);
+  SH.idleT = setTimeout(() => {
+    if (SH.phase === 'play' && !S.paused) {
+      const open = $('#shBoard .spot:not(.filled)');
+      if (open) { shHint(open.dataset.k); squeak(1, 1, .04); }
+    }
+    if (SH.phase === 'play') shArm();
+  }, 10000);
+}
+function shDrag(el, k) {
+  let d = null;
+  el.addEventListener('pointerdown', e => {
+    if (SH.phase !== 'play' || SH.busy || S.paused || d) return;
+    e.preventDefault();
+    try { el.setPointerCapture(e.pointerId); } catch (err) {}
+    d = { id: e.pointerId, x0: e.clientX, y0: e.clientY, moved: false, home: el.getBoundingClientRect() };
+    el.classList.add('dragging');
+    el.style.transition = 'transform .12s'; el.style.transform = 'scale(1.12)';
+    sfx.pick(); shArm();
+  });
+  el.addEventListener('pointermove', e => {
+    if (!d || e.pointerId !== d.id) return;
+    const dx = e.clientX - d.x0, dy = e.clientY - d.y0;
+    if (!d.moved && Math.hypot(dx, dy) > 12) { d.moved = true; el.style.transition = 'none'; }
+    if (d.moved) el.style.transform = `translate(${dx}px,${dy}px) scale(1.12)`;
+  });
+  const end = e => {
+    if (!d || e.pointerId !== d.id) return;
+    const info = d; d = null;
+    if (e.type === 'pointercancel' || !info.moved) { returnHome(el); if (!info.moved) shHint(k); return; } // a tap shows where it goes
+    shDrop(el, k, info, e.clientX, e.clientY);
+  };
+  el.addEventListener('pointerup', end);
+  el.addEventListener('pointercancel', end);
+}
+async function shDrop(el, k, info, x, y) {
+  let best = null, bd = 1e9;
+  $$('#shBoard .spot:not(.filled)').forEach(s => { const c = center(s.getBoundingClientRect()), dd = Math.hypot(c.x - x, c.y - y); if (dd < bd) { bd = dd; best = s; } });
+  if (!best || bd > best.getBoundingClientRect().width * .8) { returnHome(el); return; }
+  SH.busy = true;
+  if (best.dataset.k === k) {
+    const r = best.getBoundingClientRect(), c = center(r), hc = center(info.home);
+    el.style.transition = 'transform .22s ease-out';
+    el.style.transform = `translate(${c.x - hc.x}px,${c.y - hc.y}px) scale(${(r.width * .88 / info.home.width).toFixed(3)})`;
+    await wait(230);
+    el.remove();
+    best.classList.add('filled');
+    const svg = best.querySelector('svg'); svg.classList.remove('shadow'); svg.classList.add('placed');
+    sparkle(c.x, c.y, 8); sfx.match(); vibrate(15); shHelper('bounce');
+    SH.done++;
+    SH.busy = false;
+    if (SH.done === SH.keys.length) { await shRoundDone(); return; }
+    if (SH.done === 1 || Math.random() < .45) say(rand(['s_good1', 's_good2']));
+  } else {
+    SH.wrongs++;
+    sfx.soft(); returnHome(el); shHelper('hmm');
+    best.classList.remove('nope'); void best.offsetWidth; best.classList.add('nope');
+    if (!SH.wrongSaid || SH.wrongs % 3 === 0) { SH.wrongSaid = true; say('s_wrong'); }
+    if (SH.wrongs >= 2) setTimeout(() => shHint(k), 400);
+    await wait(300);
+    SH.busy = false;
+  }
+  shArm();
+}
+async function shRoundDone() {
+  SH.phase = 'done'; clearTimeout(SH.idleT);
+  SH.round++; shRenderProgress();
+  const b = $('#shBoard'); b.classList.remove('in', 'cheer'); void b.offsetWidth; b.classList.add('cheer');
+  confetti(16); sfx.yay(); squeak(3, 1.15); shHelper('flip');
+  await say('s_done');
+  await wait(400);
+  if (SH.round >= SH_ROUNDS) { shParty(); return; }
+  b.classList.add('out');
+  await wait(460);
+  shStartRound();
+}
+async function shStartRound() {
+  SH.phase = 'intro'; SH.done = 0; SH.wrongs = 0; SH.busy = false;
+  SH.keys = shPick(SH.round);
+  shRender();
+  const b = $('#shBoard'); b.classList.remove('out', 'cheer'); void b.offsetWidth; b.classList.add('in');
+  sfx.whoosh();
+  await wait(550);
+  SH.phase = 'play';
+  say(SH.round === SH_ROUNDS - 1 ? 's_bats' : SH.round === 0 ? 's_intro' : 's_next');
+  shArm();
+}
+async function shParty() {
+  SH.phase = 'party';
+  document.body.classList.add('party');
+  confetti(55); sfx.yay(); musicPlay('party'); squeak(4, 1.1);
+  await say('s_party');
+  await wait(900);
+  $('#shAgain').classList.add('show');
+}
+function shStart() {
+  SH.round = 0; SH.used = new Set(); SH.wrongSaid = false;
+  shRenderProgress();
+  $('#shHelper').innerHTML = batSVG(BATS[2].color, { happy: true, hat: BATS[2].hat });
+  shStartRound();
+}
+$('#shAgain').addEventListener('click', () => {
+  unlockAudio();
+  $('#shAgain').classList.remove('show');
+  document.body.classList.remove('party');
+  musicPlay('main');
+  shStart();
+});
+
 /* ================= grown-up panel (settings only; the voice ships with the app) ================= */
 function renderPanel() {
   $('#optTts').checked = SET.tts; $('#optSfx').checked = SET.sfx; $('#optMusic').checked = SET.music;
@@ -1704,11 +1979,34 @@ $('#optTheme').onchange = e => { SET.theme = e.target.value; saveSet(); };
     bg.appendChild(s);
   }
 })();
-$('#startBat').innerHTML = batSVG(BATS[0].color, { happy: true, hat: BATS[0].hat });
-$('#play').addEventListener('click', async () => {
+$('#artDoctor').innerHTML = batSVG(BATS[0].color, { happy: true, hat: BATS[0].hat }) +
+  `<svg class="mini-stetho" viewBox="-62 -62 124 124">${TOOL_ICON.stetho}</svg>`;
+$('#artShelf').innerHTML = `<div class="minipeg">${['hammer', 'trex', 'gear'].map((k, i) =>
+  `<svg viewBox="-60 -60 120 120" class="${i === 1 ? '' : 'shadow'}">${SH_ITEMS[k]}</svg>`).join('')}</div>`;
+function beginGame() {
   unlockAudio();
   try { if (navigator.wakeLock) navigator.wakeLock.request('screen').catch(() => {}); } catch (e) {}
   $('#start').remove();
+  document.body.classList.add('playing');
+}
+$('#playShelf').addEventListener('click', () => {
+  beginGame();
+  document.body.classList.add('shelf');
+  musicPlay('main');
+  shStart();
+});
+// press and hold the house for 1 second to go back to the menu (a fresh start keeps every game's state clean)
+(() => {
+  const h = $('#home'); let t = null;
+  const cancel = () => { clearTimeout(t); h.classList.remove('holding'); };
+  h.addEventListener('pointerdown', e => {
+    e.preventDefault(); h.classList.add('holding');
+    t = setTimeout(() => { cancel(); stopVoice(); location.reload(); }, 1000);
+  });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => h.addEventListener(ev, cancel));
+})();
+$('#play').addEventListener('click', async () => {
+  beginGame();
   say('welcome');               // started inside the tap so iOS allows speech
   musicPlay('main');
   await wait(2600);
