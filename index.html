@@ -21,7 +21,7 @@
     --navy:#22364f; --navy2:#2f4a6d; --mustard:#e0a930; --brick:#b5432f; --olive:#6b7a3a;
     --wood:#7a4e2d; --wood2:#5a3a22;
     --slot:clamp(64px, 13vmin, 130px);
-    --tool:clamp(84px, min(18vh, 20vw), 160px);
+    --tool:clamp(100px, min(22vh, 22vw), 190px);
     --display:"Luckiest Guy","Arial Rounded MT Bold",ui-rounded,system-ui,sans-serif;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
@@ -237,10 +237,19 @@
   #shProg .on path{fill:var(--mustard);stroke:var(--ink)}
   #shProg .on:last-of-type, #shProg .on{animation:spinOnce .9s ease-out}
   #shStage{position:relative;display:grid;place-items:center;min-height:0}
-  #shBoard{--n:3;--sl:min(19vw,27vh,190px);position:relative;z-index:2;display:grid;grid-template-columns:repeat(var(--n),var(--sl));
+  #shBoard{--n:3;--sl:min(20vw,30vh,230px);position:relative;z-index:2;display:grid;grid-template-columns:repeat(var(--n),var(--sl));
            gap:clamp(12px,2.4vw,28px);padding:clamp(16px,3vmin,30px);border:12px solid var(--wood);border-radius:10px;
            background-color:#d6b483;background-image:radial-gradient(circle, rgba(60,36,18,.55) 0 2.5px, transparent 3px);background-size:22px 22px;
            box-shadow:0 0 0 4px var(--ink), inset 0 0 0 3px var(--ink), 0 10px 0 4px var(--ink)}
+  #shBoard[data-n="2"], #shBoard[data-n="3"]{--sl:min(25vw,33vh,260px)}
+  #shBoard{gap:clamp(10px,1.8vw,22px)}
+  #shTray .tool{width:var(--tool-sh);height:var(--tool-sh)}
+  #shTray{--tool-sh:clamp(96px, min(20vw, 26vh), 220px);gap:clamp(12px,3vw,40px);min-height:calc(var(--tool-sh) + 36px)}
+  @media (orientation: portrait){
+    #shBoard[data-n="4"]{grid-template-columns:repeat(2,var(--sl));--sl:min(36vw,22vh,250px)}
+    #shBoard[data-n="2"], #shBoard[data-n="3"]{--sl:min(28vw,30vh,260px)}
+    #shTray{--tool-sh:clamp(96px, min(22vw, 18vh), 220px)}
+  }
   #shBoard.in{animation:boardIn .55s cubic-bezier(.3,1.3,.5,1)}
   #shBoard.out{animation:boardOut .45s ease-in forwards}
   #shBoard.cheer{animation:bounce .5s ease-out 2}
@@ -1794,7 +1803,7 @@ function shRenderProgress() {
 }
 function shRender() {
   const b = $('#shBoard');
-  b.style.setProperty('--n', SH.keys.length);
+  b.style.setProperty('--n', SH.keys.length); b.dataset.n = SH.keys.length;
   b.innerHTML = shuffle(SH.keys.slice()).map(k =>
     `<div class="spot" data-k="${k}"><span class="peg"></span><svg viewBox="-60 -60 120 120" class="shadow">${shItemSVG(k)}</svg></div>`).join('');
   const tr = $('#shTray'); tr.innerHTML = '';
