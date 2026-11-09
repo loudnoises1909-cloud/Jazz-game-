@@ -202,10 +202,11 @@
   #postcard svg{width:100%;height:auto;display:block}
   /* ---------- Bat Cave menu ---------- */
   .games{display:flex;gap:clamp(16px,4vw,48px);flex-wrap:wrap;justify-content:center;max-width:100%}
-  .gamecard{position:relative;width:min(40vw,42vh,340px);aspect-ratio:1/1.1;background:var(--paper);border:6px solid var(--ink);border-radius:22px;
+  .gamecard{position:relative;width:min(29vw,40vh,300px);aspect-ratio:1/1.1;background:var(--paper);border:6px solid var(--ink);border-radius:22px;
             box-shadow:0 10px 0 var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:4px;padding:12px 10px 14px;
             cursor:pointer;touch-action:manipulation;font:inherit;color:var(--ink);animation:breathe 2.4s ease-in-out infinite}
-  .gamecard:nth-child(2){animation-delay:1.2s}
+  .gamecard:nth-child(2){animation-delay:.8s}
+  .gamecard:nth-child(3){animation-delay:1.6s}
   .gamecard:active{transform:translateY(6px);box-shadow:0 4px 0 var(--ink)}
   .gamecard:focus-visible{outline:5px solid var(--mustard);outline-offset:4px}
   .gamecard .art{position:relative;width:100%;flex:1;display:grid;place-items:center;min-height:0}
@@ -271,6 +272,35 @@
   @keyframes boardOut{to{transform:translateX(-105vw) rotate(-4deg)}}
   @keyframes spotGlow{0%,100%{box-shadow:0 0 0 0 rgba(224,169,48,0)}50%{box-shadow:0 0 0 9px rgba(224,169,48,.95);background:rgba(224,169,48,.25)}}
   @keyframes spinOnce{from{transform:rotate(-180deg) scale(.6)}to{transform:none}}
+  /* ---------- Froggy Tag ---------- */
+  #mazeGame{position:fixed;inset:0;z-index:1;display:none;grid-template-rows:auto 1fr;
+            padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+  body.maze #mazeGame{display:grid}
+  body.maze #app{display:none}
+  #mzProg{display:flex;justify-content:center;gap:clamp(6px,1.4vmin,12px);padding:clamp(10px,2.2vmin,20px) 72px 4px}
+  #mzProg svg{width:clamp(44px,8vmin,74px);height:auto;overflow:visible;opacity:.55}
+  #mzProg svg.on{opacity:1;animation:popIn .5s ease-out}
+  #mzStage{position:relative;min-height:0;padding:clamp(8px,2vmin,20px) clamp(10px,3vw,30px) clamp(12px,3vmin,28px)}
+  #mzBoard{width:100%;height:100%;touch-action:none;filter:drop-shadow(0 10px 0 rgba(10,8,6,.55))}
+  #mzBoard.in{animation:boardIn .55s cubic-bezier(.3,1.3,.5,1)}
+  #mzBoard.out{animation:boardOut .45s ease-in forwards}
+  .mzsvg{width:100%;height:100%;display:block;overflow:visible}
+  .mz-bat, .mz-frog, .mz-lily{transition:transform .15s linear}
+  .mz-bat-in{transform:scaleX(var(--fx,1));transition:transform .15s}
+  .mz-bat-in.bump{animation:mzBump .35s ease-in-out}
+  .mz-bat-in.cheer, .mz-frog-in.cheer{animation:mzCheer .5s ease-in-out 3}
+  .mz-frog-in.hop{animation:mzHop .7s ease-in-out}
+  .mz-frog-in{animation:mzBreathe 2.4s ease-in-out infinite}
+  .paw{animation:pawIn .5s ease-out both}
+  .mzsvg .wing{animation-duration:.5s}
+  #mzAgain{position:fixed;left:50%;top:60%;transform:translate(-50%,-50%) scale(0);z-index:250;transition:transform .4s cubic-bezier(.3,1.6,.5,1)}
+  #mzAgain.show{transform:translate(-50%,-50%) scale(1)}
+  .minimaze{width:88%;height:auto;display:block}
+  @keyframes mzBump{0%,100%{transform:scaleX(var(--fx,1)) translateX(0)}30%{transform:scaleX(var(--fx,1)) translateX(-10px)}60%{transform:scaleX(var(--fx,1)) translateX(8px)}}
+  @keyframes mzCheer{0%,100%{transform:scaleX(var(--fx,1)) translateY(0)}50%{transform:scaleX(var(--fx,1)) translateY(-26px)}}
+  @keyframes mzHop{0%{transform:translateY(0) scale(1)}40%{transform:translateY(-70px) scale(1.15)}100%{transform:translateY(0) scale(1)}}
+  @keyframes mzBreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.05,.96)}}
+  @keyframes pawIn{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:none}}
   @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
   @keyframes flap{0%,100%{transform:scaleY(1) rotate(0)}50%{transform:scaleY(.78) rotate(-9deg)}}
   @keyframes prop{0%,100%{transform:scaleX(1)}50%{transform:scaleX(.06)}}
@@ -323,6 +353,11 @@
   <div id="shStage"><div id="shHelper"></div><div id="shBoard"></div></div>
   <div id="shTray" class="tray"></div>
 </div>
+<div id="mazeGame">
+  <div id="mzProg"></div>
+  <div id="mzStage"><div id="mzBoard"></div></div>
+</div>
+<button id="mzAgain" class="bigBtn" aria-label="Play again"><svg viewBox="0 0 100 100"><path d="M74,30 A30,30 0 1,0 80,56" fill="none" stroke="#f3e9d2" stroke-width="12" stroke-linecap="round"/><path d="M60,22 L84,26 L78,48 Z" fill="#f3e9d2" stroke="#f3e9d2" stroke-width="6" stroke-linejoin="round"/></svg></button>
 <button id="shAgain" class="bigBtn" aria-label="Play again">
   <svg viewBox="0 0 100 100"><path d="M74,30 A30,30 0 1,0 80,56" fill="none" stroke="#f3e9d2" stroke-width="12" stroke-linecap="round"/><path d="M60,22 L84,26 L78,48 Z" fill="#f3e9d2" stroke="#f3e9d2" stroke-width="6" stroke-linejoin="round"/></svg>
 </button>
@@ -336,6 +371,7 @@
   <div class="games">
     <button id="play" class="gamecard" aria-label="Play Bat Doctor"><div class="art" id="artDoctor"></div><span class="label">Bat Doctor</span></button>
     <button id="playShelf" class="gamecard" aria-label="Play Shadow Shelf"><div class="art" id="artShelf"></div><span class="label">Shadow Shelf</span></button>
+    <button id="playMaze" class="gamecard" aria-label="Play Froggy Tag"><div class="art" id="artMaze"></div><span class="label">Froggy Tag</span></button>
   </div>
   <small>Grown-ups: press and hold ⚙︎ (top right) for 2 seconds for settings. In a game, hold 🏠 (top left) to come back here.</small>
 </div>
@@ -442,7 +478,14 @@ const LINES = [
   { k: 's_done',    t: 'All tidy! Great job!' },
   { k: 's_next',    t: 'Here comes another wall!' },
   { k: 's_bats',    t: 'Now match each bat to its shadow. Look at the hats!' },
-  { k: 's_party',   t: "Every wall is tidy! You're a super organizer!" }
+  { k: 's_party',   t: "Every wall is tidy! You're a super organizer!" },
+  { k: 'm_intro',   t: 'Froggy wants to play tag! Help the bat catch Froggy!' },
+  { k: 'm_hop',     t: 'Ribbit! Catch me if you can!' },
+  { k: 'm_caught1', t: 'Tag! You got Froggy!' },
+  { k: 'm_caught2', t: 'Gotcha! Froggy is giggling!' },
+  { k: 'm_next',    t: 'Froggy hopped into a new maze!' },
+  { k: 'm_hint',    t: 'Follow the glowing stars!' },
+  { k: 'm_party',   t: 'You caught Froggy in every maze! Hooray!' }
 ];
 const LINE = Object.fromEntries(LINES.map(l => [l.k, l.t]));
 
@@ -1049,6 +1092,17 @@ Object.assign(sfx, {
   thump: weak => { const v = weak ? .25 : .5; tone(95, 0, .13, 'sine', v); tone(190, 0, .08, 'triangle', v * .35); tone(80, .2, .15, 'sine', v * .8); tone(160, .2, .08, 'triangle', v * .3); },
   rise: () => tone(380, 0, 1.2, 'sine', .07, 900),
   glug: () => tone(320, 0, .14, 'sine', .16, 170),
+  ribbit: () => {
+    if (!SET.sfx || !ac || ac.state !== 'running') return;
+    [0, .16].forEach(dt => {
+      const t = ac.currentTime + dt, o = ac.createOscillator(), g = ac.createGain(), am = ac.createOscillator(), ag = ac.createGain(), lp = ac.createBiquadFilter();
+      o.type = 'sawtooth'; o.frequency.setValueAtTime(dt ? 210 : 180, t); o.frequency.exponentialRampToValueAtTime(dt ? 150 : 130, t + .12);
+      am.type = 'square'; am.frequency.value = 38; ag.gain.value = .5; am.connect(ag).connect(g.gain);
+      lp.type = 'lowpass'; lp.frequency.value = 1400;
+      g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.25, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + .13);
+      o.connect(lp).connect(g).connect(sfxGain); o.start(t); am.start(t); o.stop(t + .15); am.stop(t + .15);
+    });
+  },
   grumble: () => { tone(110, 0, .5, 'sawtooth', .04, 80); tone(90, .3, .5, 'sawtooth', .04, 120); }
 });
 
@@ -1932,6 +1986,234 @@ $('#shAgain').addEventListener('click', () => {
   shStart();
 });
 
+/* ================= game 3: Froggy Tag (a friendly maze chase) ================= */
+const FROG = `<g>
+  <ellipse cx="0" cy="40" rx="40" ry="10" fill="#4c7330" opacity=".55"/>
+  <path d="M-36,34 q-14,6 -6,-10 M36,34 q14,6 6,-10" stroke="${INK}" stroke-width="4" fill="#5f9a3a" stroke-linecap="round"/>
+  <ellipse cx="0" cy="14" rx="38" ry="28" fill="#6fae45" ${sw}/>
+  <ellipse cx="0" cy="22" rx="22" ry="15" fill="#d9e8a8"/>
+  <circle cx="-18" cy="-14" r="15" fill="#6fae45" ${sw}/><circle cx="18" cy="-14" r="15" fill="#6fae45" ${sw}/>
+  <circle cx="-18" cy="-15" r="9" fill="#fffaf0" stroke="${INK}" stroke-width="2.5"/><circle cx="18" cy="-15" r="9" fill="#fffaf0" stroke="${INK}" stroke-width="2.5"/>
+  <circle cx="-16" cy="-14" r="4.5" fill="${INK}"/><circle cx="20" cy="-14" r="4.5" fill="${INK}"/>
+  <circle cx="-14.5" cy="-16" r="1.6" fill="#fff"/><circle cx="21.5" cy="-16" r="1.6" fill="#fff"/>
+  <path d="M-18,6 Q0,20 18,6" stroke="${INK}" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <circle cx="-26" cy="6" r="5" fill="#e0607e" opacity=".5"/><circle cx="26" cy="6" r="5" fill="#e0607e" opacity=".5"/>
+  <path d="M-14,38 l-6,6 M-8,40 l-2,7 M14,38 l6,6 M8,40 l2,7" stroke="${INK}" stroke-width="3.5" stroke-linecap="round"/>
+  <g transform="translate(0,-30) rotate(-8)"><ellipse cx="0" cy="4" rx="26" ry="6" fill="#e3c27a" ${sw}/><rect x="-14" y="-12" width="28" height="16" rx="3" fill="#e3c27a" ${sw}/><rect x="-14" y="-4" width="28" height="6" fill="#b5432f"/></g>
+</g>`;
+const LILY = `<path d="M0,0 L38,-8 A40,30 0 1,1 30,-22 Z" fill="#3f7a3a" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/><path d="M-20,8 L0,0 M-6,20 L0,0 M14,18 L0,0" stroke="#2f5a2c" stroke-width="2"/>`;
+const MZ_ROUNDS = 5, MZ_SIZES = [[3, 3], [4, 3], [4, 4], [5, 4], [6, 4]], CELL = 100;
+const MZ_NOTES = [523, 587, 659, 784, 880, 1047, 880, 784, 659, 587];
+const DIRS = { n: [-1, 0], s: [1, 0], e: [0, 1], w: [0, -1] }, OPP = { n: 's', s: 'n', e: 'w', w: 'e' };
+const MZ = { round: 0, phase: 'idle', M: null, bat: [0, 0], frog: [0, 0], moving: false, finger: null, tick: null, idleT: null, steps: 0, hopped: false, bumpAt: 0, hintSaid: false, batCfg: null };
+if (location.hash === '#test') window.__mz = MZ;
+
+function genMaze(cols, rows) {
+  const c = Array.from({ length: rows }, () => Array.from({ length: cols }, () => ({ n: 1, s: 1, e: 1, w: 1, v: 0 })));
+  const stack = [[0, 0]]; c[0][0].v = 1;
+  while (stack.length) {
+    const [r, k] = stack[stack.length - 1], nb = [];
+    for (const d of ['n', 's', 'e', 'w']) { const nr = r + DIRS[d][0], nk = k + DIRS[d][1]; if (nr >= 0 && nr < rows && nk >= 0 && nk < cols && !c[nr][nk].v) nb.push([nr, nk, d]); }
+    if (!nb.length) { stack.pop(); continue; }
+    const [nr, nk, d] = rand(nb); c[r][k][d] = 0; c[nr][nk][OPP[d]] = 0; c[nr][nk].v = 1; stack.push([nr, nk]);
+  }
+  return { cols, rows, c };
+}
+const mzOpen = (r, k, d) => !MZ.M.c[r][k][d];
+function mzBFS(from) {
+  const { rows, cols } = MZ.M, dist = Array.from({ length: rows }, () => Array(cols).fill(-1)), prev = {};
+  const q = [from]; dist[from[0]][from[1]] = 0;
+  while (q.length) {
+    const [r, k] = q.shift();
+    for (const d of ['n', 's', 'e', 'w']) {
+      if (!mzOpen(r, k, d)) continue;
+      const nr = r + DIRS[d][0], nk = k + DIRS[d][1];
+      if (dist[nr][nk] < 0) { dist[nr][nk] = dist[r][k] + 1; prev[nr + ',' + nk] = [r, k]; q.push([nr, nk]); }
+    }
+  }
+  return { dist, prev };
+}
+function mzFarthest(from, avoid) {
+  const { dist } = mzBFS(from); let best = null, bd = -1;
+  dist.forEach((row, r) => row.forEach((d, k) => { if (d > bd && !(avoid && avoid[0] === r && avoid[1] === k)) { bd = d; best = [r, k]; } }));
+  return best;
+}
+const cx = k => k * CELL + CELL / 2, cy = r => r * CELL + CELL / 2;
+
+function mazeSVG(M, extra = '') {
+  const W = M.cols * CELL, H = M.rows * CELL, segs = [];
+  for (let r = 0; r < M.rows; r++) for (let k = 0; k < M.cols; k++) {
+    const x = k * CELL, y = r * CELL, s = M.c[r][k];
+    if (s.n) segs.push(`M${x},${y} H${x + CELL}`);
+    if (s.w) segs.push(`M${x},${y} V${y + CELL}`);
+    if (r === M.rows - 1 && s.s) segs.push(`M${x},${y + CELL} H${x + CELL}`);
+    if (k === M.cols - 1 && s.e) segs.push(`M${x + CELL},${y} V${y + CELL}`);
+  }
+  let tufts = '';
+  for (let r = 0; r < M.rows; r++) for (let k = 0; k < M.cols; k++) if ((r * 7 + k * 3) % 4 === 0)
+    tufts += `<path d="M${k * CELL + 18},${r * CELL + 82} l4,-10 l4,10 M${k * CELL + 24},${r * CELL + 82} l5,-8" stroke="#5f8f3a" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  const d = segs.join(' ');
+  return `<svg viewBox="-16 -16 ${W + 32} ${H + 32}" preserveAspectRatio="xMidYMid meet" class="mzsvg">
+    <rect x="-16" y="-16" width="${W + 32}" height="${H + 32}" rx="18" fill="#2f4a2c" stroke="${INK}" stroke-width="5"/>
+    <rect x="0" y="0" width="${W}" height="${H}" fill="#4f7d3a"/>${tufts}
+    <g class="mz-hint"></g><g class="mz-trail"></g>
+    <path d="${d}" stroke="${INK}" stroke-width="17" stroke-linecap="round" fill="none"/>
+    <path d="${d}" stroke="#e6dcc0" stroke-width="9" stroke-linecap="round" fill="none"/>
+    ${extra}</svg>`;
+}
+function mzRenderProgress() {
+  $('#mzProg').innerHTML = Array.from({ length: MZ_ROUNDS }, (_, i) =>
+    `<svg viewBox="-50 -40 100 80" class="${i < MZ.round ? 'on' : ''}"><g transform="scale(1.05)">${LILY}</g>${i < MZ.round ? `<g transform="translate(0,-8) scale(.42)">${FROG}</g>` : ''}</svg>`).join('');
+}
+function mzPlace(el, r, k, instant) {
+  if (instant) { el.style.transition = 'none'; el.style.transform = `translate(${cx(k)}px,${cy(r)}px)`; void el.getBoundingClientRect(); el.style.transition = ''; }
+  else el.style.transform = `translate(${cx(k)}px,${cy(r)}px)`;
+}
+function mzRender() {
+  const M = MZ.M, b = MZ.batCfg;
+  const bat = batSVG(b.color, { happy: true, hat: b.hat }).replace('class="batsvg"', '').replace('<svg ', '<svg x="-80" y="-62" width="160" height="120" ');
+  $('#mzBoard').innerHTML = mazeSVG(M, `
+    <g class="mz-lily" style="transform:translate(${cx(MZ.frog[1])}px,${cy(MZ.frog[0])}px)"><g transform="translate(0,14) scale(.95)">${LILY}</g></g>
+    <g class="mz-frog"><g class="mz-frog-in"><g transform="translate(0,-6) scale(.62)">${FROG}</g></g></g>
+    <g class="mz-bat"><g class="mz-bat-in">${bat}</g></g>`);
+  mzPlace($('#mzBoard .mz-frog'), MZ.frog[0], MZ.frog[1], true);
+  mzPlace($('#mzBoard .mz-bat'), MZ.bat[0], MZ.bat[1], true);
+  mzTrailDot(MZ.bat[0], MZ.bat[1]);
+}
+function mzTrailDot(r, k) {
+  const t = $('#mzBoard .mz-trail'); if (!t || t.querySelector(`[data-c="${r},${k}"]`)) return;
+  t.insertAdjacentHTML('beforeend', `<circle data-c="${r},${k}" cx="${cx(k)}" cy="${cy(r)}" r="9" fill="#f3e9d2" opacity=".75"/>`);
+}
+function mzCellAt(x, y) {
+  const svg = $('#mzBoard svg'); if (!svg) return null;
+  const p = svg.createSVGPoint(); p.x = x; p.y = y;
+  const q = p.matrixTransform(svg.getScreenCTM().inverse());
+  const r = Math.floor(q.y / CELL), k = Math.floor(q.x / CELL);
+  return [Math.max(0, Math.min(MZ.M.rows - 1, r)), Math.max(0, Math.min(MZ.M.cols - 1, k))];
+}
+function mzAnim(sel, cls) {
+  const el = $('#mzBoard ' + sel); if (!el) return;
+  el.classList.remove('nope', 'hop', 'cheer', 'bump'); void el.getBoundingClientRect(); el.classList.add(cls);
+}
+// one step toward the finger: only through open passages, only steps that get closer
+async function mzStep() {
+  if (MZ.phase !== 'play' || MZ.moving || !MZ.finger || S.paused) return;
+  const [br, bk] = MZ.bat, [fr, fk] = MZ.finger;
+  if (br === fr && bk === fk) return;
+  const dr = fr - br, dk = fk - bk;
+  const opts = [];
+  if (dr) opts.push([dr > 0 ? 's' : 'n', Math.abs(dr)]);
+  if (dk) opts.push([dk > 0 ? 'e' : 'w', Math.abs(dk)]);
+  opts.sort((a, b) => b[1] - a[1]);
+  const go = opts.find(([d]) => mzOpen(br, bk, d));
+  if (!go) {
+    if (Date.now() - MZ.bumpAt > 700) { MZ.bumpAt = Date.now(); mzAnim('.mz-bat-in', 'bump'); tone(300, 0, .14, 'sine', .12, 150); }
+    return;
+  }
+  const d = go[0], nr = br + DIRS[d][0], nk = bk + DIRS[d][1];
+  MZ.moving = true; MZ.bat = [nr, nk];
+  const flip = $('#mzBoard .mz-bat-in'); if (d === 'e' || d === 'w') flip.style.setProperty('--fx', d === 'w' ? -1 : 1);
+  mzPlace($('#mzBoard .mz-bat'), nr, nk);
+  tone(MZ_NOTES[MZ.steps++ % MZ_NOTES.length], 0, .16, 'triangle', .11);
+  mzArm();
+  await wait(150);
+  mzTrailDot(nr, nk);
+  MZ.moving = false;
+  if (nr === MZ.frog[0] && nk === MZ.frog[1]) { mzCaught(); return; }
+  const near = mzBFS(MZ.bat).dist[MZ.frog[0]][MZ.frog[1]];
+  if (!MZ.hopped && MZ.round > 0 && near > 0 && near <= 2) mzFrogHop();
+}
+async function mzFrogHop() {
+  MZ.hopped = true; MZ.phase = 'hop';
+  const to = mzFarthest(MZ.bat, MZ.bat);
+  if (!to || (to[0] === MZ.frog[0] && to[1] === MZ.frog[1])) { MZ.phase = 'play'; return; }
+  sfx.ribbit(); say('m_hop');
+  mzAnim('.mz-frog-in', 'hop');
+  const f = $('#mzBoard .mz-frog'), l = $('#mzBoard .mz-lily');
+  f.style.transition = 'transform .7s cubic-bezier(.4,0,.3,1)'; l.style.transition = 'transform .7s cubic-bezier(.4,0,.3,1)';
+  MZ.frog = to;
+  mzPlace(f, to[0], to[1]); l.style.transform = `translate(${cx(to[1])}px,${cy(to[0])}px)`;
+  await wait(750);
+  f.style.transition = ''; l.style.transition = '';
+  MZ.phase = 'play';
+}
+function mzHint() {
+  const { prev } = mzBFS(MZ.bat), path = [];
+  let cur = MZ.frog;
+  while (cur && !(cur[0] === MZ.bat[0] && cur[1] === MZ.bat[1])) { path.unshift(cur); cur = prev[cur[0] + ',' + cur[1]]; }
+  const h = $('#mzBoard .mz-hint'); if (!h) return;
+  h.innerHTML = path.slice(0, 3).map(([r, k], i) =>
+    `<g class="paw" style="animation-delay:${i * .25}s"><circle cx="${cx(k)}" cy="${cy(r)}" r="22" fill="#e0a930" opacity=".75"/><polygon points="${starPts(cx(k), cy(r), 12, .45)}" fill="#fffaf0"/></g>`).join('');
+  setTimeout(() => { if (h) h.innerHTML = ''; }, 3200);
+}
+function mzArm() {
+  clearTimeout(MZ.idleT);
+  MZ.idleT = setTimeout(() => {
+    if (MZ.phase === 'play' && !S.paused) { mzHint(); if (!MZ.hintSaid) { MZ.hintSaid = true; say('m_hint'); } }
+    if (MZ.phase === 'play') mzArm();
+  }, 8000);
+}
+async function mzCaught() {
+  MZ.phase = 'caught'; clearTimeout(MZ.idleT); clearInterval(MZ.tick); MZ.tick = null;
+  mzAnim('.mz-frog-in', 'cheer'); mzAnim('.mz-bat-in', 'cheer');
+  const c = center($('#mzBoard .mz-frog').getBoundingClientRect());
+  sparkle(c.x, c.y, 14); confetti(18); sfx.yay(); squeak(3, 1.15); setTimeout(() => sfx.ribbit(), 350);
+  MZ.round++; mzRenderProgress();
+  await say(rand(['m_caught1', 'm_caught2']));
+  await wait(400);
+  if (MZ.round >= MZ_ROUNDS) { mzParty(); return; }
+  const b = $('#mzBoard'); b.classList.remove('in'); b.classList.add('out');
+  await wait(460);
+  mzStartRound();
+}
+async function mzStartRound() {
+  MZ.phase = 'intro'; MZ.hopped = false; MZ.steps = 0; MZ.finger = null;
+  let [cols, rows] = MZ_SIZES[MZ.round];
+  const box = $('#mzStage').getBoundingClientRect();
+  if (box.height > box.width) [cols, rows] = [rows, cols];
+  let tries = 0;
+  do { MZ.M = genMaze(cols, rows); MZ.bat = [0, 0]; MZ.frog = mzFarthest([0, 0]); tries++; }
+  while (mzBFS([0, 0]).dist[MZ.frog[0]][MZ.frog[1]] < Math.max(3, cols + rows - 2) && tries < 40);
+  MZ.batCfg = rand(BATS);
+  mzRender();
+  const b = $('#mzBoard'); b.classList.remove('out'); void b.offsetWidth; b.classList.add('in');
+  sfx.whoosh(); setTimeout(() => sfx.ribbit(), 500);
+  await wait(550);
+  MZ.phase = 'play';
+  say(MZ.round === 0 ? 'm_intro' : 'm_next');
+  mzArm();
+}
+async function mzParty() {
+  MZ.phase = 'party';
+  document.body.classList.add('party');
+  confetti(55); sfx.yay(); musicPlay('party'); squeak(4, 1.1); sfx.ribbit();
+  await say('m_party');
+  await wait(900);
+  $('#mzAgain').classList.add('show');
+}
+function mzStart() { MZ.round = 0; MZ.hintSaid = false; mzRenderProgress(); mzStartRound(); }
+// steering: press anywhere on the maze and the bat follows your finger
+(() => {
+  const board = $('#mzBoard');
+  const set = e => { MZ.finger = mzCellAt(e.clientX, e.clientY); };
+  board.addEventListener('pointerdown', e => {
+    if (MZ.phase !== 'play' && MZ.phase !== 'hop') return;
+    e.preventDefault(); try { board.setPointerCapture(e.pointerId); } catch (err) {}
+    set(e); mzStep(); mzArm();
+    clearInterval(MZ.tick); MZ.tick = setInterval(mzStep, 170);
+  });
+  board.addEventListener('pointermove', e => { if (MZ.tick) set(e); });
+  const stop = () => { clearInterval(MZ.tick); MZ.tick = null; MZ.finger = null; };
+  board.addEventListener('pointerup', stop); board.addEventListener('pointercancel', stop);
+})();
+$('#mzAgain').addEventListener('click', () => {
+  unlockAudio();
+  $('#mzAgain').classList.remove('show');
+  document.body.classList.remove('party');
+  musicPlay('main');
+  mzStart();
+});
+
 /* ================= grown-up panel (settings only; the voice ships with the app) ================= */
 function renderPanel() {
   $('#optTts').checked = SET.tts; $('#optSfx').checked = SET.sfx; $('#optMusic').checked = SET.music;
@@ -1992,12 +2274,25 @@ $('#artDoctor').innerHTML = batSVG(BATS[0].color, { happy: true, hat: BATS[0].ha
   `<svg class="mini-stetho" viewBox="-62 -62 124 124">${TOOL_ICON.stetho}</svg>`;
 $('#artShelf').innerHTML = `<div class="minipeg">${['hammer', 'trex', 'gear'].map((k, i) =>
   `<svg viewBox="-60 -60 120 120" class="${i === 1 ? '' : 'shadow'}">${SH_ITEMS[k]}</svg>`).join('')}</div>`;
+(() => {
+  const M = genMaze(3, 3); MZ.M = M;
+  const far = mzFarthest([0, 0]);
+  $('#artMaze').innerHTML = mazeSVG(M, `<g transform="translate(${cx(far[1])},${cy(far[0]) - 4}) scale(.6)">${FROG}</g>
+    <g transform="translate(${cx(0)},${cy(0)})">${batSVG(BATS[1].color, { happy: true, hat: BATS[1].hat }).replace('class="batsvg"', '').replace('<svg ', '<svg x="-75" y="-56" width="150" height="112" ')}</g>`).replace('class="mzsvg"', 'class="minimaze"');
+  MZ.M = null;
+})();
 function beginGame() {
   unlockAudio();
   try { if (navigator.wakeLock) navigator.wakeLock.request('screen').catch(() => {}); } catch (e) {}
   $('#start').remove();
   document.body.classList.add('playing');
 }
+$('#playMaze').addEventListener('click', () => {
+  beginGame();
+  document.body.classList.add('maze');
+  musicPlay('main');
+  mzStart();
+});
 $('#playShelf').addEventListener('click', () => {
   beginGame();
   document.body.classList.add('shelf');

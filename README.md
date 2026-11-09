@@ -11,6 +11,16 @@ glow). Five walls get gradually harder: two shadows, then three, then four, and
 a last wall of bats that you tell apart by their hats. Items include a hammer,
 wrench, screwdriver, gear, T-Rex toy, ball, moon, pumpkin, star and doctor tools.
 
+## Froggy Tag
+
+A friendly maze chase: Froggy wants to play tag. Drag anywhere on the maze and
+the bat follows your finger along the paths, one square at a time; walls block
+it (a little "boing"), a breadcrumb trail shows where it has been and every step
+plays the next note of a tune. Five mazes grow from 3×3 to 6×4 (turned upright
+when the tablet is), and from the second maze Froggy hops away once when the bat
+gets close. If nothing happens for a few seconds, glowing stars show the next
+steps. Catching Froggy fills a lily pad at the top.
+
 ## Bat Doctor
 
 A toddler game. Five pink bats (Doowy, Hoowy, Tooby, Boopy, Zoomy) each need the
