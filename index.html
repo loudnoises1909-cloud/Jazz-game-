@@ -234,8 +234,10 @@
   #bbProg .on path{fill:var(--mustard);stroke:var(--ink)}
   #bbProg .on{animation:spinOnce .9s ease-out}
   #bbStage{position:relative;display:grid;place-items:center;min-height:0;padding:8px}
-  #bbPlan{position:relative;z-index:2;width:min(72vw, calc((100vh - var(--tool-bb) - 170px) * 1.5), 840px);aspect-ratio:3/2;filter:drop-shadow(0 8px 0 rgba(10,8,6,.55))}
+  #bbPlan{position:relative;z-index:2;width:min(72vw, calc((100vh - var(--tool-bb) - 150px) * 1.5), 840px);aspect-ratio:3/2;filter:drop-shadow(0 8px 0 rgba(10,8,6,.55))}
   @media (orientation: portrait){ #bbPlan{width:min(94vw, calc((100vh - var(--tool-bb) - 170px) * 1.5), 840px)} }
+  @media (max-height: 500px){ #buildGame{--tool-bb:clamp(64px, 20vh, 120px)} #bbProg{padding-top:6px} #bbProg svg{width:26px}
+    #bbPlan{width:min(72vw, calc((100vh - var(--tool-bb) - 90px) * 1.5))} }
   #bbPlan.in{animation:boardIn .55s cubic-bezier(.3,1.3,.5,1)}
   #bbPlan.out{animation:boardOut .45s ease-in forwards}
   .plan{width:100%;height:100%;display:block;overflow:visible}
@@ -1963,7 +1965,7 @@ async function bbDrop(el, info, x, y) {
   });
   const plan = $('#bbPlan').getBoundingClientRect(), onPlan = x > plan.left && x < plan.right && y > plan.top && y < plan.bottom;
   if (!best) { returnHome(el); return; }
-  const sb = bbScreenBox(best), reach = Math.max(110, Math.hypot(sb.width, sb.height) * .6);
+  const sb = bbScreenBox(best), reach = Math.max(Math.min(110, plan.width * .16), Math.hypot(sb.width, sb.height) * .6);
   if (bd > reach) {
     returnHome(el);
     if (onPlan) { sfx.soft(); bbGlow(best.id); bbHelper('hmm'); if (!BB.wrongSaid) { BB.wrongSaid = true; say('b_try'); } }
