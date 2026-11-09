@@ -3,17 +3,28 @@
 A small collection of toddler games. The start screen is a menu; in a game,
 press and hold the 🏠 button (top left) for a second to come back to it.
 
-## Shadow Shelf
+## Bat Builder
 
-Tidy up Tooby's workshop: a pegboard tool wall shows painted shadows, and each
-tool or toy goes on its matching shadow (drag it; tapping it makes its shadow
-glow). Five walls get gradually harder: two shadows, then three, then four, and
-a last wall of bats that you tell apart by their hats. Items include a hammer,
-wrench, screwdriver, gear, T-Rex toy, ball, moon, pumpkin, star and doctor tools.
+Build a machine from a blueprint, then make it go. White outlines on blue
+engineer's paper show where each big piece goes; drag them on (tapping a piece
+makes its outline glow). When it's built, a control appears on the workbench:
+
+1. Bat-mobile (body, 2 wheels): pull the lever and it drives off and back.
+2. Windmill (tower, roof, sails): turn the crank and the sails turn with it.
+3. Robot T-Rex (tail, legs, body, head): push the button and it chomps and roars.
+4. Rocket (fins, body, nose, window with a bat inside): push the button for a countdown and blast-off.
+5. Bat house (walls, chimney, roof, door): pull the lever and the lights come on and bats fly home.
+
+The first two builds are always the bat-mobile and the windmill; the other three
+are shuffled. A green arrow appears after the machine has run once, so the child
+decides when to move on.
 
 ## Froggy Tag
 
-A friendly maze chase: Froggy wants to play tag. Drag anywhere on the maze and
+A friendly maze chase. The maze walls are nature obstacles (streams, rows of
+trees, rock piles and fallen logs), each with its own bump sound.
+
+In short: Froggy wants to play tag. Drag anywhere on the maze and
 the bat follows your finger along the paths, one square at a time; walls block
 it (a little "boing"), a breadcrumb trail shows where it has been and every step
 plays the next note of a tune. Five mazes grow from 3×3 to 6×4 (turned upright
