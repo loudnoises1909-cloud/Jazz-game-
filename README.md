@@ -15,7 +15,8 @@ A wooden busy board with six gadgets and no rules:
 - Rocket lever: countdown, then the rocket leaves its box and flies up across the
   screen into a starry sky before landing back on its pad.
 - Prize wheel: flick or tap to spin; whatever stops at the top (candy, lollipop,
-  toy car, ball, T-Rex toy or star) pops out as the prize.
+  toy car, ball, T-Rex toy or star) pops out as the prize, and dozens of them rain
+  down from the top of the screen.
 
 Trying all six gets a small celebration.
 

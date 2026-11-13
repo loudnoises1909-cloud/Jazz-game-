@@ -417,6 +417,70 @@
   @keyframes mzHop{0%{transform:translateY(0) scale(1)}40%{transform:translateY(-70px) scale(1.15)}100%{transform:translateY(0) scale(1)}}
   @keyframes mzBreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.05,.96)}}
   @keyframes pawIn{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:none}}
+  /* ================= polish pass: same vintage language everywhere (wood, brass, sunbursts, halftone, hard shadows) ================= */
+  #bg svg.rocks.back{height:30%}
+  .hangbat{position:absolute;top:0;width:clamp(12px,1.6vmin,20px);transform-origin:50% 0;animation:sway 3.4s ease-in-out infinite}
+  .hangbat svg{width:100%;height:auto;display:block}
+  @keyframes sway{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
+  /* wooden trays and workbenches */
+  #tray, .tray, #bandInst{
+    background:
+      radial-gradient(ellipse 80px 12px at 18% 42%, rgba(60,30,10,.28), transparent 70%),
+      radial-gradient(ellipse 60px 10px at 77% 66%, rgba(60,30,10,.24), transparent 70%),
+      repeating-linear-gradient(180deg, rgba(0,0,0,0) 0 13px, rgba(60,30,10,.11) 13px 15px, rgba(0,0,0,0) 15px 29px, rgba(255,230,190,.07) 29px 31px),
+      linear-gradient(180deg,#a06c3c,#7a4e2d 55%,#5e3b20);
+    border-top:6px solid var(--ink);
+    box-shadow:inset 0 7px 0 rgba(255,220,170,.2), inset 0 -10px 0 rgba(0,0,0,.2)}
+  .bigBtn{box-shadow:0 9px 0 var(--ink), inset 0 6px 0 rgba(255,255,255,.28), inset 0 -9px 0 rgba(0,0,0,.2)}
+  /* brass marquee sign with blinking bulbs */
+  .marquee{position:relative;padding:clamp(10px,2vmin,18px) clamp(26px,5vmin,52px);border:5px solid var(--ink);border-radius:18px;
+           background:linear-gradient(180deg,#9c3a28,#6e2619);box-shadow:0 8px 0 var(--ink), inset 0 0 0 4px rgba(255,220,170,.14)}
+  .marquee::before{content:"";position:absolute;inset:5px;border-radius:12px;border:7px dotted #ffe08a;pointer-events:none;
+           filter:drop-shadow(0 0 4px rgba(255,224,138,.9));animation:bulbs 1.1s steps(2) infinite}
+  .marquee h1, #start .marquee h1{transform:none !important;font-size:clamp(34px,8vmin,92px) !important}
+  .marquee.small{position:absolute;left:50%;top:clamp(28px,5vh,48px);transform:translateX(-50%) rotate(-2deg);z-index:3;padding:6px 26px;border-radius:12px}
+  .marquee.small::before{border-width:5px;inset:4px}
+  .marquee.small span{font-family:var(--display);font-size:clamp(16px,3vmin,30px);color:var(--mustard);-webkit-text-stroke:1.5px var(--ink);text-shadow:3px 3px 0 var(--ink);letter-spacing:2px}
+  @keyframes bulbs{50%{border-color:#ffb94a}}
+  /* menu cards: printed cards with sunburst art and a ribbon name */
+  .gamecard{border-width:5px;border-radius:18px;box-shadow:6px 9px 0 rgba(20,12,6,.75);padding:10px 10px 12px;overflow:hidden}
+  .gamecard:nth-child(odd){rotate:-1.5deg}.gamecard:nth-child(even){rotate:1.5deg}
+  .gamecard::after{content:"";position:absolute;inset:0;pointer-events:none;mix-blend-mode:multiply;opacity:.5;
+           background:radial-gradient(circle, rgba(35,26,20,.22) 0 .8px, transparent 1.3px) 0 0/5px 5px}
+  .gamecard .art{border:3px solid var(--ink);border-radius:12px;margin-bottom:8px;overflow:hidden;
+           background:repeating-conic-gradient(from 0deg, rgba(224,169,48,.22) 0 9deg, rgba(0,0,0,0) 9deg 18deg), radial-gradient(circle, #fffaf0, #e9d9b6)}
+  .gamecard .label{background:var(--brick);color:var(--cream);padding:6px 20px 7px;font-size:clamp(13px,2.7vmin,24px);text-shadow:2px 2px 0 var(--ink);
+           clip-path:polygon(0 0,100% 0,93% 50%,100% 100%,0 100%,7% 50%);white-space:nowrap}
+  /* Bat Doctor: sunburst halo behind the patient, brass-rimmed checklist */
+  #stage::before{content:"";position:absolute;left:50%;top:54%;width:min(115vw,115vh);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;z-index:0;
+           background:radial-gradient(circle, rgba(243,233,210,.16), rgba(243,233,210,0) 55%), repeating-conic-gradient(from 0deg, rgba(243,233,210,.08) 0 7deg, rgba(0,0,0,0) 7deg 14deg);
+           -webkit-mask-image:radial-gradient(circle, #000 18%, transparent 68%);mask-image:radial-gradient(circle, #000 18%, transparent 68%)}
+  #batWrap{position:relative;z-index:1}
+  #meter{z-index:2}
+  .st{box-shadow:3px 4px 0 rgba(20,12,6,.6), inset 0 0 0 3px rgba(224,169,48,.55)}
+  .slot.filled{box-shadow:0 0 0 3px var(--ink), inset 0 0 0 2px var(--ink), 4px 7px 0 3px rgba(20,12,6,.7)}
+  /* Froggy Tag */
+  #mzBoard{filter:drop-shadow(5px 10px 0 rgba(10,8,6,.6))}
+  /* Bat Bath: a framed vintage bathroom */
+  #bathStage svg{border:10px solid #8a5a2e;border-radius:14px;box-shadow:0 0 0 4px var(--ink), 6px 12px 0 4px rgba(10,8,6,.6), inset 0 0 0 2px rgba(255,220,170,.2)}
+  #bathProg, #mzProg, #shProg{filter:drop-shadow(2px 3px 0 rgba(10,8,6,.6))}
+  /* Bat Band: a proper little theatre */
+  #bandStage::before, #bandStage::after{
+           background:linear-gradient(90deg, rgba(0,0,0,.28), rgba(0,0,0,0) 30%, rgba(255,255,255,.12) 50%, rgba(0,0,0,0) 70%, rgba(0,0,0,.28)) 0 0/24px 100%, #a83a28}
+  #bandStage::before{box-shadow:inset -7px 0 0 #e0a930}
+  #bandStage::after{box-shadow:inset 7px 0 0 #e0a930}
+  #bandValance::after{content:"";position:absolute;left:0;right:0;bottom:-12px;height:12px;background:radial-gradient(circle at 7px 2px, #e0a930 4.5px, #231a14 5px 6px, transparent 6.5px) 0 0/14px 12px}
+  #bandBeams{position:absolute;inset:0;pointer-events:none;z-index:0;
+           background:linear-gradient(118deg, transparent 34%, rgba(255,240,190,.13) 40%, rgba(255,240,190,.13) 47%, transparent 53%),
+                      linear-gradient(62deg, transparent 47%, rgba(255,240,190,.13) 53%, rgba(255,240,190,.13) 60%, transparent 66%)}
+  #bandBats{position:relative;z-index:1;border-bottom:0;box-shadow:none;padding-bottom:34px;
+           background:linear-gradient(180deg, transparent calc(100% - 28px), #8a5a2e calc(100% - 28px)),
+                      repeating-linear-gradient(90deg, transparent 0 58px, rgba(40,20,8,.35) 58px 60px)}
+  #bandBats::after{content:"";position:absolute;left:0;right:0;bottom:0;height:28px;border-top:4px solid var(--ink);pointer-events:none;
+           background:radial-gradient(circle at 24px 15px, #fff6c8 0 4px, #ffe08a 5px, rgba(255,224,138,.35) 7px, transparent 12px) 0 0/48px 100% repeat-x,
+                      repeating-linear-gradient(90deg, transparent 0 58px, rgba(40,20,8,.35) 58px 60px), linear-gradient(180deg,#9a663a,#6e4524)}
+  /* prize rain */
+  .conf.rain{top:-100px;z-index:330}
   @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
   @keyframes flap{0%,100%{transform:scaleY(1) rotate(0)}50%{transform:scaleY(.78) rotate(-9deg)}}
   @keyframes prop{0%,100%{transform:scaleX(1)}50%{transform:scaleX(.06)}}
@@ -445,6 +509,9 @@
 <body>
 
 <div id="bg">
+  <svg class="rocks back" viewBox="0 0 1000 160" preserveAspectRatio="none" aria-hidden="true">
+    <path fill="#1a2840" d="M0,0 H1000 V30 L962,92 L930,28 L892,122 L852,34 L802,100 L762,30 L722,132 L682,36 L632,96 L592,28 L542,140 L502,32 L452,104 L412,30 L362,124 L322,34 L272,96 L232,28 L182,130 L142,36 L92,100 L52,30 L0,112 Z"/>
+  </svg>
   <svg class="rocks" viewBox="0 0 1000 120" preserveAspectRatio="none" aria-hidden="true">
     <path fill="#121a26" stroke="#231a14" stroke-width="3" d="M0,0 H1000 V18 L975,60 L955,20 L930,44 L905,16 L880,80 L858,22 L830,40 L806,14 L780,70 L752,18 L728,36 L700,12 L676,95 L650,20 L622,42 L600,14 L575,66 L548,18 L520,38 L496,12 L470,84 L445,20 L420,44 L398,14 L372,70 L346,18 L320,36 L296,12 L270,90 L245,22 L220,40 L196,14 L170,72 L146,20 L120,42 L96,14 L72,84 L48,22 L24,44 L0,16 Z"/>
   </svg>
@@ -467,7 +534,7 @@
 <div id="busyGame" class="gamescreen"><div id="busyBoard"></div></div>
 <div id="bathGame" class="gamescreen"><div id="bathProg"></div><div id="bathStage"></div><div id="bathTray" class="tray"></div></div>
 <button id="bathAgain" class="bigBtn" aria-label="Play again"><svg viewBox="0 0 100 100"><path d="M74,30 A30,30 0 1,0 80,56" fill="none" stroke="#f3e9d2" stroke-width="12" stroke-linecap="round"/><path d="M60,22 L84,26 L78,48 Z" fill="#f3e9d2" stroke="#f3e9d2" stroke-width="6" stroke-linejoin="round"/></svg></button>
-<div id="bandGame" class="gamescreen"><div id="bandStage"><div id="bandValance"></div><div id="bandBats"></div></div>
+<div id="bandGame" class="gamescreen"><div id="bandStage"><div id="bandBeams"></div><div id="bandValance"></div><div class="marquee small"><span>Bat Band</span></div><div id="bandBats"></div></div>
   <div id="bandInst"><div id="bandXylo"></div><div id="bandDrum" class="inst"></div><div id="bandShaker" class="inst"></div><div id="bandPlayer" class="inst"></div></div></div>
 <div id="mazeGame">
   <div id="mzProg"></div>
@@ -480,7 +547,7 @@
 </button>
 
 <div id="start" class="overlay">
-  <h1>Bat Cave</h1>
+  <div class="marquee"><h1>Bat Cave</h1></div>
   <div class="games">
     <button id="play" class="gamecard" aria-label="Play Bat Doctor"><div class="art" id="artDoctor"></div><span class="label">Bat Doctor</span></button>
     <button id="playMaze" class="gamecard" aria-label="Play Froggy Tag"><div class="art" id="artMaze"></div><span class="label">Froggy Tag</span></button>
@@ -2232,6 +2299,18 @@ function busySpin(tile) {
   };
   svg.addEventListener('pointerup', end); svg.addEventListener('pointercancel', end);
 }
+function prizeRain(i) {
+  for (let k = 0; k < 48; k++) {
+    const el = document.createElement('div'); el.className = 'conf rain';
+    const size = 36 + Math.random() * 44;
+    el.style.left = (Math.random() * 100) + 'vw'; el.style.width = el.style.height = size + 'px';
+    el.style.setProperty('--d', (2.2 + Math.random() * 1.8) + 's'); el.style.setProperty('--r', (Math.random() * 540 - 270) + 'deg');
+    el.style.animationDelay = (Math.random() * 1.8) + 's';
+    el.innerHTML = `<svg viewBox="-22 -22 44 44" width="100%" height="100%" style="overflow:visible">${PRIZES[i].svg}</svg>`;
+    document.body.appendChild(el); setTimeout(() => el.remove(), 6500);
+  }
+  [0, 250, 500, 800].forEach(t => setTimeout(() => tone(1200 + Math.random() * 600, 0, .12, 'sine', .08), t));
+}
 function busyPrize(tile) {
   // the segment under the pointer at the top: local angle -90deg minus the wheel's turn
   const a = ((-90 - BUSY.spinA) % 360 + 720) % 360, i = Math.floor(a / 60) % 6;
@@ -2241,7 +2320,7 @@ function busyPrize(tile) {
     ${Array.from({ length: 12 }, (_, k) => { const t = k * Math.PI / 6; return `<path d="M${100 + 62 * Math.cos(t)},${96 + 62 * Math.sin(t)} L${100 + 78 * Math.cos(t)},${96 + 78 * Math.sin(t)}" stroke="${WHEEL_COLS[i]}" stroke-width="6" stroke-linecap="round"/>`; }).join('')}
     <g transform="translate(100,96) scale(3)">${PRIZES[i].svg}</g></g>`;
   const r = tile.getBoundingClientRect(); sparkle(r.left + r.width / 2, r.top + r.height / 2, 12);
-  sfx.ding(); say('y_prize');
+  sfx.ding(); say('y_prize'); prizeRain(i);
   clearTimeout(BUSY.prizeT); BUSY.prizeT = setTimeout(() => { g.innerHTML = ''; }, 2400);
 }
 function busyStart() {
@@ -2295,9 +2374,24 @@ function bathRender() {
   const tufts = TUFT_ANGLES.map((a, i) => { const r = a * Math.PI / 180, x = 200 + 54 * Math.cos(r), y = 118 + 56 * Math.sin(r);
     return `<g class="tuft" data-i="${i}" style="display:none"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="10" fill="${b.color}" stroke="${INK}" stroke-width="2.5"/><circle cx="${(x + 6 * Math.cos(r)).toFixed(1)}" cy="${(y + 6 * Math.sin(r)).toFixed(1)}" r="6" fill="${b.color}" stroke="${INK}" stroke-width="2"/></g>`; }).join('');
   $('#bathStage').innerHTML = `<svg viewBox="0 0 400 300" class="bathsvg">
-    <defs><pattern id="btiles" width="40" height="40" patternUnits="userSpaceOnUse"><rect width="40" height="40" fill="#5f9ea0"/><path d="M40,0 H0 V40" fill="none" stroke="#4a8a8c" stroke-width="3"/></pattern></defs>
-    <rect x="-200" y="-40" width="800" height="380" fill="url(#btiles)"/>
-    <rect x="-200" y="248" width="800" height="100" fill="#e6dcc0"/><path d="M-200,248 H600" stroke="${INK}" stroke-width="3"/>
+    <defs><pattern id="subway" width="36" height="18" patternUnits="userSpaceOnUse"><rect width="36" height="18" fill="#f1e9d8"/>
+        <path d="M0,0.75 H36 M0,9.75 H36 M0.75,0 V9 M18.75,9 V18" stroke="#d6c9ae" stroke-width="1.5"/></pattern>
+      <pattern id="checker" width="36" height="36" patternUnits="userSpaceOnUse"><rect width="36" height="36" fill="#efe2c4"/><rect width="18" height="18" fill="#2f4a6d"/><rect x="18" y="18" width="18" height="18" fill="#2f4a6d"/></pattern></defs>
+    <rect x="-200" y="-40" width="800" height="200" fill="url(#subway)"/>
+    <rect x="-200" y="158" width="800" height="92" fill="#5f9ea0"/>
+    <path d="M-200,170 H600 M-200,236 H600" stroke="#4a8a8c" stroke-width="3"/>
+    ${[-160, -100, -40, 20, 80, 140, 200, 260, 320, 380, 440, 500].map(x => `<path d="M${x},172 V234" stroke="#4a8a8c" stroke-width="2"/>`).join('')}
+    <rect x="-200" y="150" width="800" height="10" fill="#e0a930" stroke="${INK}" stroke-width="2.5"/>
+    <g transform="translate(18,14)"><rect width="66" height="78" rx="33" fill="#1f2f4a" stroke="${INK}" stroke-width="4"/>
+      <circle cx="44" cy="24" r="10" fill="#f3e9d2"/><circle cx="48" cy="21" r="8.5" fill="#1f2f4a"/>
+      <circle cx="16" cy="40" r="1.6" fill="#f3e9d2"/><circle cx="28" cy="18" r="1.3" fill="#f3e9d2"/><circle cx="50" cy="56" r="1.4" fill="#f3e9d2"/>
+      <path d="M33,4 V76 M4,44 H62" stroke="#efe2c4" stroke-width="4"/><rect width="66" height="78" rx="33" fill="none" stroke="${INK}" stroke-width="4"/>
+      <rect x="-6" y="76" width="78" height="8" rx="3" fill="#efe2c4" stroke="${INK}" stroke-width="2.5"/></g>
+    <g transform="translate(318,58)"><path d="M0,0 H74" stroke="#c9ced4" stroke-width="6" stroke-linecap="round"/><path d="M0,0 H74" stroke="${INK}" stroke-width="1.5" opacity=".5"/>
+      <circle cx="0" cy="0" r="5" fill="#c9ced4" stroke="${INK}" stroke-width="2"/><circle cx="74" cy="0" r="5" fill="#c9ced4" stroke="${INK}" stroke-width="2"/>
+      <path d="M12,2 H62 V78 Q37,86 12,78 Z" fill="#f290ae" stroke="${INK}" stroke-width="3"/><path d="M12,58 H62 M12,66 H62" stroke="#fffaf0" stroke-width="4"/></g>
+    <rect x="-200" y="248" width="800" height="100" fill="url(#checker)"/><path d="M-200,248 H600" stroke="${INK}" stroke-width="3"/>
+    <ellipse cx="200" cy="284" rx="150" ry="9" fill="rgba(20,12,6,.3)"/>
     <g class="bathbat">${bat}</g>
     <g class="tufts">${tufts}</g>
     <g class="mud">${BATH.spots.map((s, i) => `<g class="spot" data-i="${i}" transform="translate(${s.x},${s.y})">${SPLAT(s.c)}</g>`).join('')}</g>
@@ -2305,7 +2399,10 @@ function bathRender() {
     <rect x="34" y="182" width="332" height="16" rx="8" fill="#f3e9d2" ${sw}/>
     <path d="M42,194 L358,194 Q354,262 300,272 L100,272 Q46,262 42,194 Z" fill="#fffaf0" ${sw}/>
     <path d="M70,210 Q200,222 330,210" stroke="#d7e7ea" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M60,214 Q66,250 104,262" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round" opacity=".9"/>
     <path d="M92,268 l-12,22 h18 l4,-18 M308,268 l12,22 h-18 l-4,-18" fill="#e0a930" ${sw}/>
+    <g transform="translate(346,166)"><path d="M0,16 V2 Q0,-10 14,-10 H22" stroke="#c9ced4" stroke-width="8" fill="none" stroke-linecap="round"/>
+      <path d="M0,16 V2 Q0,-10 14,-10 H22" stroke="${INK}" stroke-width="2" fill="none" opacity=".45"/><circle cx="-10" cy="10" r="6" fill="#c2452f" stroke="${INK}" stroke-width="2"/></g>
     ${[60, 92, 124, 276, 308, 340].map((x, i) => `<circle cx="${x}" cy="${184 - (i % 2) * 4}" r="${9 + (i % 3) * 2}" fill="#fff" fill-opacity=".85" stroke="#bfe0f0" stroke-width="2"/>`).join('')}
     <g class="fx"></g></svg>`;
   bathFace();
@@ -2670,8 +2767,15 @@ function mazeSVG(M, extra = '') {
     tufts += `<path d="M${k * CELL + 18},${r * CELL + 82} l4,-10 l4,10 M${k * CELL + 24},${r * CELL + 82} l5,-8" stroke="#5f8f3a" stroke-width="3" fill="none" stroke-linecap="round"/>`;
   const d = segs.join(' ');
   return `<svg viewBox="-16 -16 ${W + 32} ${H + 32}" preserveAspectRatio="xMidYMid meet" class="mzsvg">
-    <rect x="-16" y="-16" width="${W + 32}" height="${H + 32}" rx="18" fill="#2f4a2c" stroke="${INK}" stroke-width="5"/>
-    <rect x="0" y="0" width="${W}" height="${H}" fill="#4f7d3a"/>${tufts}
+    <rect x="-16" y="-16" width="${W + 32}" height="${H + 32}" rx="16" fill="#8a5a2e" stroke="${INK}" stroke-width="5"/>
+    <rect x="-10" y="-10" width="${W + 20}" height="${H + 20}" rx="11" fill="none" stroke="rgba(255,220,170,.28)" stroke-width="2.5"/>
+    ${[[-7, -7], [W + 7, -7], [-7, H + 7], [W + 7, H + 7]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="4.5" fill="#e6dcc0" stroke="${INK}" stroke-width="2"/>`).join('')}
+    <rect x="0" y="0" width="${W}" height="${H}" fill="#4f7d3a"/>
+    ${Array.from({ length: M.rows * 2 }, (_, i) => i % 2 ? '' : `<rect x="0" y="${i * CELL / 2}" width="${W}" height="${CELL / 2}" fill="#5a8a43" opacity=".55"/>`).join('')}
+    ${Array.from({ length: M.rows * M.cols }, (_, i) => { const r = Math.floor(i / M.cols), k = i % M.cols; if ((r * 5 + k * 7) % 3) return '';
+      const x = k * CELL + 70, y = r * CELL + 26, c = ['#fffaf0', '#e0a930', '#f5b8c8'][(r + k) % 3];
+      return `<g transform="translate(${x},${y})">${[0, 72, 144, 216, 288].map(a => `<circle cx="${(4 * Math.cos(a * Math.PI / 180)).toFixed(1)}" cy="${(4 * Math.sin(a * Math.PI / 180)).toFixed(1)}" r="3" fill="${c}"/>`).join('')}<circle r="2" fill="#e07a2a"/></g>`; }).join('')}
+    ${tufts}
     <g class="mz-hint"></g><g class="mz-trail"></g>
     <path d="${d}" stroke="${INK}" stroke-width="17" stroke-linecap="round" fill="none"/>
     <path d="${d}" stroke="#e6dcc0" stroke-width="9" stroke-linecap="round" fill="none"/>
@@ -2876,9 +2980,15 @@ $('#optTheme').onchange = e => { SET.theme = e.target.value; saveSet(); };
 })();
 
 /* ================= start ================= */
-// a few twinkling stars in the night sky
+// a few twinkling stars in the night sky, and little bats hanging from the cave roof
 (() => {
   const bg = $('#bg');
+  [6, 19, 33, 47, 61, 74, 88].forEach((x, i) => {
+    const h = document.createElement('div'); h.className = 'hangbat';
+    h.style.left = x + '%'; h.style.top = (5 + (i % 3) * 3) + '%'; h.style.animationDelay = (-i * .7) + 's';
+    h.innerHTML = `<svg viewBox="0 0 20 40"><path d="M10,0 V6" stroke="#0d121c" stroke-width="2"/><path d="M10,6 C1,9 2,27 10,34 C18,27 19,9 10,6 Z" fill="#0d121c"/><path d="M6,32 l-1,6 l4,-3 Z M14,32 l1,6 l-4,-3 Z" fill="#0d121c"/><circle cx="8" cy="29" r=".9" fill="#ffe08a"/><circle cx="12" cy="29" r=".9" fill="#ffe08a"/></svg>`;
+    bg.appendChild(h);
+  });
   for (let i = 0; i < 14; i++) {
     const s = document.createElement('div'); s.className = 'twinkle';
     s.style.left = (8 + Math.random() * 84) + '%'; s.style.top = (18 + Math.random() * 45) + '%';
