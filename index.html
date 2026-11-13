@@ -237,17 +237,66 @@
 
   /* ---------- Busy Board ---------- */
   #busyGame{place-items:center;padding-top:calc(env(safe-area-inset-top) + 66px);padding-bottom:16px}
-  #busyBoard{position:relative;width:min(96vw, calc((100vh - 100px) * 1.45));display:grid;grid-template-columns:repeat(3,1fr);
+  #busyBoard{position:relative;width:min(96vw, calc((100vh - 110px) * 1.45));display:grid;grid-template-columns:repeat(3,1fr);margin-top:18px;
              gap:clamp(8px,1.6vw,18px);padding:clamp(16px,2.8vw,32px);border:6px solid var(--ink);border-radius:20px;box-shadow:0 10px 0 var(--ink);
-             background:repeating-linear-gradient(90deg, rgba(0,0,0,0) 0 46px, rgba(0,0,0,.07) 46px 48px), linear-gradient(180deg,#a8743a,#7a4e2d)}
+             background:
+               radial-gradient(ellipse 60px 14px at 22% 30%, rgba(60,30,10,.25), transparent 70%),
+               radial-gradient(ellipse 50px 12px at 78% 74%, rgba(60,30,10,.22), transparent 70%),
+               repeating-linear-gradient(178deg, rgba(0,0,0,0) 0 9px, rgba(60,30,10,.08) 9px 11px, rgba(0,0,0,0) 11px 23px, rgba(255,230,190,.06) 23px 25px),
+               linear-gradient(180deg,#b07a3e,#8a5a2e 60%,#6e4524);
+             box-shadow:0 12px 0 var(--ink), inset 0 0 0 10px rgba(50,25,8,.35), inset 0 0 0 13px rgba(255,220,170,.15)}
+  .plaque{position:absolute;left:50%;top:-24px;transform:translateX(-50%);z-index:3;padding:6px 30px;border:4px solid var(--ink);border-radius:10px;
+          background:linear-gradient(180deg,#f0c65a,#c9952e 55%,#a87a22);box-shadow:0 5px 0 var(--ink), inset 0 2px 0 rgba(255,255,255,.5)}
+  .plaque span{font-family:var(--display);font-size:clamp(16px,2.6vmin,26px);letter-spacing:2px;color:#5a3a12;text-shadow:0 1px 0 rgba(255,255,255,.55)}
+  .plaque::before, .plaque::after{content:"";position:absolute;top:50%;width:9px;height:9px;margin-top:-5px;border-radius:50%;background:#e6dcc0;border:2px solid var(--ink)}
+  .plaque::before{left:9px}.plaque::after{right:9px}
   @media (orientation: portrait){ #busyBoard{grid-template-columns:repeat(2,1fr);width:min(94vw, calc((100vh - 110px) * .66))} }
   .screw{position:absolute;width:14px;height:14px;border-radius:50%;background:#c9ced4;border:3px solid var(--ink)}
   .screw.tl{top:6px;left:6px}.screw.tr{top:6px;right:6px}.screw.bl{bottom:6px;left:6px}.screw.br{bottom:6px;right:6px}
-  .tile{position:relative;aspect-ratio:1;border:4px solid var(--ink);border-radius:16px;overflow:hidden;box-shadow:inset 0 -6px 0 rgba(0,0,0,.12);cursor:pointer}
+  .tile{position:relative;aspect-ratio:1;border:5px solid var(--ink);border-radius:16px;overflow:hidden;cursor:pointer;
+        box-shadow:5px 7px 0 rgba(25,14,6,.6), inset 0 0 0 3px rgba(255,255,255,.16)}
+  .tile::before{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;
+        background:radial-gradient(circle at 13px 13px, #e6dcc0 0 3.5px, #231a14 3.5px 5.5px, transparent 6px),
+                   radial-gradient(circle at calc(100% - 13px) 13px, #e6dcc0 0 3.5px, #231a14 3.5px 5.5px, transparent 6px),
+                   radial-gradient(circle at 13px calc(100% - 13px), #e6dcc0 0 3.5px, #231a14 3.5px 5.5px, transparent 6px),
+                   radial-gradient(circle at calc(100% - 13px) calc(100% - 13px), #e6dcc0 0 3.5px, #231a14 3.5px 5.5px, transparent 6px)}
+  .tile::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;mix-blend-mode:multiply;opacity:.55;
+        background:radial-gradient(circle, rgba(35,26,20,.22) 0 .8px, transparent 1.3px) 0 0/5px 5px}
   .tile svg.gadget{width:100%;height:100%;display:block;touch-action:none;overflow:hidden}
   .t-rex .springup{transform:translateY(70px);transition:transform .35s cubic-bezier(.3,1.6,.5,1)}
   .t-rex.pop .springup{transform:translateY(0)}
-  .t-rex.pop .springup > g{transform-box:fill-box;transform-origin:center;animation:hmm .5s ease-in-out .35s 2}
+  .t-rex.pop .springup > g{transform-box:fill-box;transform-origin:50% 100%;animation:rexWobble .45s ease-in-out .35s 3 alternate}
+  .t-rex .spring{transform-box:fill-box;transform-origin:50% 100%}
+  .t-rex.pop .spring{animation:springy .5s ease-out .3s 2}
+  .rx-eye{transform-box:fill-box;transform-origin:center;animation:blink 3.4s ease-in-out infinite}
+  .rx-jaw{transform-box:fill-box;transform-origin:0% 15%}
+  .t-rex.pop .rx-jaw{animation:chomp .28s ease-in-out .4s 5}
+  .t-door.open .rx-jaw{animation:chomp .28s ease-in-out .3s 4}
+  .rx-body{transform-box:fill-box;transform-origin:50% 100%}
+  .t-door.open .rx-body{animation:rexBreathe 1.6s ease-in-out infinite}
+  .rx-tail{transform-box:fill-box;transform-origin:100% 50%}
+  .t-door.open .rx-tail{animation:tailWag .45s ease-in-out infinite alternate}
+  .rx-headg2{transform-box:fill-box;transform-origin:0% 100%}
+  .t-door.open .rx-headg2{animation:headBob 1.1s ease-in-out infinite}
+  .bbat{width:100%;height:100%;overflow:visible}
+  .bwing{transform-box:fill-box;transform-origin:center;animation:bflap .16s ease-in-out infinite alternate}
+  .flock{z-index:325}
+  .skyshow{position:fixed;inset:0;z-index:310;pointer-events:none}
+  .skyshow svg{display:block}
+  .skyshow .tw{animation:skyTwinkle 2s ease-in-out infinite}
+  @keyframes skyTwinkle{0%,100%{opacity:.45}50%{opacity:1}}
+  .skyshow .shoot{opacity:0;animation:shoot 1s ease-out forwards}
+  .puff{position:fixed;z-index:318;pointer-events:none;border-radius:50%;background:#f3e9d2;border:2px solid rgba(35,26,20,.5);animation:puff 1.1s ease-out forwards}
+  @keyframes rexWobble{from{transform:rotate(-9deg)}to{transform:rotate(9deg)}}
+  @keyframes springy{30%{transform:scaleY(1.3)}65%{transform:scaleY(.8)}}
+  @keyframes blink{0%,90%,100%{transform:none}94%{transform:scaleY(.1)}}
+  @keyframes chomp{50%{transform:rotate(16deg)}}
+  @keyframes rexBreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.03,.97)}}
+  @keyframes tailWag{from{transform:rotate(-10deg)}to{transform:rotate(10deg)}}
+  @keyframes headBob{0%,100%{transform:rotate(0)}50%{transform:rotate(-6deg)}}
+  @keyframes bflap{to{transform:scaleY(.3)}}
+  @keyframes shoot{0%{opacity:0;transform:translate(0,0)}10%{opacity:1}100%{opacity:0;transform:translate(-260px,115px)}}
+  @keyframes puff{0%{transform:scale(.4);opacity:.95}100%{transform:scale(1.8) translateY(20px);opacity:0}}
   .t-rex .lid{transform-box:view-box;transform-origin:34px 109px;transition:transform .25s}
   .t-rex.pop .lid{transform:rotate(-115deg)}
   .t-lamp .glow{opacity:0;transition:opacity .3s}
@@ -1896,26 +1945,82 @@ const gearAt = (cx, cy, R, ri, t, hole) => {
   }
   return `M${pts.join(' L')} Z M${cx + hole},${cy} A${hole},${hole} 0 1,0 ${cx - hole},${cy} A${hole},${hole} 0 1,0 ${cx + hole},${cy} Z`;
 };
-const REXHEAD = `<polygon points="80,58 88,42 96,56" fill="#e0a930" ${sw}/><polygon points="96,54 104,38 112,54" fill="#e0a930" ${sw}/>
+const REXHEAD = `<g class="rx-headg"><polygon points="80,58 88,42 96,56" fill="#e0a930" ${sw}/><polygon points="96,54 104,38 112,54" fill="#e0a930" ${sw}/>
   <path d="M66,96 Q62,60 92,54 L124,54 Q140,54 140,72 L140,92 L66,100 Z" fill="#5f8f3a" ${sw}/>
-  <circle cx="120" cy="70" r="7" fill="#fffaf0" stroke="${INK}" stroke-width="2"/><circle cx="121" cy="70" r="3.5" fill="${INK}"/>
-  <path d="M68,100 L138,94 Q136,112 120,114 L80,114 Q70,112 68,100 Z" fill="#5f8f3a" ${sw}/>
-  <path d="M74,99 l4,6 l4,-6 l4,6 l4,-6 l4,6 l4,-6 l4,6 l4,-6 l4,6 l4,-6 l4,6 l4,-6 l4,6 l4,-6" fill="#fffaf0" stroke="${INK}" stroke-width="1.5" stroke-linejoin="round"/>`;
+  <path d="M74,68 Q86,58 104,60" stroke="#8fbf5a" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="133" cy="68" r="2" fill="${INK}"/>
+  <path d="M84,82 q4,-3 8,0 M96,86 q4,-3 8,0" stroke="#4c7330" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <g class="rx-eye"><circle cx="120" cy="70" r="7.5" fill="#fffaf0" stroke="${INK}" stroke-width="2"/><circle cx="121.5" cy="70" r="3.6" fill="${INK}"/><circle cx="123" cy="68.5" r="1.2" fill="#fff"/></g>
+  <g class="rx-jaw"><path d="M68,100 L138,94 Q136,112 120,114 L80,114 Q70,112 68,100 Z" fill="#5f8f3a" ${sw}/>
+  <path d="M74,99 l4,6 l4,-6 l4,6 l4,-6 l4,6 l4,-6 l4,6 l4,-6 l4,6 l4,-6 l4,6 l4,-6 l4,6 l4,-6" fill="#fffaf0" stroke="${INK}" stroke-width="1.5" stroke-linejoin="round"/>
+  <path d="M84,108 q14,4 30,0" stroke="#c94a5a" stroke-width="3" fill="none" stroke-linecap="round"/></g></g>`;
 const MELODY = TUNE.mel.join(' ').split(/\s+/).filter(x => x !== '.').map(noteHz);
 const BUSY = { tried: new Set(), idleT: null, allDone: false, spinA: 0, spinV: 0, spinRaf: 0, crankA: 0, crankAcc: 0, note: 0, lastFriend: -1 };
 if (location.hash === '#test') window.__busy = BUSY;
 
-// ---- full-body T-Rex for the peekaboo door (drawn around 0,0), with a random accessory
-const TREX_FULL = `<g>
-  <path d="M-58,10 Q-36,-4 -14,-6 L-12,14 Q-34,18 -58,10 Z" fill="#5f8f3a" ${sw}/>
+// full-body T-Rex (drawn around 0,0); the accessory goes on the head so it moves with it
+const trexFull = hat => `<g class="rx-body">
+  <g class="rx-tail"><path d="M-58,10 Q-36,-4 -14,-6 L-12,14 Q-34,18 -58,10 Z" fill="#5f8f3a" ${sw}/><polygon points="-44,4 -38,-6 -32,4" fill="#e0a930" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/></g>
   <path d="M-12,22 L-12,46 L2,46 L-1,22 Z" fill="#4c7330" ${sw}/><path d="M8,22 L8,46 L22,46 L19,22 Z" fill="#4c7330" ${sw}/>
+  <path d="M-15,46 h18 M5,46 h18" stroke="${INK}" stroke-width="4" stroke-linecap="round"/>
   <polygon points="-32,-6 -26,-18 -20,-6" fill="#e0a930" ${sw}/><polygon points="-18,-12 -11,-25 -4,-12" fill="#e0a930" ${sw}/><polygon points="-2,-14 5,-27 12,-14" fill="#e0a930" ${sw}/>
   <ellipse cx="0" cy="8" rx="26" ry="22" fill="#5f8f3a" ${sw}/><ellipse cx="4" cy="14" rx="13" ry="11" fill="#a9c97a"/>
-  <path d="M10,-8 Q12,-36 32,-40 Q56,-42 58,-26 Q58,-14 44,-12 L26,-10 Z" fill="#5f8f3a" ${sw}/>
-  <path d="M24,-10 L54,-12 Q52,-2 34,0 Q26,0 24,-10 Z" fill="#5f8f3a" ${sw}/>
-  <path d="M30,-11 l3,5 l3,-5 l3,5 l3,-5 l3,5 l3,-5 Z" fill="#fffaf0" stroke="${INK}" stroke-width="1.5" stroke-linejoin="round"/>
-  <circle cx="40" cy="-29" r="5.5" fill="#fffaf0" stroke="${INK}" stroke-width="2"/><circle cx="41.5" cy="-29" r="2.6" fill="${INK}"/>
+  <path d="M-14,-2 q6,-6 14,-4" stroke="#8fbf5a" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <g class="rx-headg2">
+    <path d="M10,-8 Q12,-36 32,-40 Q56,-42 58,-26 Q58,-14 44,-12 L26,-10 Z" fill="#5f8f3a" ${sw}/>
+    <path d="M20,-30 Q28,-38 40,-37" stroke="#8fbf5a" stroke-width="3.5" fill="none" stroke-linecap="round"/><circle cx="53" cy="-27" r="1.8" fill="${INK}"/>
+    <g class="rx-eye"><circle cx="40" cy="-29" r="5.5" fill="#fffaf0" stroke="${INK}" stroke-width="2"/><circle cx="41.5" cy="-29" r="2.6" fill="${INK}"/></g>
+    <g class="rx-jaw"><path d="M24,-10 L54,-12 Q52,-2 34,0 Q26,0 24,-10 Z" fill="#5f8f3a" ${sw}/>
+      <path d="M30,-11 l3,5 l3,-5 l3,5 l3,-5 l3,5 l3,-5 Z" fill="#fffaf0" stroke="${INK}" stroke-width="1.5" stroke-linejoin="round"/></g>
+    ${hat || ''}</g>
   <g class="wave"><path d="M20,4 l9,-8 M20,10 l10,2" stroke="${INK}" stroke-width="3.5" stroke-linecap="round"/></g></g>`;
+// a little black bat silhouette with glowing eyes, for flocks
+const BLACK_BAT = `<svg viewBox="-30 -16 60 32" class="bbat"><g class="bwing"><path d="M0,2 C-6,-8 -18,-12 -29,-6 C-23,-2 -23,4 -25,8 C-17,4 -11,6 -7,10 C-5,6 -2,4 0,6 C2,4 5,6 7,10 C11,6 17,4 25,8 C23,4 23,-2 29,-6 C18,-12 6,-8 0,2 Z" fill="#17121f"/></g>
+  <ellipse cx="0" cy="2" rx="5" ry="7" fill="#17121f"/><path d="M-4,-3 l-1.5,-5 l3.5,2.5 Z M4,-3 l1.5,-5 l-3.5,2.5 Z" fill="#17121f"/><circle cx="-1.8" cy="0" r=".9" fill="#ffe08a"/><circle cx="1.8" cy="0" r=".9" fill="#ffe08a"/></svg>`;
+function batFlock(from, n = 16) {
+  const W = innerWidth, H = innerHeight, c = { x: from.left + from.width / 2, y: from.top + from.height / 2 };
+  for (let i = 0; i < n; i++) {
+    const sz = 50 + Math.random() * 70, ang = -Math.PI / 2 + (Math.random() - .5) * Math.PI * 1.6, far = Math.max(W, H) * (.75 + Math.random() * .4);
+    const mid = { x: (Math.random() - .5) * W * .7, y: -(.15 + Math.random() * .35) * H };
+    const end = { x: Math.cos(ang) * far, y: Math.sin(ang) * far - H * .2 };
+    const box = { left: c.x - sz / 2 + (Math.random() - .5) * 40, top: c.y - sz * .27 + (Math.random() - .5) * 30, width: sz, height: sz * .54 };
+    flyAcross(BLACK_BAT, box, [
+      { transform: 'translate(0,0) scale(.6)', opacity: 0 },
+      { transform: `translate(${mid.x * .3}px,${mid.y * .3}px) scale(1.2)`, opacity: 1, offset: .12 },
+      { transform: `translate(${mid.x}px,${mid.y}px) scale(1.1) rotate(${(Math.random() - .5) * 30}deg)`, offset: .55 },
+      { transform: `translate(${end.x}px,${end.y}px) scale(.8)`, opacity: 1 }], 2200 + Math.random() * 1300, 'flock', i * 70);
+  }
+}
+// a deep night sky with hundreds of twinkling stars, shooting stars, a ringed planet and the moon
+function skyShow(ms) {
+  const W = innerWidth, H = innerHeight, n = Math.min(1100, Math.round(W * H / 850));
+  let stars = '';
+  for (let i = 0; i < n; i++) {
+    const x = Math.random() * W, y = Math.random() * H, big = Math.random() < .14, col = rand(['#fffaf0', '#f3e9d2', '#ffe08a', '#ffd1e0', '#cfe8f3']);
+    const dur = (1.2 + Math.random() * 2.2).toFixed(2), del = (-Math.random() * 3).toFixed(2);
+    stars += big ? `<polygon class="tw" style="animation-duration:${dur}s;animation-delay:${del}s" points="${starPts(x, y, 5 + Math.random() * 5, .3)}" fill="${col}"/>`
+      : `<circle class="tw" style="animation-duration:${dur}s;animation-delay:${del}s" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(.8 + Math.random() * 1.8).toFixed(1)}" fill="${col}"/>`;
+  }
+  const shoots = [0, 1, 2, 3, 4, 5].map(i => { const x = W * (.2 + Math.random() * .7), y = H * Math.random() * .5;
+    return `<g class="shoot" style="animation-delay:${(.3 + i * .55).toFixed(1)}s"><path d="M${x},${y} l-90,40" stroke="url(#shootG)" stroke-width="3" stroke-linecap="round"/><circle cx="${x}" cy="${y}" r="2.5" fill="#fff"/></g>`; }).join('');
+  const pr = Math.min(W, H) * .09, px = W * .14, py = H * .78, mr = Math.min(W, H) * .07;
+  const s = document.createElement('div'); s.className = 'skyshow';
+  s.innerHTML = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+    <defs><radialGradient id="skyG" cx="50%" cy="0%" r="110%"><stop offset="0" stop-color="#2f4a6d"/><stop offset=".55" stop-color="#16213a"/><stop offset="1" stop-color="#090d18"/></radialGradient>
+      <linearGradient id="shootG" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff"/></linearGradient></defs>
+    <rect width="${W}" height="${H}" fill="url(#skyG)"/>
+    <ellipse cx="${W * .5}" cy="${H * .45}" rx="${W * .6}" ry="${H * .12}" fill="#f3e9d2" opacity=".05" transform="rotate(-18 ${W * .5} ${H * .45})"/>
+    ${stars}${shoots}
+    <g transform="translate(${px},${py})"><ellipse rx="${pr * 1.9}" ry="${pr * .45}" fill="none" stroke="#e0a930" stroke-width="${pr * .12}" transform="rotate(-16)" opacity=".9"/>
+      <circle r="${pr}" fill="#b5432f" stroke="${INK}" stroke-width="4"/><path d="M${-pr * .9},${-pr * .2} Q0,${-pr * .45} ${pr * .9},${-pr * .2}" stroke="#d9714f" stroke-width="${pr * .15}" fill="none"/>
+      <path d="M${-pr * 1.9},0 A${pr * 1.9},${pr * .45} 0 0,0 ${pr * 1.9},0" fill="none" stroke="#e0a930" stroke-width="${pr * .12}" transform="rotate(-16)"/></g>
+    <g transform="translate(${W * .84},${H * .2})"><circle r="${mr * 1.8}" fill="#f3e9d2" opacity=".08"/><circle r="${mr}" fill="#f3e9d2" stroke="${INK}" stroke-width="4"/><circle cx="${mr * .45}" cy="${-mr * .2}" r="${mr * .86}" fill="#16213a"/></g>
+  </svg>`;
+  document.body.appendChild(s);
+  s.animate([{ opacity: 0 }, { opacity: 1, offset: .12 }, { opacity: 1, offset: .85 }, { opacity: 0 }], { duration: ms, fill: 'forwards' }).onfinish = () => s.remove();
+}
+// a sunburst behind each gadget, like an old toy box
+const SUNBURST = col => `<g opacity=".55">${Array.from({ length: 16 }, (_, i) => { const a1 = i * Math.PI / 8, a2 = a1 + Math.PI / 16;
+  return `<path d="M100,100 L${(100 + 180 * Math.cos(a1)).toFixed(1)},${(100 + 180 * Math.sin(a1)).toFixed(1)} L${(100 + 180 * Math.cos(a2)).toFixed(1)},${(100 + 180 * Math.sin(a2)).toFixed(1)} Z" fill="${mix(col, '#ffffff', .16)}"/>`; }).join('')}</g>`;
 const REX_HATS = [
   `<path d="M28,-38 L36,-64 L46,-40 Z" fill="#3f6fa8" ${sw}/><circle cx="36" cy="-65" r="4" fill="#c2452f" ${sw}/>`,
   `<path d="M24,-38 L26,-54 L33,-46 L38,-58 L43,-46 L50,-54 L50,-38 Z" fill="#e0a930" ${sw}/>`,
@@ -1938,21 +2043,17 @@ const ROCKET_SM = (flame) => `${flame ? `<path d="M132,178 Q142,214 152,178 Z" f
   <path d="M130,176 L130,112 Q130,94 142,86 Q154,94 154,112 L154,176 Z" fill="#fffaf0" ${sw}/>
   <path d="M131,104 Q134,92 142,86 Q150,92 153,104 Z" fill="#c2452f"/><circle cx="142" cy="128" r="8" fill="#9fcbd6" stroke="${INK}" stroke-width="2.5"/>`;
 // fly something across the whole screen from a starting box, then remove it
-function flyAcross(markup, from, frames, ms, cls = '') {
+function flyAcross(markup, from, frames, ms, cls = '', delay = 0) {
   const el = document.createElement('div');
   el.className = 'skyflyer ' + cls; el.innerHTML = markup;
   Object.assign(el.style, { left: from.left + 'px', top: from.top + 'px', width: from.width + 'px', height: from.height + 'px' });
   document.body.appendChild(el);
-  const a = el.animate(frames, { duration: ms, easing: 'ease-in', fill: 'forwards' });
+  const a = el.animate(frames, { duration: ms, easing: 'ease-in', fill: 'both', delay });
   return new Promise(res => { a.onfinish = () => { el.remove(); res(); }; });
-}
-function skyFlash(ms) {
-  const s = document.createElement('div'); s.className = 'skyflash'; document.body.appendChild(s);
-  s.animate([{ opacity: 0 }, { opacity: .92, offset: .15 }, { opacity: .92, offset: .8 }, { opacity: 0 }], { duration: ms, fill: 'forwards' }).onfinish = () => s.remove();
 }
 const BUSY_TILES = [
   { k: 'rex', bg: '#efe2c4', svg: () => `<svg viewBox="0 0 200 200" class="gadget">
-      <g class="springup"><path d="M100,150 l-14,-8 l28,-8 l-28,-8 l28,-8 l-28,-8 l14,-8" stroke="#9aa3ad" stroke-width="6" fill="none" stroke-linejoin="round"/><g transform="translate(-3,0)">${REXHEAD}</g></g>
+      <g class="springup"><path class="spring" d="M100,150 l-14,-8 l28,-8 l-28,-8 l28,-8 l-28,-8 l14,-8" stroke="#9aa3ad" stroke-width="6" fill="none" stroke-linejoin="round"/><g transform="translate(-3,0)">${REXHEAD}</g></g>
       <rect x="40" y="110" width="120" height="80" rx="8" fill="#c2452f" ${sw}/>
       <polygon points="${starPts(66, 132, 9, .45)}" fill="#e0a930"/><polygon points="${starPts(140, 176, 7, .45)}" fill="#e0a930"/>
       <g class="lid"><rect x="34" y="102" width="132" height="14" rx="5" fill="#e0a930" ${sw}/></g>
@@ -2035,7 +2136,8 @@ const BUSY_DO = {
         { transform: `translate(${-.25 * W}px,${-.15 * H}px) scale(1.8) rotate(-10deg)`, offset: .3 },
         { transform: `translate(${.3 * W}px,${-.25 * H}px) scale(1.5) rotate(12deg)`, offset: .62 },
         { transform: `translate(${.05 * W}px,${-(r.top + r.height + 60)}px) scale(.6) rotate(0)` }], 2600);
-      [600, 1300, 2000].forEach(t => setTimeout(() => squeak(2, 1.2, .05), t));
+      batFlock(r, 26);
+      [200, 600, 1000, 1300, 1700, 2000].forEach((t, k) => setTimeout(() => squeak(2, 1 + k * .06, .045), t));
     } else {
       tone(700, 0, .05, 'square', .06);
       sb.style.visibility = ''; sleepFace(sb.querySelector('svg'), true);
@@ -2048,7 +2150,7 @@ const BUSY_DO = {
     if (!open) { tone(260, 0, .08, 'triangle', .12); return; }
     let i; do { i = Math.floor(Math.random() * REX_HATS.length); } while (i === BUSY.lastFriend);
     BUSY.lastFriend = i;
-    tile.querySelector('.friend').innerHTML = `<g transform="translate(96,112) scale(1.05)">${TREX_FULL}${REX_HATS[i]}</g>`;
+    tile.querySelector('.friend').innerHTML = `<g transform="translate(96,112) scale(1.05)">${trexFull(REX_HATS[i])}</g>`;
     tone(520, 0, .1, 'triangle', .1, 780); setTimeout(() => { sfx.roar(); vibrate(20); }, 200);
   },
   async rocket(tile) {
@@ -2057,14 +2159,23 @@ const BUSY_DO = {
     [0, 350, 700].forEach(t => setTimeout(() => tone(880, 0, .1, 'square', .06), t));
     await wait(1050);
     const rk = tile.querySelector('.rk'), r = rk.getBoundingClientRect();
-    rk.style.visibility = 'hidden'; sfx.rumble(); skyFlash(3300);
+    rk.style.visibility = 'hidden'; sfx.rumble(); skyShow(4300);
+    const trail = setInterval(() => {
+      const f = $('.skyflyer.rocketfly'); if (!f) return;
+      const b = f.getBoundingClientRect(), pf = document.createElement('div');
+      pf.className = 'puff'; const z = Math.max(14, b.width * .5);
+      Object.assign(pf.style, { left: (b.left + b.width / 2 - z / 2 + (Math.random() - .5) * 10) + 'px', top: (b.bottom - z * .4) + 'px', width: z + 'px', height: z + 'px' });
+      document.body.appendChild(pf); setTimeout(() => pf.remove(), 1100);
+    }, 70);
+    await wait(300);
     await flyAcross(`<svg viewBox="112 82 60 140" class="flyrocket">${ROCKET_SM(true)}</svg>`, r, [
       { transform: 'translate(0,0) scale(1)' },
       { transform: 'translate(-4px,0) scale(1)', offset: .06 }, { transform: 'translate(4px,0) scale(1)', offset: .12 },
       { transform: 'translate(0,-12px) scale(1.15)', offset: .2 },
-      { transform: `translate(${(innerWidth / 2 - r.left - r.width / 2) * .5}px,${-(r.top + r.height) * .55}px) scale(2.6)`, offset: .6 },
-      { transform: `translate(${innerWidth / 2 - r.left - r.width / 2}px,${-(r.top + r.height + 120)}px) scale(.5)` }], 2900);
-    sparkle(innerWidth / 2, 40, 16); sfx.ding();
+      { transform: `translate(${(innerWidth / 2 - r.left - r.width / 2) * .5}px,${-(r.top + r.height) * .55}px) scale(3.4)`, offset: .6 },
+      { transform: `translate(${innerWidth / 2 - r.left - r.width / 2}px,${-(r.top + r.height + 160)}px) scale(.6)` }], 3200, 'rocketfly');
+    clearInterval(trail);
+    sparkle(innerWidth / 2, 40, 22); sfx.ding();
     rk.style.visibility = ''; rk.classList.remove('land'); void rk.getBoundingClientRect(); rk.classList.add('land');
     await wait(900); delete tile.dataset.busy;
   }
@@ -2135,7 +2246,8 @@ function busyPrize(tile) {
 }
 function busyStart() {
   BUSY.tried = new Set(); BUSY.allDone = false;
-  $('#busyBoard').innerHTML = BUSY_TILES.map(t => `<div class="tile t-${t.k}" data-k="${t.k}" style="background:${t.bg}">${t.svg()}</div>`).join('') +
+  $('#busyBoard').innerHTML = `<div class="plaque"><span>Busy Board</span></div>` +
+    BUSY_TILES.map(t => `<div class="tile t-${t.k}" data-k="${t.k}" style="background:${t.bg}">${t.svg().replace('class="gadget">', 'class="gadget">' + SUNBURST(t.bg))}</div>`).join('') +
     ['tl', 'tr', 'bl', 'br'].map(c => `<span class="screw ${c}"></span>`).join('');
   $$('#busyBoard .tile').forEach(tile => {
     const k = tile.dataset.k;
