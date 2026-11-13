@@ -201,12 +201,14 @@
   #postcard.show{transition:transform .6s cubic-bezier(.3,1.5,.5,1);transform:translate(-50%,-50%) scale(1) rotate(-3deg)}
   #postcard svg{width:100%;height:auto;display:block}
   /* ---------- Bat Cave menu ---------- */
-  .games{display:flex;gap:clamp(16px,4vw,48px);flex-wrap:wrap;justify-content:center;max-width:100%}
-  .gamecard{position:relative;width:min(29vw,40vh,300px);aspect-ratio:1/1.1;background:var(--paper);border:6px solid var(--ink);border-radius:22px;
+  .games{display:flex;gap:clamp(12px,3vw,40px);flex-wrap:wrap;justify-content:center;max-width:min(100%, 960px)}
+  .gamecard{position:relative;width:min(27vw,30vh,250px);aspect-ratio:1/1.1;background:var(--paper);border:6px solid var(--ink);border-radius:22px;
             box-shadow:0 10px 0 var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:4px;padding:12px 10px 14px;
             cursor:pointer;touch-action:manipulation;font:inherit;color:var(--ink);animation:breathe 2.4s ease-in-out infinite}
   .gamecard:nth-child(2){animation-delay:.8s}
   .gamecard:nth-child(3){animation-delay:1.6s}
+  .gamecard:nth-child(4){animation-delay:.4s}
+  .gamecard:nth-child(5){animation-delay:1.2s}
   .gamecard:active{transform:translateY(6px);box-shadow:0 4px 0 var(--ink)}
   .gamecard:focus-visible{outline:5px solid var(--mustard);outline-offset:4px}
   .gamecard .art{position:relative;width:100%;flex:1;display:grid;place-items:center;min-height:0}
@@ -223,73 +225,105 @@
   #home::after{content:"";position:absolute;inset:0;border-radius:50%;background:var(--brick);transform:scale(0)}
   #home.holding::after{animation:holdfill 1s linear forwards}
 
-  /* ---------- Bat Builder ---------- */
-  #buildGame{--tool-bb:clamp(90px, min(20vw, 22vh), 210px);position:fixed;inset:0;z-index:1;display:none;grid-template-rows:auto 1fr auto;
-             padding:env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left)}
-  body.build #buildGame{display:grid}
-  body.build #app{display:none}
-  #bbProg{display:flex;justify-content:center;gap:clamp(8px,1.6vmin,14px);padding:clamp(12px,2.4vmin,22px) 72px 0}
-  #bbProg svg{width:clamp(30px,6vmin,52px);height:auto;overflow:visible}
-  #bbProg path{fill:rgba(243,233,210,.1);stroke:var(--cream)}
-  #bbProg .on path{fill:var(--mustard);stroke:var(--ink)}
-  #bbProg .on{animation:spinOnce .9s ease-out}
-  #bbStage{position:relative;display:grid;place-items:center;min-height:0;padding:8px}
-  #bbPlan{position:relative;z-index:2;width:min(72vw, calc((100vh - var(--tool-bb) - 150px) * 1.5), 840px);aspect-ratio:3/2;filter:drop-shadow(0 8px 0 rgba(10,8,6,.55))}
-  @media (orientation: portrait){ #bbPlan{width:min(94vw, calc((100vh - var(--tool-bb) - 170px) * 1.5), 840px)} }
-  @media (max-height: 500px){ #buildGame{--tool-bb:clamp(64px, 20vh, 120px)} #bbProg{padding-top:6px} #bbProg svg{width:26px}
-    #bbPlan{width:min(72vw, calc((100vh - var(--tool-bb) - 90px) * 1.5))} }
-  #bbPlan.in{animation:boardIn .55s cubic-bezier(.3,1.3,.5,1)}
-  #bbPlan.out{animation:boardOut .45s ease-in forwards}
-  .plan{width:100%;height:100%;display:block;overflow:visible}
-  #bbTray{gap:clamp(12px,3vw,40px);min-height:calc(var(--tool-bb) + 36px)}
-  #bbTray .tool{width:var(--tool-bb);height:var(--tool-bb)}
-  #bbHelper{position:absolute;left:max(6px,1.5vw);bottom:2%;width:min(18vw,22vh,190px);z-index:3;pointer-events:none}
-  #bbHelper .batsvg{width:100%;height:auto;animation:bob 3s ease-in-out infinite}
-  #bbHelper.hmm{animation:hmm .8s ease-in-out}
-  #bbHelper.bounce{animation:bounce .35s ease-out}
-  #bbHelper.flip{animation:flip .9s ease-in-out}
-  .ghost.glow{animation:ghostGlow 1.2s ease-in-out}
-  .part.snap{transform-box:fill-box;transform-origin:center;animation:stick .35s ease-out}
-  .plan.built .ghosts{display:none}
-  #bbCtrl{height:calc(var(--tool-bb) * 1.05);touch-action:none;cursor:pointer;animation:popIn .45s ease-out;filter:drop-shadow(4px 5px 0 rgba(35,26,20,.55))}
-  #bbCtrl svg{height:100%;width:auto;display:block;overflow:visible}
-  #bbCtrl.nudge{animation:wiggle 1s ease-in-out 2}
-  .lever .stick{transform-box:view-box;transform-origin:60px 178px;transform:rotate(-22deg);transition:transform .2s ease-out}
-  .lever .stick.down{transform:rotate(38deg)}
-  .button .dome{transition:transform .12s}
-  .button .dome.down{transform:translateY(12px)}
-  .crank .arm{transform-box:view-box;transform-origin:90px 90px}
-  #bbNext{width:clamp(76px,12vmin,120px);height:clamp(76px,12vmin,120px);background:var(--olive);transform:scale(0);transition:transform .4s cubic-bezier(.3,1.6,.5,1);animation:none}
-  #bbNext.show{transform:scale(1);animation:breathe 1.6s ease-in-out infinite}
-  #bbAgain{position:fixed;left:50%;top:60%;transform:translate(-50%,-50%) scale(0);z-index:250;transition:transform .4s cubic-bezier(.3,1.6,.5,1)}
-  #bbAgain.show{transform:translate(-50%,-50%) scale(1)}
-  .miniplan{width:92%;height:auto;display:block;border-radius:8px;box-shadow:0 0 0 3px var(--ink)}
-  /* the machines */
-  .sails{transform-box:view-box;transform-origin:300px 150px}
-  .plan.drive .parts{animation:drive 2.7s ease-in-out}
-  .plan.drive .wheel{transform-box:fill-box;transform-origin:center;animation:spin .35s linear infinite}
-  .plan.chomp .jaw{transform-box:view-box;transform-origin:348px 160px;animation:chomp .42s ease-in-out 4}
-  .plan.chomp .eye{animation:eyeGlow .42s ease-in-out 4}
-  .plan.chomp .tail{transform-box:view-box;transform-origin:210px 238px;animation:wag .42s ease-in-out 4}
-  .flame{display:none}
-  .plan.launch .flame{display:inline;transform-box:fill-box;transform-origin:50% 0;animation:flick .1s linear infinite alternate}
-  .plan.launch .parts{animation:launch 3.4s ease-in}
-  .plan.lit .win{fill:#ffe08a;transition:fill .5s}
-  .smoke{transform-box:fill-box;transform-origin:center;animation:smoke 1.6s ease-out infinite}
-  .flybat{animation:flyIn 1.6s ease-in both}
+  /* ---------- mini games (shared) ---------- */
+  .gamescreen{position:fixed;inset:0;z-index:1;display:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left)}
+  body.g-busy #busyGame, body.g-bath #bathGame, body.g-band #bandGame{display:grid}
+  body.g-busy #app, body.g-bath #app, body.g-band #app{display:none}
+  .notefloat{position:fixed;z-index:200;font-size:clamp(26px,5vmin,46px);font-weight:900;pointer-events:none;-webkit-text-stroke:1.5px var(--ink);animation:noteUp 1.2s ease-out forwards}
+  .nudge{animation:wiggle 1s ease-in-out 2}
+  @keyframes noteUp{0%{opacity:0;transform:translate(-50%,-30%) scale(.6)}20%{opacity:1}100%{opacity:0;transform:translate(-50%,-260%) rotate(20deg) scale(1.2)}}
   @keyframes boardIn{from{transform:translateX(105vw) rotate(4deg)}}
   @keyframes boardOut{to{transform:translateX(-105vw) rotate(-4deg)}}
-  @keyframes spinOnce{from{transform:rotate(-180deg) scale(.6)}to{transform:none}}
-  @keyframes ghostGlow{50%{opacity:.9}}
-  @keyframes drive{0%{transform:none}10%{transform:translateX(-20px)}45%{transform:translateX(480px)}45.01%{transform:translateX(-540px)}100%{transform:none}}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  @keyframes chomp{50%{transform:rotate(18deg)}}
-  @keyframes eyeGlow{50%{fill:#ff7a3c}}
-  @keyframes wag{50%{transform:rotate(-14deg)}}
-  @keyframes launch{0%{transform:none}5%{transform:translateX(-4px)}10%{transform:translateX(4px)}15%{transform:translateX(-4px)}20%{transform:translateX(4px)}25%{transform:none}60%{transform:translateY(-660px)}60.01%{transform:translateY(560px)}100%{transform:none}}
-  @keyframes flick{from{transform:scaleY(.8)}to{transform:scaleY(1.2)}}
-  @keyframes smoke{0%{transform:translate(0,0) scale(.6);opacity:.9}100%{transform:translate(18px,-70px) scale(1.6);opacity:0}}
-  @keyframes flyIn{0%{transform:translate(280px,-300px) scale(1.3);opacity:0}15%{opacity:1}100%{transform:translate(0,0) scale(.2);opacity:0}}
+
+  /* ---------- Busy Board ---------- */
+  #busyGame{place-items:center;padding-top:calc(env(safe-area-inset-top) + 66px);padding-bottom:16px}
+  #busyBoard{position:relative;width:min(96vw, calc((100vh - 100px) * 1.45));display:grid;grid-template-columns:repeat(3,1fr);
+             gap:clamp(8px,1.6vw,18px);padding:clamp(16px,2.8vw,32px);border:6px solid var(--ink);border-radius:20px;box-shadow:0 10px 0 var(--ink);
+             background:repeating-linear-gradient(90deg, rgba(0,0,0,0) 0 46px, rgba(0,0,0,.07) 46px 48px), linear-gradient(180deg,#a8743a,#7a4e2d)}
+  @media (orientation: portrait){ #busyBoard{grid-template-columns:repeat(2,1fr);width:min(94vw, calc((100vh - 110px) * .66))} }
+  .screw{position:absolute;width:14px;height:14px;border-radius:50%;background:#c9ced4;border:3px solid var(--ink)}
+  .screw.tl{top:6px;left:6px}.screw.tr{top:6px;right:6px}.screw.bl{bottom:6px;left:6px}.screw.br{bottom:6px;right:6px}
+  .tile{position:relative;aspect-ratio:1;border:4px solid var(--ink);border-radius:16px;overflow:hidden;box-shadow:inset 0 -6px 0 rgba(0,0,0,.12);cursor:pointer}
+  .tile svg.gadget{width:100%;height:100%;display:block;touch-action:none;overflow:hidden}
+  .t-rex .springup{transform:translateY(70px);transition:transform .35s cubic-bezier(.3,1.6,.5,1)}
+  .t-rex.pop .springup{transform:translateY(0)}
+  .t-rex.pop .springup > g{transform-box:fill-box;transform-origin:center;animation:hmm .5s ease-in-out .35s 2}
+  .t-rex .lid{transform-box:view-box;transform-origin:34px 109px;transition:transform .25s}
+  .t-rex.pop .lid{transform:rotate(-115deg)}
+  .t-lamp .glow{opacity:0;transition:opacity .3s}
+  .t-lamp.on .glow{opacity:.42}
+  .t-lamp .bulb{transition:fill .2s}
+  .t-lamp.on .bulb{fill:#ffe08a}
+  .t-lamp .toggle{transition:transform .15s}
+  .t-lamp.on .toggle{transform:translateY(20px)}
+  .t-lamp .zzz{animation:twinkle 2s ease-in-out infinite}
+  .t-lamp.on .zzz{display:none}
+  .t-lamp .sleepbat .wing{animation-duration:4s}
+  .t-lamp.on .sleepbat .wing{animation-duration:.35s}
+  .t-crank .arm, .t-crank .g1, .t-crank .g2, .t-spin .wheel6{transform-box:view-box}
+  .t-door .leaf{transform-box:view-box;transition:transform .35s ease-in-out}
+  .t-door.open .leaf{transform:scaleX(.06)}
+  .t-door .friend{transform-box:fill-box;transform-origin:center}
+  .t-door.open .friend{animation:popIn .4s ease-out}
+  .t-rocket .stick{transform-box:view-box;transform:rotate(-20deg);transition:transform .2s}
+  .t-rocket.pulled .stick{transform:rotate(35deg)}
+  .t-rocket .flame2{display:none}
+  .t-rocket.launch .flame2{display:inline}
+  .t-rocket.launch .rk{animation:rkLaunch 2.5s ease-in}
+  @keyframes rkLaunch{0%{transform:none}6%{transform:translateX(-3px)}12%{transform:translateX(3px)}18%{transform:none}55%{transform:translateY(-230px)}55.01%{transform:translateY(160px)}100%{transform:none}}
+
+  /* ---------- Bat Bath ---------- */
+  #bathGame{grid-template-rows:auto 1fr auto}
+  #bathProg{display:flex;justify-content:center;gap:12px;padding:clamp(12px,2.4vmin,22px) 72px 0}
+  #bathProg svg{width:clamp(36px,6.5vmin,58px);height:auto;opacity:.35;overflow:visible}
+  #bathProg svg.on{opacity:1;animation:popIn .5s ease-out}
+  #bathStage{position:relative;min-height:0;display:grid;place-items:center;padding:6px 12px}
+  #bathStage svg{width:min(96vw, calc((100vh - var(--tool) - 150px) * 1.333), 900px);height:auto;border:5px solid var(--ink);border-radius:18px;box-shadow:0 8px 0 rgba(10,8,6,.55);overflow:hidden;touch-action:none}
+  #bathStage.in{animation:boardIn .55s cubic-bezier(.3,1.3,.5,1)}
+  #bathStage.out{animation:boardOut .45s ease-in forwards}
+  #bathTray{min-height:calc(var(--tool) + 36px)}
+  .bub, .tuft{transform-box:fill-box;transform-origin:center;animation:popIn .25s ease-out}
+  .drop{animation:dropFall .5s linear forwards}
+  .wind{animation:windGo .6s ease-out forwards}
+  .spot{transition:opacity .15s}
+  .bathbat.shine{transform-box:fill-box;transform-origin:center bottom;animation:bounce .4s ease-out 3}
+  #bathAgain{position:fixed;left:50%;top:60%;transform:translate(-50%,-50%) scale(0);z-index:250;transition:transform .4s cubic-bezier(.3,1.6,.5,1)}
+  #bathAgain.show{transform:translate(-50%,-50%) scale(1)}
+  @keyframes dropFall{to{transform:translateY(60px);opacity:0}}
+  @keyframes windGo{to{transform:translateX(-50px);opacity:0}}
+
+  /* ---------- Bat Band ---------- */
+  #bandGame{grid-template-rows:1fr auto;padding-top:calc(env(safe-area-inset-top) + 56px)}
+  #bandStage{position:relative;display:flex;align-items:flex-end;justify-content:center;min-height:0;padding:0 clamp(40px,9vw,110px);
+             background:radial-gradient(ellipse 45% 70% at 50% 100%, rgba(255,224,138,.35), rgba(255,224,138,0) 70%);border-top:5px solid var(--ink)}
+  #bandStage::before, #bandStage::after{content:"";position:absolute;top:0;bottom:0;width:clamp(36px,8vw,100px);border:4px solid var(--ink);border-top:0;
+             background:repeating-linear-gradient(90deg, #b5432f 0 14px, #8f3424 14px 22px)}
+  #bandStage::before{left:0;border-left:0;border-radius:0 0 60% 0}
+  #bandStage::after{right:0;border-right:0;border-radius:0 0 0 60%}
+  #bandValance{position:absolute;left:0;right:0;top:0;height:clamp(22px,4vh,40px);z-index:2;border-bottom:4px solid var(--ink);
+             background:radial-gradient(circle at 20px -6px, #b5432f 22px, transparent 23px) 0 0/40px 100%, #8f3424}
+  #bandBats{display:flex;align-items:flex-end;justify-content:center;gap:clamp(4px,1.5vw,18px);width:100%;padding-bottom:14px;
+            border-bottom:18px solid #7a4e2d;box-shadow:0 5px 0 var(--ink)}
+  .bandbat{width:min(20vw, 40vh, 280px);margin:0 -2.2vw;cursor:pointer;touch-action:manipulation}
+  .bandbat .batsvg{width:100%;height:auto;overflow:visible;display:block}
+  .bandbat.singing .bb-in{animation:singBounce .5s ease-out}
+  #bandGame.dancing .bandbat .bb-in{animation:danceBob 1.07s ease-in-out infinite}
+  #bandGame.dancing .bandbat:nth-child(even) .bb-in{animation-delay:-.535s}
+  #bandInst{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:clamp(8px,2vw,26px);padding:12px 12px calc(14px + env(safe-area-inset-bottom));
+            background:linear-gradient(180deg,#8a5a32,#5a3a22);border-top:5px solid var(--ink)}
+  #bandXylo svg{height:clamp(84px,22vh,200px);width:auto;display:block;touch-action:none;overflow:visible}
+  .inst svg{height:clamp(76px,18vh,170px);width:auto;display:block;overflow:visible;cursor:pointer}
+  .bar.hit{transform-box:fill-box;transform-origin:center;animation:barHit .3s ease-out}
+  #bandDrum.boom .skin{transform-box:fill-box;transform-origin:center;animation:skin .25s ease-out}
+  #bandShaker.shake .mar{transform-box:fill-box;transform-origin:50% 100%;animation:shakeMar .22s ease-in-out 2}
+  #bandGame.dancing .led{fill:#7fd36a}
+  #bandGame.dancing #bandPlayer svg{animation:bounce .53s ease-out infinite}
+  @keyframes singBounce{0%{transform:none}30%{transform:translateY(-14px) scale(1.06,1.1)}100%{transform:none}}
+  @keyframes danceBob{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-16px) rotate(5deg)}}
+  @keyframes barHit{40%{transform:scale(.92)}}
+  @keyframes skin{50%{transform:scaleY(.75)}}
+  @keyframes shakeMar{50%{transform:rotate(-16deg)}}
+  .miniart{width:92%;height:auto;display:block}
   /* ---------- Froggy Tag ---------- */
   #mazeGame{position:fixed;inset:0;z-index:1;display:none;grid-template-rows:auto 1fr;
             padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
@@ -366,17 +400,16 @@
   <div id="tray"></div>
 </div>
 
-<div id="buildGame">
-  <div id="bbProg"></div>
-  <div id="bbStage"><div id="bbHelper"></div><div id="bbPlan"></div></div>
-  <div id="bbTray" class="tray"></div>
-</div>
+<div id="busyGame" class="gamescreen"><div id="busyBoard"></div></div>
+<div id="bathGame" class="gamescreen"><div id="bathProg"></div><div id="bathStage"></div><div id="bathTray" class="tray"></div></div>
+<button id="bathAgain" class="bigBtn" aria-label="Play again"><svg viewBox="0 0 100 100"><path d="M74,30 A30,30 0 1,0 80,56" fill="none" stroke="#f3e9d2" stroke-width="12" stroke-linecap="round"/><path d="M60,22 L84,26 L78,48 Z" fill="#f3e9d2" stroke="#f3e9d2" stroke-width="6" stroke-linejoin="round"/></svg></button>
+<div id="bandGame" class="gamescreen"><div id="bandStage"><div id="bandValance"></div><div id="bandBats"></div></div>
+  <div id="bandInst"><div id="bandXylo"></div><div id="bandDrum" class="inst"></div><div id="bandShaker" class="inst"></div><div id="bandPlayer" class="inst"></div></div></div>
 <div id="mazeGame">
   <div id="mzProg"></div>
   <div id="mzStage"><div id="mzBoard"></div></div>
 </div>
 <button id="mzAgain" class="bigBtn" aria-label="Play again"><svg viewBox="0 0 100 100"><path d="M74,30 A30,30 0 1,0 80,56" fill="none" stroke="#f3e9d2" stroke-width="12" stroke-linecap="round"/><path d="M60,22 L84,26 L78,48 Z" fill="#f3e9d2" stroke="#f3e9d2" stroke-width="6" stroke-linejoin="round"/></svg></button>
-<button id="bbAgain" class="bigBtn" aria-label="Play again"><svg viewBox="0 0 100 100"><path d="M74,30 A30,30 0 1,0 80,56" fill="none" stroke="#f3e9d2" stroke-width="12" stroke-linecap="round"/><path d="M60,22 L84,26 L78,48 Z" fill="#f3e9d2" stroke="#f3e9d2" stroke-width="6" stroke-linejoin="round"/></svg></button>
 
 <button id="again" class="bigBtn" aria-label="Play again">
   <svg viewBox="0 0 100 100"><path d="M74,30 A30,30 0 1,0 80,56" fill="none" stroke="#f3e9d2" stroke-width="12" stroke-linecap="round"/><path d="M60,22 L84,26 L78,48 Z" fill="#f3e9d2" stroke="#f3e9d2" stroke-width="6" stroke-linejoin="round"/></svg>
@@ -386,8 +419,10 @@
   <h1>Bat Cave</h1>
   <div class="games">
     <button id="play" class="gamecard" aria-label="Play Bat Doctor"><div class="art" id="artDoctor"></div><span class="label">Bat Doctor</span></button>
-    <button id="playBuild" class="gamecard" aria-label="Play Bat Builder"><div class="art" id="artBuild"></div><span class="label">Bat Builder</span></button>
     <button id="playMaze" class="gamecard" aria-label="Play Froggy Tag"><div class="art" id="artMaze"></div><span class="label">Froggy Tag</span></button>
+    <button id="playBusy" class="gamecard" aria-label="Play Busy Board"><div class="art" id="artBusy"></div><span class="label">Busy Board</span></button>
+    <button id="playBath" class="gamecard" aria-label="Play Bat Bath"><div class="art" id="artBath"></div><span class="label">Bat Bath</span></button>
+    <button id="playBand" class="gamecard" aria-label="Play Bat Band"><div class="art" id="artBand"></div><span class="label">Bat Band</span></button>
   </div>
   <small>Grown-ups: press and hold ⚙︎ (top right) for 2 seconds for settings. In a game, hold 🏠 (top left) to come back here.</small>
 </div>
@@ -487,20 +522,17 @@ const LINES = [
   { k: 'healed',    t: 'Yay! All better!' },
   { k: 'home',      t: 'Back home with the family!' },
   { k: 'party',     t: 'You healed all the bats! Thank you, Doctor!' },
-  { k: 'b_car', t: "Let's build a bat-mobile!" },
-  { k: 'b_windmill', t: "Let's build a windmill!" },
-  { k: 'b_trex', t: "Let's build a robot T-Rex!" },
-  { k: 'b_rocket', t: "Let's build a rocket!" },
-  { k: 'b_house', t: "Let's build a house for the bats!" },
-  { k: 'b_intro', t: 'Put each piece on the plan.' },
-  { k: 'b_good', t: 'Clunk! It fits!' },
-  { k: 'b_try', t: 'That piece goes somewhere else. Look at the plan!' },
-  { k: 'b_lever', t: 'You built it! Pull the lever!' },
-  { k: 'b_button', t: 'You built it! Push the big red button!' },
-  { k: 'b_crank', t: 'You built it! Turn the crank!' },
-  { k: 'b_next', t: 'Ready for the next one? Tap the green arrow!' },
-  { k: 'b_countdown', t: 'Three, two, one, blast off!' },
-  { k: 'b_party', t: "You built everything! You're a super engineer!" },
+  { k: 'y_intro', t: "It's a busy board! Try every button and switch!" },
+  { k: 'y_all', t: 'You tried everything! What a busy bat!' },
+  { k: 'w_intro', t: "Uh oh! This bat is all messy. Let's give it a bath!" },
+  { k: 'w_scrub', t: 'Scrub, scrub, scrub with the sponge!' },
+  { k: 'w_rinse', t: 'Now rinse off all the bubbles!' },
+  { k: 'w_dry', t: 'Dry off with the fluffy towel!' },
+  { k: 'w_fluff', t: 'Now the hair dryer, for super fluffy fur!' },
+  { k: 'w_done', t: 'Squeaky clean and fluffy!' },
+  { k: 'w_party', t: 'Every bat is squeaky clean! Bath time is over!' },
+  { k: 'n_intro', t: 'Welcome to the Bat Band! Tap the bats to make them sing!' },
+  { k: 'n_dance', t: "Let's dance!" },
   { k: 'm_intro',   t: 'Froggy wants to play tag! Help the bat catch Froggy!' },
   { k: 'm_hop',     t: 'Ribbit! Catch me if you can!' },
   { k: 'm_caught1', t: 'Tag! You got Froggy!' },
@@ -1812,319 +1844,494 @@ function confetti(n) {
 }
 const vibrate = ms => { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} };
 
-/* ================= game 2: Bat Builder (build a machine from a blueprint, then make it go) ================= */
-const wheelSVG = (x, y) => `<g class="wheel"><circle cx="${x}" cy="${y}" r="36" fill="#2b2238" ${sw}/><circle cx="${x}" cy="${y}" r="17" fill="#9aa3ad" ${sw}/>
-  <path d="M${x - 17},${y} H${x + 17} M${x},${y - 17} V${y + 17}" stroke="${INK}" stroke-width="3"/></g>`;
-const BB_BUILDS = {
-  car: { line: 'b_car', label: 'BAT-MOBILE', control: 'lever', pieces: [
-    { id: 'body', box: [140, 108, 330, 182], svg: `
-      <path d="M150,268 L150,222 Q150,202 174,198 L214,192 L250,152 Q258,142 272,142 L358,142 Q376,142 386,156 L416,194 L438,198 Q460,202 460,224 L460,268 Q460,282 446,282 L164,282 Q150,282 150,268 Z" fill="#f290ae" ${sw}/>
-      <path d="M264,158 L354,158 Q364,158 370,168 L388,194 L238,194 Z" fill="#9fcbd6" ${sw}/><path d="M312,158 V194" stroke="${INK}" stroke-width="4"/>
-      <path d="M156,238 H454" stroke="#b5432f" stroke-width="10"/><circle cx="448" cy="216" r="9" fill="#ffe08a" ${sw}/>
-      <path d="M276,144 l8,-26 l12,24 Z M330,144 l10,-26 l10,24 Z" fill="#f290ae" ${sw}/>
-      <rect x="140" y="250" width="16" height="12" rx="3" fill="#9aa3ad" ${sw}/>` },
-    { id: 'w1', type: 'wheel', box: [172, 242, 80, 80], svg: wheelSVG(212, 282) },
-    { id: 'w2', type: 'wheel', box: [358, 242, 80, 80], svg: wheelSVG(398, 282) }] },
-  windmill: { line: 'b_windmill', label: 'WINDMILL', control: 'crank', pieces: [
-    { id: 'tower', box: [244, 156, 112, 210], svg: `
-      <path d="M250,360 L268,160 L332,160 L350,360 Z" fill="#e6dcc0" ${sw}/><path d="M258,290 H342 M263,226 H337" stroke="#c9b99a" stroke-width="4"/>
-      <path d="M284,360 V328 Q300,310 316,328 V360 Z" fill="#7a4e2d" ${sw}/><circle cx="300" cy="244" r="12" fill="#9fcbd6" ${sw}/>` },
-    { id: 'roof', box: [250, 104, 100, 68], svg: `<path d="M256,166 L300,108 L344,166 Z" fill="#b5432f" ${sw}/>` },
-    { id: 'sails', box: [182, 32, 236, 236], svg: `<g class="sails">${[0, 90, 180, 270].map(a => `<g transform="rotate(${a} 300 150)">
-      <rect x="296" y="40" width="8" height="110" fill="#7a4e2d" ${sw}/><rect x="304" y="44" width="34" height="90" fill="#fffaf0" stroke="${INK}" stroke-width="3"/>
-      <path d="M304,74 H338 M304,104 H338 M321,44 V134" stroke="#c9b99a" stroke-width="2"/></g>`).join('')}<circle cx="300" cy="150" r="13" fill="#e0a930" ${sw}/></g>` }] },
-  trex: { line: 'b_trex', label: 'ROBO T-REX', control: 'button', pieces: [
-    { id: 'tail', box: [92, 206, 124, 64], svg: `<g class="tail"><path d="M210,214 L106,244 Q94,250 106,256 L210,264 Z" fill="#5f9ea0" ${sw}/><polygon points="146,234 158,214 168,232" fill="#e0a930" ${sw}/></g>` },
-    { id: 'legs', box: [216, 284, 154, 78], svg: `<rect x="228" y="288" width="44" height="58" rx="10" fill="#4a8a8c" ${sw}/><rect x="312" y="288" width="44" height="58" rx="10" fill="#4a8a8c" ${sw}/>
-      <rect x="220" y="338" width="60" height="18" rx="8" fill="#3f6f70" ${sw}/><rect x="304" y="338" width="60" height="18" rx="8" fill="#3f6f70" ${sw}/>` },
-    { id: 'tbody', box: [196, 140, 216, 162], svg: `
-      <polygon points="236,170 248,146 262,168" fill="#e0a930" ${sw}/><polygon points="270,166 284,142 298,166" fill="#e0a930" ${sw}/>
-      <rect x="200" y="166" width="184" height="132" rx="46" fill="#5f9ea0" ${sw}/><rect x="246" y="200" width="70" height="56" rx="10" fill="#d7e7ea" ${sw}/>
-      <path d="M260,240 A22,22 0 0,1 302,240" stroke="${INK}" stroke-width="3" fill="none"/><path d="M281,240 L292,222" stroke="#c2452f" stroke-width="4" stroke-linecap="round"/>
-      ${[[216, 186], [368, 186], [216, 280], [368, 280]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="4" fill="#3f6f70"/>`).join('')}
-      <path d="M372,236 l26,10 M398,246 l8,-6 M398,246 l6,8" stroke="${INK}" stroke-width="5" fill="none" stroke-linecap="round"/>` },
-    { id: 'head', box: [338, 62, 148, 142], svg: `
-      <path d="M380,92 v-14" stroke="${INK}" stroke-width="4"/><circle cx="380" cy="72" r="7" fill="#c2452f" ${sw}/>
-      <path d="M344,114 Q344,92 366,92 L458,92 Q480,92 480,114 L480,148 L344,158 Z" fill="#5f9ea0" ${sw}/>
-      <circle class="eye" cx="430" cy="118" r="13" fill="#ffe08a" ${sw}/><circle cx="433" cy="118" r="5" fill="${INK}"/>
-      <g class="jaw"><path d="M346,160 L478,150 L472,186 Q470,198 456,198 L360,198 Q348,198 346,186 Z" fill="#5f9ea0" ${sw}/>
-      <path d="M356,160 l7,10 l7,-10 l7,10 l7,-10 l7,10 l7,-10 l7,10 l7,-10 l7,10 l7,-10 l7,10 l7,-10 l7,10 l7,-10 l7,10 l7,-10" fill="#fffaf0" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/></g>` }] },
-  rocket: { line: 'b_rocket', label: 'ROCKET', control: 'button', pieces: [
-    { id: 'fins', box: [206, 254, 188, 102], svg: `<g class="flame"><path d="M276,346 Q300,420 324,346 Z" fill="#e0a930" ${sw}/><path d="M286,346 Q300,392 314,346 Z" fill="#c2452f"/></g>
-      <path d="M262,262 L214,330 L214,350 L262,322 Z" fill="#c2452f" ${sw}/><path d="M338,262 L386,330 L386,350 L338,322 Z" fill="#c2452f" ${sw}/>
-      <rect x="270" y="318" width="60" height="28" rx="6" fill="#7d8690" ${sw}/>` },
-    { id: 'rbody', box: [250, 116, 100, 220], svg: `<path d="M256,330 L256,150 Q256,122 300,122 Q344,122 344,150 L344,330 Z" fill="#fffaf0" ${sw}/><path d="M256,272 H344 M256,288 H344" stroke="#c2452f" stroke-width="7"/>` },
-    { id: 'nose', box: [250, 40, 100, 94], svg: `<path d="M256,132 Q262,70 300,44 Q338,70 344,132 Z" fill="#c2452f" ${sw}/>` },
-    { id: 'window', box: [264, 158, 72, 72], svg: `<circle cx="300" cy="194" r="31" fill="#9aa3ad" ${sw}/><circle cx="300" cy="194" r="21" fill="#9fcbd6" ${sw}/>
-      <path d="M290,194 l2,-11 l6,8 M310,194 l-2,-11 l-6,8" fill="#f290ae" stroke="${INK}" stroke-width="1.5"/><circle cx="300" cy="200" r="11" fill="#f290ae" stroke="${INK}" stroke-width="1.5"/>
-      <circle cx="296" cy="198" r="1.8" fill="${INK}"/><circle cx="304" cy="198" r="1.8" fill="${INK}"/><path d="M297,204 q3,3 6,0" stroke="${INK}" stroke-width="1.5" fill="none"/>` }] },
-  house: { line: 'b_house', label: 'BAT HOUSE', control: 'lever', pieces: [
-    { id: 'walls', box: [196, 196, 208, 162], svg: `<rect x="204" y="200" width="192" height="152" fill="#c08a4a" ${sw}/>
-      <path d="M204,236 H396 M204,272 H396 M204,308 H396" stroke="#a8743a" stroke-width="3"/>
-      <rect class="win" x="226" y="224" width="46" height="40" fill="#22364f" ${sw}/><rect class="win" x="328" y="224" width="46" height="40" fill="#22364f" ${sw}/>
-      <path d="M249,224 V264 M226,244 H272 M351,224 V264 M328,244 H374" stroke="${INK}" stroke-width="3"/>` },
-    { id: 'chimney', box: [334, 92, 50, 100], svg: `<rect x="342" y="100" width="32" height="88" fill="#b5432f" ${sw}/><rect x="338" y="96" width="40" height="12" fill="#9c3a28" ${sw}/>` },
-    { id: 'roof2', box: [176, 104, 248, 104], svg: `<path d="M184,204 L300,110 L416,204 Z" fill="#2f4a6d" ${sw}/><path d="M222,174 H378 M250,150 H350" stroke="#22364f" stroke-width="4"/>` },
-    { id: 'door', box: [268, 278, 64, 80], svg: `<path d="M274,352 V306 Q300,280 326,306 V352 Z" fill="#7a4e2d" ${sw}/><circle cx="316" cy="326" r="4" fill="#e0a930"/>` }] }
-};
-const BB_ORDER_FIRST = ['car', 'windmill'], BB_ORDER_REST = ['trex', 'rocket', 'house'];
-const BB = { round: 0, order: [], phase: 'idle', build: null, placed: new Set(), running: false, ran: false, busy: false, wrongSaid: false, idleT: null, crank: 0 };
-if (location.hash === '#test') {
-  window.__bb = BB;
-  window.__bbTarget = id => { const p = bbSlotFor(id); return p ? center(bbScreenBox(p)) : null; };
+/* ================= shared bits for the mini games ================= */
+function svgPoint(svg, x, y) { const p = svg.createSVGPoint(); p.x = x; p.y = y; return p.matrixTransform(svg.getScreenCTM().inverse()); }
+function musicStop() { clearInterval(MUS.timer); MUS.timer = null; }
+function floatNote(x, y, color) {
+  const el = document.createElement('div');
+  el.className = 'notefloat'; el.textContent = rand(['♪', '♫']);
+  el.style.left = x + 'px'; el.style.top = y + 'px'; el.style.color = color || rand(['#e0a930', '#f3e9d2', '#ff8fc7', '#9fcbd6']);
+  document.body.appendChild(el); setTimeout(() => el.remove(), 1300);
 }
-const NUT = `<path d="M0,-40 L35,-20 L35,20 L0,40 L-35,20 L-35,-20 Z M14,0 A14,14 0 1,0 -14,0 A14,14 0 1,0 14,0 Z" fill-rule="evenodd" stroke-width="6" stroke-linejoin="round"/>`;
-
+function nudge(el) { if (!el) return; el.classList.remove('nudge'); void el.offsetWidth; el.classList.add('nudge'); }
 Object.assign(sfx, {
   clunk: () => { tone(150, 0, .09, 'square', .1, 110); tone(950, .02, .05, 'triangle', .08); },
-  vroom: () => { tone(80, 0, 1, 'sawtooth', .08, 240); tone(240, 1, .9, 'sawtooth', .06, 110); tone(660, .15, .12, 'square', .06); tone(660, .35, .12, 'square', .06); },
   roar: () => { tone(210, 0, .7, 'sawtooth', .12, 110); tone(310, 0, .6, 'square', .04, 160); },
+  ding: () => [784, 988, 1175].forEach((f, i) => tone(f, i * .12, .5, 'sine', .14)),
   rumble: () => { noiseBurst(2.2, 300, .35); tone(60, 0, 2, 'sawtooth', .05, 140); },
-  ding: () => [784, 988, 1175].forEach((f, i) => tone(f, i * .12, .5, 'sine', .14))
+  boing: () => tone(180, 0, .45, 'sine', .22, 620),
+  tick: () => tone(1800, 0, .03, 'square', .05),
+  squeakToy: () => { tone(1400, 0, .12, 'sine', .14, 1000); tone(1500, .14, .12, 'sine', .12, 1100); },
+  drum: () => { tone(95, 0, .3, 'sine', .55, 48); noiseBurst(.07, 1400, .12); },
+  shaker: () => { noiseBurst(.09, 6200, .22); setTimeout(() => noiseBurst(.09, 6800, .18), 120); }
 });
+const sleepFace = (svg, asleep) => {
+  setHappy(.8, svg);
+  svg.querySelector('.eyes-open').style.display = asleep ? 'none' : 'inline';
+  svg.querySelector('.eyes-happy').style.display = asleep ? 'inline' : 'none';
+};
 
-function bbRenderProgress() {
-  $('#bbProg').innerHTML = Array.from({ length: BB_ORDER_FIRST.length + BB_ORDER_REST.length }, (_, i) =>
-    `<svg viewBox="-46 -46 92 92" class="${i < BB.round ? 'on' : ''}">${NUT}</svg>`).join('');
+/* ================= game 2: Busy Board (six gadgets, no rules) ================= */
+const gearAt = (cx, cy, R, ri, t, hole) => {
+  const pts = [];
+  for (let i = 0; i < t; i++) {
+    const a = i * 2 * Math.PI / t, w = Math.PI / t;
+    [[a - w, ri], [a - w * .55, R], [a + w * .55, R], [a + w, ri]].forEach(([g, r]) => pts.push((cx + r * Math.cos(g)).toFixed(1) + ',' + (cy + r * Math.sin(g)).toFixed(1)));
+  }
+  return `M${pts.join(' L')} Z M${cx + hole},${cy} A${hole},${hole} 0 1,0 ${cx - hole},${cy} A${hole},${hole} 0 1,0 ${cx + hole},${cy} Z`;
+};
+const REXHEAD = `<polygon points="80,58 88,42 96,56" fill="#e0a930" ${sw}/><polygon points="96,54 104,38 112,54" fill="#e0a930" ${sw}/>
+  <path d="M66,96 Q62,60 92,54 L124,54 Q140,54 140,72 L140,92 L66,100 Z" fill="#5f8f3a" ${sw}/>
+  <circle cx="120" cy="70" r="7" fill="#fffaf0" stroke="${INK}" stroke-width="2"/><circle cx="121" cy="70" r="3.5" fill="${INK}"/>
+  <path d="M68,100 L138,94 Q136,112 120,114 L80,114 Q70,112 68,100 Z" fill="#5f8f3a" ${sw}/>
+  <path d="M74,99 l4,6 l4,-6 l4,6 l4,-6 l4,6 l4,-6 l4,6 l4,-6 l4,6 l4,-6 l4,6 l4,-6 l4,6 l4,-6" fill="#fffaf0" stroke="${INK}" stroke-width="1.5" stroke-linejoin="round"/>`;
+const MELODY = TUNE.mel.join(' ').split(/\s+/).filter(x => x !== '.').map(noteHz);
+const BUSY = { tried: new Set(), idleT: null, allDone: false, spinA: 0, spinV: 0, spinRaf: 0, crankA: 0, crankAcc: 0, note: 0, lastFriend: -1 };
+if (location.hash === '#test') window.__busy = BUSY;
+
+const BUSY_TILES = [
+  { k: 'rex', bg: '#efe2c4', svg: () => `<svg viewBox="0 0 200 200" class="gadget">
+      <g class="springup"><path d="M100,150 l-14,-8 l28,-8 l-28,-8 l28,-8 l-28,-8 l14,-8" stroke="#9aa3ad" stroke-width="6" fill="none" stroke-linejoin="round"/><g transform="translate(-3,0)">${REXHEAD}</g></g>
+      <rect x="40" y="110" width="120" height="80" rx="8" fill="#c2452f" ${sw}/>
+      <polygon points="${starPts(66, 132, 9, .45)}" fill="#e0a930"/><polygon points="${starPts(140, 176, 7, .45)}" fill="#e0a930"/>
+      <g class="lid"><rect x="34" y="102" width="132" height="14" rx="5" fill="#e0a930" ${sw}/></g>
+      <circle cx="100" cy="156" r="20" fill="#e0a930" ${sw}/><circle cx="94" cy="150" r="6" fill="#fff" opacity=".5"/></svg>` },
+  { k: 'lamp', bg: '#22364f', svg: () => `<svg viewBox="0 0 200 200" class="gadget">
+      <rect class="glow" width="200" height="200" fill="#ffe08a"/>
+      <path d="M150,0 V36" stroke="${INK}" stroke-width="3"/><rect x="142" y="34" width="16" height="10" fill="#7d8690" stroke="${INK}" stroke-width="2.5"/>
+      <circle class="bulb" cx="150" cy="56" r="14" fill="#9aa3ad" ${sw}/>
+      <path d="M10,40 H118" stroke="#7a4e2d" stroke-width="9" stroke-linecap="round"/>
+      <g class="sleepbat" transform="rotate(180 64 84)">${nestBat(BATS[0].color, BATS[0].hat, 4, 40, 120)}</g>
+      <text class="zzz" x="112" y="128" font-family="Luckiest Guy, sans-serif" font-size="20" fill="#f3e9d2">z z</text>
+      <rect x="140" y="118" width="44" height="68" rx="8" fill="#e6dcc0" ${sw}/><rect x="154" y="130" width="16" height="44" rx="6" fill="#c9b99a"/>
+      <g class="toggle"><rect x="152" y="132" width="20" height="22" rx="6" fill="#c2452f" ${sw}/></g></svg>` },
+  { k: 'crank', bg: '#e6dcc0', svg: () => `<svg viewBox="0 0 200 200" class="gadget">
+      <path class="g1" d="${gearAt(56, 66, 34, 26, 9, 8)}" fill="#e0a930" fill-rule="evenodd" ${sw} style="transform-origin:56px 66px"/>
+      <path class="g2" d="${gearAt(110, 50, 24, 18, 7, 6)}" fill="#9aa3ad" fill-rule="evenodd" ${sw} style="transform-origin:110px 50px"/>
+      <rect x="16" y="96" width="124" height="88" rx="8" fill="#7a4e2d" ${sw}/><path d="M24,118 H132 M24,162 H132" stroke="#5a3a22" stroke-width="4"/>
+      <polygon points="${starPts(78, 140, 12, .45)}" fill="#e0a930" ${sw}/>
+      <circle cx="160" cy="140" r="26" fill="#7d8690" ${sw}/>
+      <g class="arm" style="transform-origin:160px 140px"><path d="M160,140 L160,104" stroke="${INK}" stroke-width="11" stroke-linecap="round"/><path d="M160,140 L160,104" stroke="#e0a930" stroke-width="6" stroke-linecap="round"/>
+        <circle cx="160" cy="102" r="12" fill="#c2452f" ${sw}/><circle cx="160" cy="140" r="8" fill="#e0a930" ${sw}/></g></svg>` },
+  { k: 'door', bg: '#5f8f3a', svg: () => `<svg viewBox="0 0 200 200" class="gadget">
+      <rect x="40" y="22" width="120" height="160" rx="12" fill="#22364f" ${sw}/><g class="friend"></g>
+      <g class="leaf" style="transform-origin:40px 100px"><rect x="40" y="22" width="120" height="160" rx="12" fill="#c2452f" ${sw}/>
+        <rect x="56" y="38" width="88" height="56" rx="6" fill="none" stroke="#9c3a28" stroke-width="5"/><rect x="56" y="108" width="88" height="56" rx="6" fill="none" stroke="#9c3a28" stroke-width="5"/>
+        <circle cx="144" cy="102" r="8" fill="#e0a930" ${sw}/></g></svg>` },
+  { k: 'rocket', bg: '#efe2c4', svg: () => `<svg viewBox="0 0 200 200" class="gadget">
+      <defs><clipPath id="rkClip"><rect x="96" y="10" width="92" height="180" rx="10"/></clipPath></defs>
+      <rect x="96" y="10" width="92" height="180" rx="10" fill="#17233a" ${sw}/>
+      <g clip-path="url(#rkClip)">${dots(14, CREAM, 18, 150, 1.6, 4).replace(/cx="(\d+)"/g, (m, v) => `cx="${100 + (+v % 84)}"`)}
+        <g class="rk"><g class="flame2"><path d="M132,178 Q142,210 152,178 Z" fill="#e0a930" ${sw}/></g>
+          <path d="M130,150 L116,176 L130,170 Z M154,150 L168,176 L154,170 Z" fill="#c2452f" ${sw}/>
+          <path d="M130,176 L130,112 Q130,94 142,86 Q154,94 154,112 L154,176 Z" fill="#fffaf0" ${sw}/>
+          <path d="M131,104 Q134,92 142,86 Q150,92 153,104 Z" fill="#c2452f"/><circle cx="142" cy="128" r="8" fill="#9fcbd6" stroke="${INK}" stroke-width="2.5"/></g></g>
+      <rect x="96" y="10" width="92" height="180" rx="10" fill="none" ${sw}/>
+      <rect x="14" y="146" width="64" height="44" rx="8" fill="#e0a930" ${sw}/><rect x="40" y="152" width="12" height="26" rx="5" fill="${INK}"/>
+      <g class="stick" style="transform-origin:46px 166px"><rect x="41" y="80" width="10" height="88" rx="5" fill="#9aa3ad" ${sw}/><circle cx="46" cy="76" r="17" fill="#c2452f" ${sw}/><circle cx="40" cy="70" r="5" fill="#fff" opacity=".5"/></g></svg>` },
+  { k: 'spin', bg: '#9fcbd6', svg: () => {
+      const cols = ['#c2452f', '#e0a930', '#5f8f3a', '#3f6fa8', '#f290ae', '#e07a2a'];
+      const seg = cols.map((c, i) => { const a1 = i * 60 * Math.PI / 180, a2 = (i + 1) * 60 * Math.PI / 180;
+        return `<path d="M100,92 L${(100 + 70 * Math.cos(a1)).toFixed(1)},${(92 + 70 * Math.sin(a1)).toFixed(1)} A70,70 0 0,1 ${(100 + 70 * Math.cos(a2)).toFixed(1)},${(92 + 70 * Math.sin(a2)).toFixed(1)} Z" fill="${c}" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/>`; }).join('');
+      return `<svg viewBox="0 0 200 200" class="gadget"><path d="M100,100 V194" stroke="#7a4e2d" stroke-width="9" stroke-linecap="round"/>
+        <g class="wheel6" style="transform-origin:100px 92px">${seg}<circle cx="100" cy="92" r="70" fill="none" ${sw}/><circle cx="100" cy="92" r="12" fill="#fffaf0" ${sw}/></g>
+        <polygon points="92,12 108,12 100,28" fill="${INK}"/></svg>`; } }
+];
+function busyTried(k) {
+  BUSY.tried.add(k); busyArm();
+  if (!BUSY.allDone && BUSY.tried.size === BUSY_TILES.length) {
+    BUSY.allDone = true;
+    setTimeout(() => { confetti(40); sfx.yay(); squeak(3, 1.1); say('y_all'); }, 900);
+  }
 }
-function bbScreenBox(p) {
-  const svg = $('#bbPlan svg'), m = svg.getScreenCTM(), [x, y, w, h] = p.box;
-  return { left: m.e + x * m.a, top: m.f + y * m.d, width: w * m.a, height: h * m.d };
-}
-function bbSlotFor(id) { // the unfilled slot this tray piece can go into (wheels are interchangeable)
-  const piece = BB.build.pieces.find(q => q.id === id), type = piece.type || piece.id;
-  return BB.build.pieces.find(q => (q.type || q.id) === type && !BB.placed.has(q.id));
-}
-function bbRender() {
-  const b = BB.build, n = BB.round + 1;
-  $('#bbPlan').innerHTML = `<svg viewBox="0 0 600 400" class="plan">
-    <defs><filter id="bbWhite"><feFlood flood-color="#ffffff"/><feComposite in2="SourceAlpha" operator="in"/></filter>
-      <pattern id="bbGrid" width="25" height="25" patternUnits="userSpaceOnUse"><path d="M25,0 H0 V25" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="1.5"/></pattern></defs>
-    <rect width="600" height="400" rx="14" fill="#2f5d8a"/><rect width="600" height="400" rx="14" fill="url(#bbGrid)"/>
-    <rect x="8" y="8" width="584" height="384" rx="10" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2" stroke-dasharray="10 8"/>
-    <text x="580" y="384" text-anchor="end" font-family="Luckiest Guy, Arial Rounded MT Bold, sans-serif" font-size="18" fill="rgba(255,255,255,.75)" letter-spacing="1">PLAN No. ${n} · ${b.label}</text>
-    <g class="ghosts">${b.pieces.map(p => `<g class="ghost" data-id="${p.id}" filter="url(#bbWhite)" opacity=".3">${p.svg}</g>`).join('')}</g>
-    <g class="parts">${b.pieces.map(p => `<g class="part" data-id="${p.id}" style="display:none">${p.svg}</g>`).join('')}</g>
-    <g class="fx"></g></svg>`;
-  const tr = $('#bbTray'); tr.innerHTML = '';
-  shuffle(b.pieces.slice()).forEach((p, i) => {
-    const [x, y, w, h] = p.box, el = document.createElement('div');
-    el.className = 'tool'; el.dataset.id = p.id; el.setAttribute('aria-label', p.id);
-    el.innerHTML = `<svg viewBox="${x - 8} ${y - 8} ${w + 16} ${h + 16}" class="pop" style="animation-delay:${i * .12}s">${p.svg}</svg>`;
-    const svg = el.firstElementChild; svg.addEventListener('animationend', () => svg.classList.remove('pop', 'wiggle'));
-    bbDrag(el); tr.appendChild(el);
-  });
-}
-function bbGlow(slotId) {
-  const g = $(`#bbPlan .ghost[data-id="${slotId}"]`); if (!g) return;
-  g.classList.remove('glow'); void g.getBoundingClientRect(); g.classList.add('glow');
-}
-function bbHint(id) {
-  const slot = bbSlotFor(id); if (slot) bbGlow(slot.id);
-  const it = $(`#bbTray .tool[data-id="${id}"] svg`); if (it) { it.classList.remove('wiggle'); void it.getBoundingClientRect(); it.classList.add('wiggle'); }
-}
-function bbArm() {
-  clearTimeout(BB.idleT);
-  BB.idleT = setTimeout(() => {
-    if (!S.paused) {
-      if (BB.phase === 'build') { const it = $('#bbTray .tool'); if (it) bbHint(it.dataset.id); }
-      else if (BB.phase === 'machine' && !BB.ran) { const c = $('#bbCtrl'); if (c) { c.classList.remove('nudge'); void c.offsetWidth; c.classList.add('nudge'); } }
+function busyArm() {
+  clearTimeout(BUSY.idleT);
+  BUSY.idleT = setTimeout(() => {
+    if (!S.paused && document.body.classList.contains('g-busy')) {
+      const left = BUSY_TILES.filter(t => !BUSY.tried.has(t.k));
+      nudge($(`#busyBoard .tile[data-k="${(left.length ? rand(left) : rand(BUSY_TILES)).k}"]`));
     }
-    if (BB.phase === 'build' || BB.phase === 'machine') bbArm();
+    busyArm();
+  }, 11000);
+}
+const busyAngle = (svg, e, cx, cy) => { const p = svgPoint(svg, e.clientX, e.clientY); return Math.atan2(p.y - cy, p.x - cx) * 180 / Math.PI; };
+const BUSY_DO = {
+  async rex(tile) {
+    if (tile.dataset.busy) return; tile.dataset.busy = 1; busyTried('rex');
+    tile.classList.add('pop'); sfx.boing(); setTimeout(() => sfx.roar(), 250); vibrate(20);
+    await wait(1700); tile.classList.remove('pop'); await wait(450); delete tile.dataset.busy;
+  },
+  lamp(tile) {
+    const on = tile.classList.toggle('on'); busyTried('lamp');
+    sleepFace(tile.querySelector('.sleepbat svg'), !on);
+    if (on) { tone(1200, 0, .05, 'square', .06); setTimeout(() => squeak(2, 1.1), 250); } else tone(700, 0, .05, 'square', .06);
+  },
+  door(tile) {
+    const open = tile.classList.toggle('open'); busyTried('door');
+    if (!open) { tone(260, 0, .08, 'triangle', .12); return; }
+    const FR = [
+      { svg: `<g transform="translate(100,112) scale(.66)">${FROG}</g>`, s: () => sfx.ribbit() },
+      { svg: nestBat(rand(BATS).color, rand(BATS).hat, 44, 62, 112), s: () => squeak(3, 1.1) },
+      { svg: `<g transform="translate(-4,22)">${REXHEAD}</g>`, s: () => sfx.roar() },
+      { svg: `<polygon points="${starPts(100, 102, 42, .45)}" fill="#e0a930" ${sw}/><circle cx="88" cy="98" r="4" fill="${INK}"/><circle cx="112" cy="98" r="4" fill="${INK}"/><path d="M90,112 Q100,120 110,112" stroke="${INK}" stroke-width="3" fill="none"/>`, s: () => sfx.ding() }
+    ];
+    let i; do { i = Math.floor(Math.random() * FR.length); } while (i === BUSY.lastFriend);
+    BUSY.lastFriend = i;
+    tile.querySelector('.friend').innerHTML = FR[i].svg; tone(520, 0, .1, 'triangle', .1, 780); setTimeout(FR[i].s, 200);
+  },
+  async rocket(tile) {
+    if (tile.dataset.busy) return; tile.dataset.busy = 1; busyTried('rocket');
+    tile.classList.add('pulled'); sfx.clunk(); setTimeout(() => tile.classList.remove('pulled'), 300);
+    [0, 350, 700].forEach(t => setTimeout(() => tone(880, 0, .1, 'square', .06), t));
+    await wait(1050); tile.classList.add('launch'); sfx.rumble();
+    await wait(2500); tile.classList.remove('launch'); delete tile.dataset.busy;
+  }
+};
+function busyCrank(tile) {
+  const svg = tile.querySelector('svg'), arm = svg.querySelector('.arm'), g1 = svg.querySelector('.g1'), g2 = svg.querySelector('.g2');
+  const turn = da => {
+    BUSY.crankA += da; arm.style.transform = `rotate(${BUSY.crankA}deg)`;
+    g1.style.transform = `rotate(${BUSY.crankA * 1.2}deg)`; g2.style.transform = `rotate(${-BUSY.crankA * 1.7}deg)`;
+    BUSY.crankAcc += Math.abs(da);
+    while (BUSY.crankAcc >= 40) {
+      BUSY.crankAcc -= 40;
+      if (ac && ac.state === 'running') mallet(MELODY[BUSY.note++ % MELODY.length], ac.currentTime + .01, { vol: .3, dur: .5, xylo: true });
+      const r = svg.getBoundingClientRect(); floatNote(r.left + r.width * (.25 + Math.random() * .3), r.top + r.height * .3);
+    }
+  };
+  let d = null;
+  svg.addEventListener('pointerdown', e => {
+    e.preventDefault(); try { svg.setPointerCapture(e.pointerId); } catch (err) {}
+    d = { id: e.pointerId, a: busyAngle(svg, e, 160, 140), moved: 0 }; busyTried('crank');
+  });
+  svg.addEventListener('pointermove', e => {
+    if (!d || e.pointerId !== d.id) return;
+    const a = busyAngle(svg, e, 160, 140); let da = a - d.a; if (da > 180) da -= 360; if (da < -180) da += 360;
+    d.a = a; d.moved += Math.abs(da); turn(da);
+  });
+  const end = e => { if (!d || e.pointerId !== d.id) return; const m = d.moved; d = null; if (m < 15) for (let i = 0; i < 6; i++) setTimeout(() => turn(40), i * 170); };
+  svg.addEventListener('pointerup', end); svg.addEventListener('pointercancel', end);
+}
+function busySpin(tile) {
+  const svg = tile.querySelector('svg'), wheel = svg.querySelector('.wheel6');
+  let lastSeg = 0;
+  const setA = a => { BUSY.spinA = a; wheel.style.transform = `rotate(${a}deg)`; const s = Math.floor(a / 60); if (s !== lastSeg) { lastSeg = s; sfx.tick(); } };
+  const coast = () => {
+    cancelAnimationFrame(BUSY.spinRaf); let t0 = performance.now();
+    const step = now => { const dt = now - t0; t0 = now; setA(BUSY.spinA + BUSY.spinV * dt); BUSY.spinV *= Math.pow(.9975, dt); if (Math.abs(BUSY.spinV) > .01) BUSY.spinRaf = requestAnimationFrame(step); };
+    BUSY.spinRaf = requestAnimationFrame(step);
+  };
+  let d = null;
+  svg.addEventListener('pointerdown', e => {
+    e.preventDefault(); try { svg.setPointerCapture(e.pointerId); } catch (err) {}
+    cancelAnimationFrame(BUSY.spinRaf); d = { id: e.pointerId, a: busyAngle(svg, e, 100, 92), t: performance.now(), v: 0, moved: 0 }; busyTried('spin');
+  });
+  svg.addEventListener('pointermove', e => {
+    if (!d || e.pointerId !== d.id) return;
+    const a = busyAngle(svg, e, 100, 92), now = performance.now(); let da = a - d.a; if (da > 180) da -= 360; if (da < -180) da += 360;
+    d.v = da / Math.max(1, now - d.t); d.a = a; d.t = now; d.moved += Math.abs(da); setA(BUSY.spinA + da);
+  });
+  const end = e => {
+    if (!d || e.pointerId !== d.id) return;
+    BUSY.spinV = d.moved < 10 ? (.6 + Math.random() * .6) * (Math.random() < .5 ? -1 : 1) : Math.max(-2, Math.min(2, d.v));
+    d = null; coast();
+  };
+  svg.addEventListener('pointerup', end); svg.addEventListener('pointercancel', end);
+}
+function busyStart() {
+  BUSY.tried = new Set(); BUSY.allDone = false;
+  $('#busyBoard').innerHTML = BUSY_TILES.map(t => `<div class="tile t-${t.k}" data-k="${t.k}" style="background:${t.bg}">${t.svg()}</div>`).join('') +
+    ['tl', 'tr', 'bl', 'br'].map(c => `<span class="screw ${c}"></span>`).join('');
+  $$('#busyBoard .tile').forEach(tile => {
+    const k = tile.dataset.k;
+    if (k === 'crank') busyCrank(tile);
+    else if (k === 'spin') busySpin(tile);
+    else tile.addEventListener('pointerdown', e => { e.preventDefault(); if (!S.paused) BUSY_DO[k](tile); });
+  });
+  sleepFace($('#busyBoard .t-lamp .sleepbat svg'), true);
+  say('y_intro');
+  busyArm();
+}
+
+/* ================= game 3: Bat Bath (scrub, rinse, dry, fluff) ================= */
+const BATH_ROUNDS = 3;
+const MESS = [{ c: '#7a4e2d', name: 'mud' }, { c: '#7b3f8a', name: 'berry' }, { c: null, name: 'paint' }];
+const MESS_SPOTS = [[112, 86], [140, 116], [288, 86], [260, 116], [168, 128], [232, 130], [200, 162], [166, 60], [200, 146], [146, 156], [254, 156]];
+const TUFT_ANGLES = [-170, -150, -130, -110, -90, -70, -50, -30, -10, 10, 170];
+const BATH_TOOLS = { scrub: 'sponge', rinse: 'shower', dry: 'towel', fluff: 'dryer' };
+const BATH_LINES = { scrub: 'w_scrub', rinse: 'w_rinse', dry: 'w_dry', fluff: 'w_fluff' };
+const BATH = { round: 0, phase: 'idle', spots: [], bubbles: [], drips: [], tufts: 0, cfg: null, idleT: null, lastSnd: 0 };
+if (location.hash === '#test') window.__bath = BATH;
+const SPLAT = c => `<path d="M-16,0 Q-18,-13 -5,-15 Q6,-20 13,-8 Q20,2 12,11 Q2,18 -9,14 Q-18,9 -16,0 Z" fill="${c}" stroke="${mix(c, INK, .35)}" stroke-width="2"/>
+  <circle cx="18" cy="-13" r="4.5" fill="${c}"/><circle cx="-15" cy="13" r="3.5" fill="${c}"/>`;
+const BATH_ICON = {
+  sponge: `<g transform="rotate(-12)"><rect x="-44" y="-28" width="88" height="56" rx="14" fill="#e3c03a" ${sw}/>
+    ${[[-26, -12], [-6, 6], [16, -10], [28, 12], [-30, 14], [6, -16]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="5" fill="#c49a20"/>`).join('')}</g>`,
+  shower: `<g transform="rotate(20)"><path d="M-6,46 Q-8,8 10,-6" stroke="#9aa3ad" stroke-width="12" fill="none" stroke-linecap="round"/><path d="M-6,46 Q-8,8 10,-6" stroke="${INK}" stroke-width="3" fill="none" stroke-dasharray="1 0" opacity="0"/>
+    <path d="M-8,-30 Q10,-50 34,-30 L28,-14 Q10,-26 -2,-14 Z" fill="#c9ced4" ${sw}/>${[-2, 8, 18, 28].map(x => `<circle cx="${x}" cy="-16" r="2.5" fill="${INK}"/>`).join('')}</g>`,
+  towel: `<g transform="rotate(-8)"><rect x="-44" y="-30" width="88" height="60" rx="8" fill="#5f9ea0" ${sw}/><path d="M-44,10 H44 M-44,18 H44" stroke="${CREAM}" stroke-width="4"/>
+    <path d="M-40,30 v8 M-28,30 v8 M-16,30 v8 M-4,30 v8 M8,30 v8 M20,30 v8 M32,30 v8" stroke="${CREAM}" stroke-width="3" stroke-linecap="round"/></g>`,
+  dryer: `<g transform="rotate(-10)"><rect x="-10" y="4" width="20" height="44" rx="8" fill="#22364f" ${sw}/><path d="M-40,-20 Q-40,-38 -20,-38 L26,-38 Q38,-38 38,-24 L38,-8 Q38,6 24,6 L-20,6 Q-40,6 -40,-20 Z" fill="#c2452f" ${sw}/>
+    <rect x="38" y="-30" width="12" height="28" rx="3" fill="#7d8690" ${sw}/><circle cx="-14" cy="-16" r="8" fill="#e0a930" ${sw}/></g>`,
+  duck: `<path d="M-34,10 Q-36,36 0,38 Q36,38 38,12 Q30,-2 12,4 Q14,-12 6,-24 Q-6,-38 -20,-28 Q-30,-20 -26,-6 Q-34,-4 -34,10 Z" fill="#e3c03a" ${sw}/>
+    <path d="M-26,-14 L-44,-10 L-28,-4 Z" fill="#e07a2a" ${sw}/><circle cx="-14" cy="-18" r="4" fill="${INK}"/><path d="M-4,14 Q10,22 24,12" stroke="#c49a20" stroke-width="4" fill="none" stroke-linecap="round"/>`
+};
+function bathRenderProgress() {
+  $('#bathProg').innerHTML = Array.from({ length: BATH_ROUNDS }, (_, i) =>
+    `<svg viewBox="-50 -46 100 92" class="${i < BATH.round ? 'on' : ''}">${BATH_ICON.duck}</svg>`).join('');
+}
+function bathRender() {
+  const b = BATH.cfg, mess = MESS[BATH.round % MESS.length];
+  const bat = batSVG(b.color, { hat: b.hat }).replace('class="batsvg"', 'class="bathbatsvg"').replace('<svg ', '<svg x="40" y="-18" width="320" height="240" ');
+  BATH.spots = shuffle(MESS_SPOTS.slice()).slice(0, 7).map(([x, y], i) => ({ x, y, d: 1, c: mess.c || ['#c2452f', '#3f6fa8', '#e0a930', '#5f8f3a'][i % 4] }));
+  BATH.bubbles = []; BATH.drips = []; BATH.tufts = 0;
+  const tufts = TUFT_ANGLES.map((a, i) => { const r = a * Math.PI / 180, x = 200 + 54 * Math.cos(r), y = 118 + 56 * Math.sin(r);
+    return `<g class="tuft" data-i="${i}" style="display:none"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="10" fill="${b.color}" stroke="${INK}" stroke-width="2.5"/><circle cx="${(x + 6 * Math.cos(r)).toFixed(1)}" cy="${(y + 6 * Math.sin(r)).toFixed(1)}" r="6" fill="${b.color}" stroke="${INK}" stroke-width="2"/></g>`; }).join('');
+  $('#bathStage').innerHTML = `<svg viewBox="0 0 400 300" class="bathsvg">
+    <defs><pattern id="btiles" width="40" height="40" patternUnits="userSpaceOnUse"><rect width="40" height="40" fill="#5f9ea0"/><path d="M40,0 H0 V40" fill="none" stroke="#4a8a8c" stroke-width="3"/></pattern></defs>
+    <rect x="-200" y="-40" width="800" height="380" fill="url(#btiles)"/>
+    <rect x="-200" y="248" width="800" height="100" fill="#e6dcc0"/><path d="M-200,248 H600" stroke="${INK}" stroke-width="3"/>
+    <g class="bathbat">${bat}</g>
+    <g class="tufts">${tufts}</g>
+    <g class="mud">${BATH.spots.map((s, i) => `<g class="spot" data-i="${i}" transform="translate(${s.x},${s.y})">${SPLAT(s.c)}</g>`).join('')}</g>
+    <g class="drips"></g><g class="bubbles"></g>
+    <rect x="34" y="182" width="332" height="16" rx="8" fill="#f3e9d2" ${sw}/>
+    <path d="M42,194 L358,194 Q354,262 300,272 L100,272 Q46,262 42,194 Z" fill="#fffaf0" ${sw}/>
+    <path d="M70,210 Q200,222 330,210" stroke="#d7e7ea" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M92,268 l-12,22 h18 l4,-18 M308,268 l12,22 h-18 l-4,-18" fill="#e0a930" ${sw}/>
+    ${[60, 92, 124, 276, 308, 340].map((x, i) => `<circle cx="${x}" cy="${184 - (i % 2) * 4}" r="${9 + (i % 3) * 2}" fill="#fff" fill-opacity=".85" stroke="#bfe0f0" stroke-width="2"/>`).join('')}
+    <g class="fx"></g></svg>`;
+  bathFace();
+}
+const bathSvg = () => $('#bathStage svg');
+function bathFace() {
+  const dirt = BATH.spots.reduce((a, s) => a + s.d, 0) / Math.max(1, BATH.spots.length);
+  const h = BATH.phase === 'done' ? 1 : BATH.phase === 'scrub' || BATH.phase === 'intro' ? .3 + .35 * (1 - dirt) : BATH.phase === 'fluff' ? .8 + .15 * BATH.tufts / TUFT_ANGLES.length : .7;
+  const svg = $('#bathStage .bathbatsvg'); if (svg) setHappy(h, svg);
+}
+function bathTray() {
+  const tool = BATH_TOOLS[BATH.phase];
+  $('#bathTray').innerHTML = (tool ? `<div class="tool" data-k="${tool}"><svg viewBox="-60 -60 120 120" class="pop">${BATH_ICON[tool]}</svg></div>` : '') +
+    `<div class="tool duck" data-k="duck"><svg viewBox="-60 -60 120 120">${BATH_ICON.duck}</svg></div>`;
+  const t = $('#bathTray .tool:not(.duck)'); if (t) bathDrag(t);
+  $('#bathTray .duck').addEventListener('pointerdown', e => { e.preventDefault(); sfx.squeakToy(); nudge($('#bathTray .duck svg')); });
+}
+function bathSetPhase(p) {
+  BATH.phase = p; bathTray(); bathFace();
+  if (BATH_LINES[p]) say(BATH_LINES[p]);
+  bathArm();
+}
+function bathArm() {
+  clearTimeout(BATH.idleT);
+  BATH.idleT = setTimeout(() => {
+    if (!S.paused && BATH_TOOLS[BATH.phase]) nudge($('#bathTray .tool:not(.duck) svg'));
+    if (BATH_TOOLS[BATH.phase]) bathArm();
   }, 9000);
 }
-function bbDrag(el) {
+const bathOnBat = p => p.x > 56 && p.x < 344 && p.y > 22 && p.y < 186;
+function bathSound(kind) {
+  const now = performance.now(); if (now - BATH.lastSnd < 140) return; BATH.lastSnd = now;
+  if (kind === 'squish') noiseBurst(.08, 2400, .1);
+  else if (kind === 'pop') tone(1600 + Math.random() * 600, 0, .04, 'sine', .08, 900);
+  else if (kind === 'rub') noiseBurst(.1, 900, .12);
+  else if (kind === 'wind') noiseBurst(.16, 1500, .1);
+}
+function bathApply(k, p, dist) {
+  const svg = bathSvg(); if (!svg) return;
+  if (k === 'sponge' && BATH.phase === 'scrub') {
+    let rubbed = false;
+    BATH.spots.forEach((s, i) => {
+      if (s.d > 0 && Math.hypot(s.x - p.x, s.y - p.y) < 38) { s.d = Math.max(0, s.d - dist * .014); svg.querySelector(`.spot[data-i="${i}"]`).style.opacity = s.d; rubbed = true; }
+    });
+    if (bathOnBat(p) && dist > 0 && BATH.bubbles.length < 50 && Math.random() < .55) {
+      const b = { x: p.x + (Math.random() - .5) * 30, y: p.y + (Math.random() - .5) * 26, r: 6 + Math.random() * 9 };
+      BATH.bubbles.push(b);
+      svg.querySelector('.bubbles').insertAdjacentHTML('beforeend', `<g class="bub"><circle cx="${b.x.toFixed(1)}" cy="${b.y.toFixed(1)}" r="${b.r.toFixed(1)}" fill="#fff" fill-opacity=".8" stroke="#bfe0f0" stroke-width="2"/><circle cx="${(b.x - b.r * .35).toFixed(1)}" cy="${(b.y - b.r * .35).toFixed(1)}" r="${(b.r * .25).toFixed(1)}" fill="#fff"/></g>`);
+    }
+    if (rubbed) { bathSound('squish'); bathFace(); }
+    if (BATH.spots.every(s => s.d < .12)) {
+      BATH.spots.forEach((s, i) => { s.d = 0; svg.querySelector(`.spot[data-i="${i}"]`).style.opacity = 0; });
+      while (BATH.bubbles.length < 12) { // make sure there are bubbles to rinse
+        const b = { x: 120 + Math.random() * 160, y: 70 + Math.random() * 90, r: 8 + Math.random() * 8 }; BATH.bubbles.push(b);
+        svg.querySelector('.bubbles').insertAdjacentHTML('beforeend', `<g class="bub"><circle cx="${b.x.toFixed(1)}" cy="${b.y.toFixed(1)}" r="${b.r.toFixed(1)}" fill="#fff" fill-opacity=".8" stroke="#bfe0f0" stroke-width="2"/></g>`);
+      }
+      sfx.match(); bathSetPhase('rinse');
+    }
+  } else if (k === 'shower' && BATH.phase === 'rinse') {
+    const fx = svg.querySelector('.fx');
+    if (Math.random() < .6) fx.insertAdjacentHTML('beforeend', `<path class="drop" d="M${(p.x + (Math.random() - .5) * 30).toFixed(1)},${p.y.toFixed(1)} v14" stroke="#9fcbd6" stroke-width="3" stroke-linecap="round"/>`);
+    while (fx.children.length > 24) fx.firstElementChild.remove();
+    const bubs = svg.querySelectorAll('.bubbles .bub');
+    BATH.bubbles = BATH.bubbles.filter((b, i) => {
+      if (Math.hypot(b.x - p.x, b.y - p.y) < 44) {
+        bubs[i].remove(); bathSound('pop');
+        if (BATH.drips.length < 10 && Math.random() < .5) bathAddDrip(b.x, b.y);
+        return false;
+      }
+      return true;
+    });
+    if (!BATH.bubbles.length) {
+      while (BATH.drips.length < 6) bathAddDrip(130 + Math.random() * 140, 70 + Math.random() * 90);
+      fx.innerHTML = ''; sfx.match(); bathSetPhase('dry');
+    }
+  } else if (k === 'towel' && BATH.phase === 'dry') {
+    const els = svg.querySelectorAll('.drips .drip');
+    BATH.drips = BATH.drips.filter((d, i) => { if (Math.hypot(d.x - p.x, d.y - p.y) < 44) { els[i].remove(); return false; } return true; });
+    if (dist > 0 && bathOnBat(p)) bathSound('rub');
+    if (!BATH.drips.length) { sfx.match(); bathSetPhase('fluff'); }
+  } else if (k === 'dryer' && BATH.phase === 'fluff') {
+    if (Math.hypot(p.x - 200, p.y - 112) > 150) return;
+    const fx = svg.querySelector('.fx');
+    if (Math.random() < .5) fx.insertAdjacentHTML('beforeend', `<path class="wind" d="M${p.x.toFixed(1)},${p.y.toFixed(1)} q-14,-8 -28,0 t-28,0" stroke="#f3e9d2" stroke-width="3" fill="none" stroke-linecap="round"/>`);
+    while (fx.children.length > 10) fx.firstElementChild.remove();
+    bathSound('wind');
+    BATH.tufts = Math.min(TUFT_ANGLES.length, BATH.tufts + dist * .03);
+    svg.querySelectorAll('.tuft').forEach((t, i) => { if (i < Math.floor(BATH.tufts)) t.style.display = ''; });
+    bathFace();
+    if (BATH.tufts >= TUFT_ANGLES.length) { fx.innerHTML = ''; bathDone(); }
+  }
+}
+function bathAddDrip(x, y) {
+  BATH.drips.push({ x, y });
+  bathSvg().querySelector('.drips').insertAdjacentHTML('beforeend', `<path class="drip" d="M${x.toFixed(1)},${(y - 8).toFixed(1)} q7,9 0,14 q-7,-5 0,-14 Z" fill="#6aa8d8" stroke="${INK}" stroke-width="1.5"/>`);
+}
+function bathDrag(el) {
   let d = null;
   el.addEventListener('pointerdown', e => {
-    if (BB.phase !== 'build' || BB.busy || S.paused || d) return;
+    if (!BATH_TOOLS[BATH.phase] || S.paused || d) return;
     e.preventDefault(); try { el.setPointerCapture(e.pointerId); } catch (err) {}
-    d = { id: e.pointerId, x0: e.clientX, y0: e.clientY, moved: false, home: el.getBoundingClientRect() };
-    el.classList.add('dragging'); el.style.transition = 'transform .12s'; el.style.transform = 'scale(1.12)';
-    sfx.pick(); bbArm();
+    const r = el.getBoundingClientRect();
+    d = { id: e.pointerId, x0: e.clientX, y0: e.clientY, cx: r.left + r.width / 2, cy: r.top + r.height / 2, last: null };
+    el.classList.add('dragging'); el.style.transition = 'none'; sfx.pick(); bathArm();
   });
   el.addEventListener('pointermove', e => {
     if (!d || e.pointerId !== d.id) return;
     const dx = e.clientX - d.x0, dy = e.clientY - d.y0;
-    if (!d.moved && Math.hypot(dx, dy) > 12) { d.moved = true; el.style.transition = 'none'; }
-    if (d.moved) el.style.transform = `translate(${dx}px,${dy}px) scale(1.12)`;
+    el.style.transform = `translate(${dx}px,${dy}px) scale(1.1)`;
+    const p = svgPoint(bathSvg(), d.cx + dx, d.cy + dy);
+    const dist = d.last ? Math.hypot(p.x - d.last.x, p.y - d.last.y) : 0; d.last = p;
+    bathApply(el.dataset.k, p, Math.min(dist, 40));
   });
-  const end = e => {
-    if (!d || e.pointerId !== d.id) return;
-    const info = d; d = null;
-    if (e.type === 'pointercancel' || !info.moved) { returnHome(el); if (!info.moved) bbHint(el.dataset.id); return; }
-    bbDrop(el, info, e.clientX, e.clientY);
-  };
+  const end = e => { if (!d || e.pointerId !== d.id) return; d = null; returnHome(el); };
   el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
 }
-async function bbDrop(el, info, x, y) {
-  const id = el.dataset.id, piece = BB.build.pieces.find(q => q.id === id), type = piece.type || piece.id;
-  // nearest free slot of the same kind; a generous radius so little fingers succeed
-  let best = null, bd = 1e9;
-  BB.build.pieces.filter(q => (q.type || q.id) === type && !BB.placed.has(q.id)).forEach(q => {
-    const c = center(bbScreenBox(q)), dd = Math.hypot(c.x - x, c.y - y); if (dd < bd) { bd = dd; best = q; }
-  });
-  const plan = $('#bbPlan').getBoundingClientRect(), onPlan = x > plan.left && x < plan.right && y > plan.top && y < plan.bottom;
-  if (!best) { returnHome(el); return; }
-  const sb = bbScreenBox(best), reach = Math.max(Math.min(110, plan.width * .16), Math.hypot(sb.width, sb.height) * .6);
-  if (bd > reach) {
-    returnHome(el);
-    if (onPlan) { sfx.soft(); bbGlow(best.id); bbHelper('hmm'); if (!BB.wrongSaid) { BB.wrongSaid = true; say('b_try'); } }
-    return;
-  }
-  BB.busy = true;
-  // scale so the piece lands at exactly its blueprint size: (blueprint px per unit) / (tray px per unit)
-  const c = center(sb), hc = center(info.home), [, , pw, ph] = piece.box;
-  const trayPx = Math.min(info.home.width / (pw + 16), info.home.height / (ph + 16)), planPx = $('#bbPlan svg').getScreenCTM().a;
-  const s = planPx / trayPx;
-  el.style.transition = 'transform .22s ease-out';
-  el.style.transform = `translate(${c.x - hc.x}px,${c.y - hc.y}px) scale(${Math.max(.2, Math.min(3, s)).toFixed(3)})`;
-  await wait(230);
-  el.remove();
-  BB.placed.add(best.id);
-  const part = $(`#bbPlan .part[data-id="${best.id}"]`); part.style.display = ''; part.classList.add('snap');
-  const gh = $(`#bbPlan .ghost[data-id="${best.id}"]`); if (gh) gh.style.display = 'none';
-  sfx.clunk(); sparkle(c.x, c.y, 6); vibrate(15); bbHelper('bounce');
-  BB.busy = false;
-  if (BB.placed.size === BB.build.pieces.length) { bbBuilt(); return; }
-  if (BB.placed.size === 1 || Math.random() < .4) say('b_good');
-  bbArm();
-}
-function bbHelper(cls) { const h = $('#bbHelper'); if (!h) return; h.classList.remove('hmm', 'bounce', 'flip'); void h.offsetWidth; h.classList.add(cls); }
-
-/* ---------- controls: lever, big button, crank ---------- */
-const CTRL = {
-  lever: `<svg viewBox="0 0 120 220" class="ctrl lever"><rect x="20" y="150" width="80" height="58" rx="10" fill="#e0a930" ${sw}/><rect x="52" y="160" width="16" height="36" rx="6" fill="${INK}"/>
-    <g class="stick"><rect x="54" y="60" width="12" height="120" rx="6" fill="#9aa3ad" ${sw}/><circle cx="60" cy="56" r="24" fill="#c2452f" ${sw}/><circle cx="52" cy="48" r="7" fill="#fff" opacity=".5"/></g></svg>`,
-  button: `<svg viewBox="0 0 160 150" class="ctrl button"><rect x="16" y="82" width="128" height="56" rx="12" fill="#e0a930" ${sw}/>
-    <g class="dome"><ellipse cx="80" cy="82" rx="48" ry="14" fill="#9c3a28" ${sw}/><path d="M32,82 Q32,34 80,34 Q128,34 128,82 Z" fill="#c2452f" ${sw}/><ellipse cx="64" cy="52" rx="13" ry="7" fill="#fff" opacity=".45"/></g></svg>`,
-  crank: `<svg viewBox="0 0 180 180" class="ctrl crank"><circle cx="90" cy="90" r="74" fill="#7d8690" ${sw}/>
-    <g class="arm"><circle cx="90" cy="90" r="58" fill="#9aa3ad" ${sw}/><path d="M90,90 L90,30" stroke="${INK}" stroke-width="13" stroke-linecap="round"/><path d="M90,90 L90,30" stroke="#e0a930" stroke-width="7" stroke-linecap="round"/>
-    <circle cx="90" cy="30" r="17" fill="#c2452f" ${sw}/><circle cx="90" cy="90" r="12" fill="#e0a930" ${sw}/></g></svg>`
-};
-function bbShowControl() {
-  const tr = $('#bbTray');
-  tr.innerHTML = `<div id="bbCtrl" class="pop-ctrl">${CTRL[BB.build.control]}</div><button id="bbNext" class="bigBtn small" aria-label="Next build">
-    <svg viewBox="0 0 100 100"><path d="M26,50 H70 M52,30 L74,50 L52,70" fill="none" stroke="#f3e9d2" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`;
-  const ctrl = $('#bbCtrl');
-  if (BB.build.control === 'crank') bbCrank(ctrl);
-  else ctrl.addEventListener('pointerdown', e => { e.preventDefault(); bbPress(); });
-  $('#bbNext').addEventListener('click', bbNext);
-}
-async function bbPress() {
-  if (BB.phase !== 'machine' || BB.running || S.paused) return;
-  const c = BB.build.control, el = $(`#bbCtrl .${c === 'lever' ? 'stick' : 'dome'}`);
-  el.classList.add('down'); sfx.clunk();
-  setTimeout(() => el.classList.remove('down'), 260);
-  bbRun();
-}
-function bbCrank(ctrl) {
-  const arm = ctrl.querySelector('.arm'), sails = () => $('#bbPlan .part[data-id="sails"] .sails');
-  let d = null;
-  const angle = e => { const r = ctrl.getBoundingClientRect(); return Math.atan2(e.clientY - (r.top + r.height / 2), e.clientX - (r.left + r.width / 2)) * 180 / Math.PI; };
-  const setTurn = (deg, smooth) => {
-    BB.crank = deg;
-    [arm, sails()].forEach(el => { if (!el) return; el.style.transition = smooth ? 'transform 1.4s cubic-bezier(.2,.7,.3,1)' : 'none'; });
-    arm.style.transform = `rotate(${deg}deg)`;
-    const s = sails(); if (s) s.style.transform = `rotate(${deg * 1.6}deg)`;
-  };
-  let lastWhoosh = 0;
-  ctrl.addEventListener('pointerdown', e => {
-    if (BB.phase !== 'machine' || S.paused) return;
-    e.preventDefault(); try { ctrl.setPointerCapture(e.pointerId); } catch (err) {}
-    d = { id: e.pointerId, a: angle(e), total: 0 }; bbArm();
-  });
-  ctrl.addEventListener('pointermove', e => {
-    if (!d || e.pointerId !== d.id) return;
-    let a = angle(e), da = a - d.a; if (da > 180) da -= 360; if (da < -180) da += 360;
-    d.a = a; d.total += Math.abs(da);
-    setTurn(BB.crank + da, false);
-    if (Math.abs(BB.crank - lastWhoosh) > 120) { lastWhoosh = BB.crank; sfx.whoosh(); }
-    if (d.total > 300) bbRan();
-  });
-  const end = e => {
-    if (!d || e.pointerId !== d.id) return;
-    const moved = d.total; d = null;
-    if (moved < 30) { setTurn(BB.crank + 720, true); sfx.whoosh(); setTimeout(() => sfx.whoosh(), 500); setTimeout(bbRan, 900); } // a tap gives a big spin
-  };
-  ctrl.addEventListener('pointerup', end); ctrl.addEventListener('pointercancel', end);
-}
-async function bbRun() {
-  BB.running = true;
-  const svg = $('#bbPlan svg'), k = BB.order[BB.round];
-  const play = async (cls, ms) => { svg.classList.remove(cls); void svg.getBoundingClientRect(); svg.classList.add(cls); await wait(ms); svg.classList.remove(cls); };
-  if (k === 'car') { sfx.vroom(); squeak(2); await play('drive', 2700); }
-  else if (k === 'trex') { sfx.roar(); setTimeout(() => sfx.roar(), 800); await play('chomp', 1700); }
-  else if (k === 'rocket') { say('b_countdown'); await wait(1700); sfx.rumble(); await play('launch', 3400); }
-  else if (k === 'house') {
-    svg.classList.add('lit'); sfx.ding();
-    const fx = svg.querySelector('.fx');
-    fx.innerHTML = [0, 1, 2].map(i => `<circle class="smoke" cx="358" cy="92" r="${10 + i * 3}" fill="#e6dcc0" opacity=".85" style="animation-delay:${i * .35}s"/>`).join('') +
-      [0, 1, 2].map(i => `<g class="flybat" style="animation-delay:${.3 + i * .45}s"><path d="M300,320 q-14,-12 -28,-4 q8,8 4,16 q10,-4 14,4 q4,-8 10,-8 q6,0 10,8 q4,-8 14,-4 q-4,-8 4,-16 q-14,-8 -28,4 Z" fill="#f290ae" stroke="${INK}" stroke-width="2"/></g>`).join('');
-    [0, 450, 900].forEach(t => setTimeout(() => squeak(2, 1.15, .05), 300 + t));
-    await wait(2600); fx.innerHTML = '';
-  }
-  BB.running = false;
-  bbRan();
-}
-function bbRan() {
-  if (BB.ran || BB.phase !== 'machine') return;
-  BB.ran = true;
-  setTimeout(() => { $('#bbNext') && $('#bbNext').classList.add('show'); say('b_next'); }, 500);
-}
-async function bbBuilt() {
-  BB.phase = 'machine'; clearTimeout(BB.idleT);
-  const svg = $('#bbPlan svg'); svg.classList.add('built');
-  sfx.yay(); squeak(3, 1.15); bbHelper('flip'); confetti(14);
-  bbShowControl();
-  const c = BB.build.control;
-  await say(c === 'lever' ? 'b_lever' : c === 'crank' ? 'b_crank' : 'b_button');
-  bbArm();
-}
-async function bbNext() {
-  if (BB.phase !== 'machine') return;
-  unlockAudio();
-  BB.phase = 'next'; clearTimeout(BB.idleT);
-  BB.round++; bbRenderProgress();
-  if (BB.round >= BB.order.length) { bbParty(); return; }
-  const p = $('#bbPlan'); p.classList.remove('in'); p.classList.add('out');
+async function bathDone() {
+  BATH.phase = 'done'; clearTimeout(BATH.idleT);
+  $('#bathTray').innerHTML = `<div class="tool duck" data-k="duck"><svg viewBox="-60 -60 120 120">${BATH_ICON.duck}</svg></div>`;
+  bathFace();
+  const svg = bathSvg(), r = svg.getBoundingClientRect();
+  sparkle(r.left + r.width / 2, r.top + r.height * .45, 18); sfx.yay(); squeak(3, 1.15);
+  svg.querySelector('.bathbat').classList.add('shine');
+  BATH.round++; bathRenderProgress();
+  await say('w_done');
+  await wait(500);
+  if (BATH.round >= BATH_ROUNDS) { bathParty(); return; }
+  const st = $('#bathStage'); st.classList.remove('in'); st.classList.add('out');
   await wait(460);
-  bbStartRound();
+  bathStartRound();
 }
-async function bbStartRound() {
-  BB.phase = 'intro'; BB.placed = new Set(); BB.ran = false; BB.running = false; BB.busy = false; BB.crank = 0;
-  BB.build = BB_BUILDS[BB.order[BB.round]];
-  bbRender();
-  const p = $('#bbPlan'); p.classList.remove('out'); void p.offsetWidth; p.classList.add('in');
-  sfx.whoosh();
+async function bathStartRound() {
+  BATH.phase = 'intro';
+  BATH.cfg = BATS[(BATH.order + BATH.round) % BATS.length];
+  bathRender(); $('#bathTray').innerHTML = '';
+  const st = $('#bathStage'); st.classList.remove('out'); void st.offsetWidth; st.classList.add('in');
+  sfx.whoosh(); setTimeout(() => squeak(1, .9, .05), 500);
   await wait(550);
-  BB.phase = 'build';
-  await say(BB.build.line);
-  if (BB.round === 0 && BB.phase === 'build') say('b_intro');
-  bbArm();
+  if (BATH.round === 0) await say('w_intro');
+  bathSetPhase('scrub');
 }
-async function bbParty() {
-  BB.phase = 'party';
-  $('#bbTray').innerHTML = '';
+async function bathParty() {
+  BATH.phase = 'party';
   document.body.classList.add('party');
   confetti(55); sfx.yay(); musicPlay('party'); squeak(4, 1.1);
-  await say('b_party');
+  await say('w_party');
   await wait(900);
-  $('#bbAgain').classList.add('show');
+  $('#bathAgain').classList.add('show');
 }
-function bbStart() {
-  BB.order = BB_ORDER_FIRST.concat(shuffle(BB_ORDER_REST.slice()));
-  BB.round = 0; BB.wrongSaid = false;
-  bbRenderProgress();
-  $('#bbHelper').innerHTML = batSVG(BATS[4].color, { happy: true, hat: BATS[4].hat });
-  bbStartRound();
-}
-$('#bbAgain').addEventListener('click', () => {
-  unlockAudio();
-  $('#bbAgain').classList.remove('show');
-  document.body.classList.remove('party');
-  musicPlay('main');
-  bbStart();
+function bathStart() { BATH.round = 0; BATH.order = Math.floor(Math.random() * BATS.length); bathRenderProgress(); bathStartRound(); }
+$('#bathAgain').addEventListener('click', () => {
+  unlockAudio(); $('#bathAgain').classList.remove('show'); document.body.classList.remove('party'); musicPlay('main'); bathStart();
 });
+
+/* ================= game 4: Bat Band (sing, play, dance) ================= */
+const BAND_NOTES = ['D4', 'F4', 'G4', 'A4', 'C5'];
+const XYLO_NOTES = ['D5', 'F5', 'G5', 'A5', 'C6', 'D6', 'F6', 'G6'];
+const XYLO_COLS = ['#c2452f', '#e07a2a', '#e0a930', '#5f8f3a', '#5f9ea0', '#3f6fa8', '#2f4a6d', '#8a5aa8'];
+const BAND = { idleT: null, dancing: false, danceSaid: false, xyLast: -1 };
+if (location.hash === '#test') window.__band = BAND;
+function sing(f) {
+  if (!SET.sfx || !ac || ac.state !== 'running') return;
+  const t = ac.currentTime, o = ac.createOscillator(), o2 = ac.createOscillator(), g2 = ac.createGain(), g = ac.createGain(), lp = ac.createBiquadFilter(), v = ac.createOscillator(), vg = ac.createGain();
+  o.type = 'triangle'; o.frequency.value = f; o2.type = 'sine'; o2.frequency.value = f * 2; g2.gain.value = .3;
+  v.frequency.value = 5.5; vg.gain.value = f * .015; v.connect(vg); vg.connect(o.frequency); vg.connect(o2.frequency);
+  lp.type = 'lowpass'; lp.frequency.value = 1700;
+  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.3, t + .05); g.gain.exponentialRampToValueAtTime(.16, t + .3); g.gain.exponentialRampToValueAtTime(.0001, t + .8);
+  o.connect(lp); o2.connect(g2).connect(lp); lp.connect(g).connect(sfxGain);
+  [o, o2, v].forEach(x => { x.start(t); x.stop(t + .85); });
+}
+function bandRender() {
+  $('#bandBats').innerHTML = BATS.map((b, i) => `<div class="bandbat" data-i="${i}"><div class="bb-in">${batSVG(b.color, { hat: b.hat })}</div></div>`).join('');
+  $$('#bandBats .batsvg').forEach(s => setHappy(.8, s));
+  const bars = XYLO_NOTES.map((n, i) => { const h = 132 - i * 9, x = 18 + i * 46;
+    return `<g class="bar" data-i="${i}"><rect x="${x}" y="${80 - h / 2}" width="38" height="${h}" rx="7" fill="${XYLO_COLS[i]}" ${sw}/>
+      <circle cx="${x + 19}" cy="${80 - h / 2 + 12}" r="4" fill="#e6dcc0" stroke="${INK}" stroke-width="2"/><circle cx="${x + 19}" cy="${80 + h / 2 - 12}" r="4" fill="#e6dcc0" stroke="${INK}" stroke-width="2"/></g>`; }).join('');
+  $('#bandXylo').innerHTML = `<svg viewBox="0 0 400 160"><path d="M10,34 L392,52 M10,126 L392,108" stroke="#7a4e2d" stroke-width="12" stroke-linecap="round"/>${bars}</svg>`;
+  $('#bandDrum').innerHTML = `<svg viewBox="0 0 160 160"><path d="M24,52 V122 Q80,150 136,122 V52" fill="#c2452f" ${sw}/>
+    <path d="M24,70 L52,128 L80,70 L108,128 L136,70" stroke="#e0a930" stroke-width="5" fill="none"/>
+    <g class="skin"><ellipse cx="80" cy="52" rx="56" ry="20" fill="#f3e9d2" ${sw}/><path d="M72,52 q-10,-8 -20,-2 q6,4 3,9 q6,-2 9,2 q2,-5 8,-5 q6,0 8,5 q3,-4 9,-2 q-3,-5 3,-9 q-10,-6 -20,2 Z" fill="#f290ae" stroke="${INK}" stroke-width="1.5"/></g></svg>`;
+  $('#bandShaker').innerHTML = `<svg viewBox="0 0 160 160"><g class="mar"><path d="M58,120 L74,82" stroke="#7a4e2d" stroke-width="10" stroke-linecap="round"/><ellipse cx="82" cy="58" rx="28" ry="34" transform="rotate(20 82 58)" fill="#e0a930" ${sw}/>
+    <path d="M64,48 q18,-10 34,8" stroke="#c2452f" stroke-width="5" fill="none"/></g>
+    <g class="mar m2"><path d="M110,130 L104,92" stroke="#7a4e2d" stroke-width="10" stroke-linecap="round"/><ellipse cx="104" cy="70" rx="24" ry="30" transform="rotate(-10 104 70)" fill="#5f9ea0" ${sw}/>
+    <path d="M90,62 q14,-8 28,4" stroke="#f3e9d2" stroke-width="5" fill="none"/></g></svg>`;
+  $('#bandPlayer').innerHTML = `<svg viewBox="0 0 160 160"><rect x="16" y="64" width="128" height="76" rx="10" fill="#7a4e2d" ${sw}/>
+    <g class="disc" style="transform-origin:80px 70px"><ellipse cx="80" cy="70" rx="56" ry="22" fill="${INK}"/><ellipse cx="80" cy="70" rx="40" ry="15" fill="none" stroke="#3a2e26" stroke-width="2"/><ellipse cx="80" cy="70" rx="14" ry="6" fill="#c2452f"/></g>
+    <path d="M136,40 L120,66" stroke="#9aa3ad" stroke-width="6" stroke-linecap="round"/><circle cx="136" cy="40" r="8" fill="#9aa3ad" ${sw}/>
+    <circle class="led" cx="36" cy="120" r="7" fill="#5a3a22" ${sw}/><path d="M64,104 l20,12 l-20,12 Z" fill="#f3e9d2" stroke="${INK}" stroke-width="2"/></svg>`;
+}
+function bandArm() {
+  clearTimeout(BAND.idleT);
+  BAND.idleT = setTimeout(() => {
+    if (!S.paused && document.body.classList.contains('g-band')) nudge(rand($$('#bandBats .bandbat')));
+    bandArm();
+  }, 10000);
+}
+function bandBat(el) {
+  const i = +el.dataset.i, svg = el.querySelector('.batsvg');
+  sing(noteHz(BAND_NOTES[i])); setHappy(1, svg);
+  el.classList.remove('singing'); void el.offsetWidth; el.classList.add('singing');
+  clearTimeout(el._t); el._t = setTimeout(() => setHappy(.8, svg), 600);
+  const r = el.getBoundingClientRect(); floatNote(r.left + r.width * .5, r.top + r.height * .1);
+  bandArm();
+}
+function bandXylo(e, svg) {
+  const p = svgPoint(svg, e.clientX, e.clientY), i = Math.floor((p.x - 14) / 46);
+  if (i < 0 || i >= XYLO_NOTES.length || p.y < 4 || p.y > 156 || i === BAND.xyLast) return;
+  BAND.xyLast = i;
+  if (ac && ac.state === 'running') mallet(noteHz(XYLO_NOTES[i]), ac.currentTime + .005, { vol: .34, dur: .6, xylo: true });
+  const bar = svg.querySelector(`.bar[data-i="${i}"]`); bar.classList.remove('hit'); void bar.getBoundingClientRect(); bar.classList.add('hit');
+  const r = bar.getBoundingClientRect(); floatNote(r.left + r.width / 2, r.top, XYLO_COLS[i]);
+  bandArm();
+}
+function bandStart() {
+  musicStop(); BAND.dancing = false; $('#bandGame').classList.remove('dancing');
+  bandRender();
+  $$('#bandBats .bandbat').forEach(el => el.addEventListener('pointerdown', e => { e.preventDefault(); bandBat(el); }));
+  const xs = $('#bandXylo svg');
+  xs.addEventListener('pointerdown', e => { e.preventDefault(); try { xs.setPointerCapture(e.pointerId); } catch (err) {} BAND.xyLast = -1; bandXylo(e, xs); });
+  xs.addEventListener('pointermove', e => { if (e.buttons || e.pointerType === 'touch') bandXylo(e, xs); });
+  xs.addEventListener('pointerup', () => { BAND.xyLast = -1; });
+  $('#bandDrum').addEventListener('pointerdown', e => { e.preventDefault(); sfx.drum(); nudgeClass($('#bandDrum'), 'boom'); vibrate(15); bandArm(); });
+  $('#bandShaker').addEventListener('pointerdown', e => { e.preventDefault(); sfx.shaker(); nudgeClass($('#bandShaker'), 'shake'); bandArm(); });
+  $('#bandPlayer').addEventListener('pointerdown', e => {
+    e.preventDefault(); BAND.dancing = !BAND.dancing;
+    $('#bandGame').classList.toggle('dancing', BAND.dancing);
+    if (BAND.dancing) { musicPlay('main'); if (!BAND.danceSaid) { BAND.danceSaid = true; say('n_dance'); } } else musicStop();
+    tone(BAND.dancing ? 880 : 440, 0, .06, 'square', .06); bandArm();
+  });
+  say('n_intro');
+  bandArm();
+}
+function nudgeClass(el, cls) { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
 
 /* ================= game 3: Froggy Tag (a friendly maze chase) ================= */
 const FROG = `<g>
@@ -2475,9 +2682,20 @@ $('#optTheme').onchange = e => { SET.theme = e.target.value; saveSet(); };
 })();
 $('#artDoctor').innerHTML = batSVG(BATS[0].color, { happy: true, hat: BATS[0].hat }) +
   `<svg class="mini-stetho" viewBox="-62 -62 124 124">${TOOL_ICON.stetho}</svg>`;
-$('#artBuild').innerHTML = `<svg viewBox="0 0 600 400" class="miniplan"><rect width="600" height="400" fill="#2f5d8a"/>
-  <path d="${Array.from({ length: 23 }, (_, i) => `M${i * 25},0 V400`).join(' ')} ${Array.from({ length: 16 }, (_, i) => `M0,${i * 25} H600`).join(' ')}" stroke="rgba(255,255,255,.14)" stroke-width="2"/>
-  <g transform="translate(0,-20)">${BB_BUILDS.car.pieces.map(q => q.svg).join('')}</g></svg>`;
+$('#artBusy').innerHTML = `<svg viewBox="0 0 200 140" class="miniart"><rect x="4" y="4" width="192" height="132" rx="14" fill="#a8743a" ${sw}/>
+  <rect x="16" y="16" width="52" height="52" rx="8" fill="#efe2c4" stroke="${INK}" stroke-width="3"/><circle cx="42" cy="42" r="16" fill="#c2452f" ${sw}/>
+  <rect x="74" y="16" width="52" height="52" rx="8" fill="#22364f" stroke="${INK}" stroke-width="3"/><circle cx="100" cy="36" r="9" fill="#ffe08a" stroke="${INK}" stroke-width="3"/><rect x="94" y="48" width="12" height="16" rx="3" fill="#c2452f" stroke="${INK}" stroke-width="2"/>
+  <rect x="132" y="16" width="52" height="52" rx="8" fill="#9fcbd6" stroke="${INK}" stroke-width="3"/>${['#c2452f', '#e0a930', '#5f8f3a', '#3f6fa8'].map((c, i) => `<path d="M158,42 L${158 + 18 * Math.cos(i * Math.PI / 2)},${42 + 18 * Math.sin(i * Math.PI / 2)} A18,18 0 0,1 ${158 + 18 * Math.cos((i + 1) * Math.PI / 2)},${42 + 18 * Math.sin((i + 1) * Math.PI / 2)} Z" fill="${c}" stroke="${INK}" stroke-width="2"/>`).join('')}
+  <rect x="16" y="74" width="52" height="52" rx="8" fill="#5f8f3a" stroke="${INK}" stroke-width="3"/><rect x="28" y="82" width="28" height="38" rx="4" fill="#c2452f" stroke="${INK}" stroke-width="2.5"/>
+  <rect x="74" y="74" width="52" height="52" rx="8" fill="#e6dcc0" stroke="${INK}" stroke-width="3"/><path d="${gearAt(100, 100, 18, 13, 8, 5)}" fill="#e0a930" fill-rule="evenodd" stroke="${INK}" stroke-width="2.5"/>
+  <rect x="132" y="74" width="52" height="52" rx="8" fill="#efe2c4" stroke="${INK}" stroke-width="3"/><path d="M152,118 L152,96 Q152,86 158,82 Q164,86 164,96 L164,118 Z" fill="#fffaf0" stroke="${INK}" stroke-width="2.5"/></svg>`;
+$('#artBath').innerHTML = `<svg viewBox="40 40 320 240" class="miniart"><rect x="0" y="0" width="400" height="300" fill="#5f9ea0"/>
+  ${nestBat(BATS[3].color, BATS[3].hat, 60, 30, 280)}
+  ${[[120, 130], [160, 112], [250, 120], [286, 140], [210, 100]].map(([x, y], i) => `<circle cx="${x}" cy="${y}" r="${12 + i % 3 * 3}" fill="#fff" fill-opacity=".85" stroke="#bfe0f0" stroke-width="2"/>`).join('')}
+  <rect x="34" y="182" width="332" height="16" rx="8" fill="#f3e9d2" ${sw}/><path d="M42,194 L358,194 Q354,262 300,272 L100,272 Q46,262 42,194 Z" fill="#fffaf0" ${sw}/></svg>`;
+$('#artBand').innerHTML = `<svg viewBox="0 0 220 180" class="miniart">${nestBat(BATS[2].color, BATS[2].hat, 30, 0, 160)}
+  ${XYLO_COLS.slice(0, 6).map((c, i) => `<rect x="${24 + i * 30}" y="${128 + i * 3}" width="24" height="${44 - i * 5}" rx="5" fill="${c}" stroke="${INK}" stroke-width="2.5"/>`).join('')}
+  <text x="168" y="40" font-size="34" font-weight="900" fill="#e0a930" stroke="${INK}" stroke-width="1.5">♪</text><text x="26" y="52" font-size="26" font-weight="900" fill="#f290ae" stroke="${INK}" stroke-width="1.5">♫</text></svg>`;
 (() => {
   const M = genMaze(3, 3); MZ.M = M;
   const far = mzFarthest([0, 0]);
@@ -2497,12 +2715,10 @@ $('#playMaze').addEventListener('click', () => {
   musicPlay('main');
   mzStart();
 });
-$('#playBuild').addEventListener('click', () => {
-  beginGame();
-  document.body.classList.add('build');
-  musicPlay('main');
-  bbStart();
-});
+const startMini = (cls, fn) => { beginGame(); document.body.classList.add(cls); fn(); };
+$('#playBusy').addEventListener('click', () => startMini('g-busy', () => { musicPlay('main'); busyStart(); }));
+$('#playBath').addEventListener('click', () => startMini('g-bath', () => { musicPlay('main'); bathStart(); }));
+$('#playBand').addEventListener('click', () => startMini('g-band', bandStart));
 // press and hold the house for 1 second to go back to the menu (a fresh start keeps every game's state clean)
 (() => {
   const h = $('#home'); let t = null;

@@ -3,21 +3,26 @@
 A small collection of toddler games. The start screen is a menu; in a game,
 press and hold the 🏠 button (top left) for a second to come back to it.
 
-## Bat Builder
+## Busy Board
 
-Build a machine from a blueprint, then make it go. White outlines on blue
-engineer's paper show where each big piece goes; drag them on (tapping a piece
-makes its outline glow). When it's built, a control appears on the workbench:
+A wooden busy board with six gadgets and no rules: a big button (a T-Rex
+jack-in-the-box), a light switch (a bat sleeping upside down wakes up), a music
+box crank (gears turn and the game's tune plays note by note), a peekaboo door
+(a different friend each time), a rocket lever (countdown and launch) and a
+pinwheel to flick. Trying all six gets a small celebration.
 
-1. Bat-mobile (body, 2 wheels): pull the lever and it drives off and back.
-2. Windmill (tower, roof, sails): turn the crank and the sails turn with it.
-3. Robot T-Rex (tail, legs, body, head): push the button and it chomps and roars.
-4. Rocket (fins, body, nose, window with a bat inside): push the button for a countdown and blast-off.
-5. Bat house (walls, chimney, roof, door): pull the lever and the lights come on and bats fly home.
+## Bat Bath
 
-The first two builds are always the bat-mobile and the windmill; the other three
-are shuffled. A green arrow appears after the machine has run once, so the child
-decides when to move on.
+A messy bat sits in a clawfoot tub: scrub with the sponge (the mess fades and
+bubbles pile up), rinse with the shower, dry with the towel and fluff with the
+hair dryer. Three bats per game: muddy, berry juice, then paint splats. The
+rubber duck squeaks whenever you like.
+
+## Bat Band
+
+Five bats on a stage, each singing its own note when tapped, plus a xylophone
+(tap or slide), a drum, maracas and a record player that starts the music and
+makes the bats dance. No goals.
 
 ## Froggy Tag
 
