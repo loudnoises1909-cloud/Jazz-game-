@@ -5,11 +5,19 @@ press and hold the 🏠 button (top left) for a second to come back to it.
 
 ## Busy Board
 
-A wooden busy board with six gadgets and no rules: a big button (a T-Rex
-jack-in-the-box), a light switch (a bat sleeping upside down wakes up), a music
-box crank (gears turn and the game's tune plays note by note), a peekaboo door
-(a different friend each time), a rocket lever (countdown and launch) and a
-pinwheel to flick. Trying all six gets a small celebration.
+A wooden busy board with six gadgets and no rules:
+
+- Big button: a T-Rex jack-in-the-box.
+- Light switch: the bulb glows in changing colours and the sleeping bat flies
+  off across the whole screen; switch it off and the bat comes back to sleep.
+- Music box crank: gears turn and the game's tune plays note by note.
+- Peekaboo door: a T-Rex pops out, wearing a different hat or bow tie each time.
+- Rocket lever: countdown, then the rocket leaves its box and flies up across the
+  screen into a starry sky before landing back on its pad.
+- Prize wheel: flick or tap to spin; whatever stops at the top (candy, lollipop,
+  toy car, ball, T-Rex toy or star) pops out as the prize.
+
+Trying all six gets a small celebration.
 
 ## Bat Bath
 

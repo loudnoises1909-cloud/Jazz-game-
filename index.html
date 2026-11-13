@@ -253,7 +253,10 @@
   .t-lamp .glow{opacity:0;transition:opacity .3s}
   .t-lamp.on .glow{opacity:.42}
   .t-lamp .bulb{transition:fill .2s}
-  .t-lamp.on .bulb{fill:#ffe08a}
+  .t-lamp.on .bulb{animation:bulbCols 2.4s linear infinite}
+  .t-lamp.on .glow{animation:bulbCols 2.4s linear infinite}
+  .t-lamp .sleepbat.home{animation:fadeBack .6s ease-out}
+  @keyframes fadeBack{from{opacity:0}to{opacity:1}}
   .t-lamp .toggle{transition:transform .15s}
   .t-lamp.on .toggle{transform:translateY(20px)}
   .t-lamp .zzz{animation:twinkle 2s ease-in-out infinite}
@@ -270,6 +273,18 @@
   .t-rocket .flame2{display:none}
   .t-rocket.launch .flame2{display:inline}
   .t-rocket.launch .rk{animation:rkLaunch 2.5s ease-in}
+  .t-rocket .rk.land{animation:rkLand .8s cubic-bezier(.3,1.4,.5,1)}
+  .prize-pop{transform-box:fill-box;transform-origin:center;animation:popIn .45s ease-out}
+  .t-door .wave{transform-box:fill-box;transform-origin:0 50%;animation:hmm .6s ease-in-out infinite}
+  .skyflyer{position:fixed;z-index:320;pointer-events:none}
+  .skyflyer > *{width:100%;height:100%;display:block}
+  .skyflyer .batsvg{width:100%;height:auto}
+  .flyrocket{overflow:visible}
+  .skyflash{position:fixed;inset:0;z-index:310;pointer-events:none;opacity:0;
+    background:radial-gradient(circle at 20% 30%, #fff 0 1.5px, transparent 2.5px) 0 0/90px 90px, radial-gradient(circle at 60% 70%, #f3e9d2 0 1.2px, transparent 2px) 0 0/130px 130px,
+               radial-gradient(ellipse at 50% 0%, #22364f, #0b111c 75%)}
+  @keyframes bulbCols{0%{fill:#ffe08a}20%{fill:#ff8fc7}40%{fill:#9fcbd6}60%{fill:#7fd36a}80%{fill:#e07a2a}100%{fill:#ffe08a}}
+  @keyframes rkLand{from{transform:translateY(-120px)}to{transform:none}}
   @keyframes rkLaunch{0%{transform:none}6%{transform:translateX(-3px)}12%{transform:translateX(3px)}18%{transform:none}55%{transform:translateY(-230px)}55.01%{transform:translateY(160px)}100%{transform:none}}
 
   /* ---------- Bat Bath ---------- */
@@ -523,6 +538,7 @@ const LINES = [
   { k: 'home',      t: 'Back home with the family!' },
   { k: 'party',     t: 'You healed all the bats! Thank you, Doctor!' },
   { k: 'y_intro', t: "It's a busy board! Try every button and switch!" },
+  { k: 'y_prize', t: 'You won a prize!' },
   { k: 'y_all', t: 'You tried everything! What a busy bat!' },
   { k: 'w_intro', t: "Uh oh! This bat is all messy. Let's give it a bath!" },
   { k: 'w_scrub', t: 'Scrub, scrub, scrub with the sponge!' },
@@ -1889,6 +1905,51 @@ const MELODY = TUNE.mel.join(' ').split(/\s+/).filter(x => x !== '.').map(noteHz
 const BUSY = { tried: new Set(), idleT: null, allDone: false, spinA: 0, spinV: 0, spinRaf: 0, crankA: 0, crankAcc: 0, note: 0, lastFriend: -1 };
 if (location.hash === '#test') window.__busy = BUSY;
 
+// ---- full-body T-Rex for the peekaboo door (drawn around 0,0), with a random accessory
+const TREX_FULL = `<g>
+  <path d="M-58,10 Q-36,-4 -14,-6 L-12,14 Q-34,18 -58,10 Z" fill="#5f8f3a" ${sw}/>
+  <path d="M-12,22 L-12,46 L2,46 L-1,22 Z" fill="#4c7330" ${sw}/><path d="M8,22 L8,46 L22,46 L19,22 Z" fill="#4c7330" ${sw}/>
+  <polygon points="-32,-6 -26,-18 -20,-6" fill="#e0a930" ${sw}/><polygon points="-18,-12 -11,-25 -4,-12" fill="#e0a930" ${sw}/><polygon points="-2,-14 5,-27 12,-14" fill="#e0a930" ${sw}/>
+  <ellipse cx="0" cy="8" rx="26" ry="22" fill="#5f8f3a" ${sw}/><ellipse cx="4" cy="14" rx="13" ry="11" fill="#a9c97a"/>
+  <path d="M10,-8 Q12,-36 32,-40 Q56,-42 58,-26 Q58,-14 44,-12 L26,-10 Z" fill="#5f8f3a" ${sw}/>
+  <path d="M24,-10 L54,-12 Q52,-2 34,0 Q26,0 24,-10 Z" fill="#5f8f3a" ${sw}/>
+  <path d="M30,-11 l3,5 l3,-5 l3,5 l3,-5 l3,5 l3,-5 Z" fill="#fffaf0" stroke="${INK}" stroke-width="1.5" stroke-linejoin="round"/>
+  <circle cx="40" cy="-29" r="5.5" fill="#fffaf0" stroke="${INK}" stroke-width="2"/><circle cx="41.5" cy="-29" r="2.6" fill="${INK}"/>
+  <g class="wave"><path d="M20,4 l9,-8 M20,10 l10,2" stroke="${INK}" stroke-width="3.5" stroke-linecap="round"/></g></g>`;
+const REX_HATS = [
+  `<path d="M28,-38 L36,-64 L46,-40 Z" fill="#3f6fa8" ${sw}/><circle cx="36" cy="-65" r="4" fill="#c2452f" ${sw}/>`,
+  `<path d="M24,-38 L26,-54 L33,-46 L38,-58 L43,-46 L50,-54 L50,-38 Z" fill="#e0a930" ${sw}/>`,
+  `<path d="M10,-2 l-8,-6 v12 Z M14,-2 l8,-6 v12 Z" fill="#c2452f" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/><circle cx="12" cy="-2" r="3" fill="#c2452f" stroke="${INK}" stroke-width="2"/>`,
+  `<path d="M30,-30 H52" stroke="${INK}" stroke-width="3"/><rect x="33" y="-35" width="15" height="11" rx="4" fill="${INK}"/>`
+];
+// ---- prizes on the wheel (each drawn around 0,0)
+const PRIZES = [
+  { name: 'candy', svg: `<path d="M-10,0 l-9,-7 v14 Z M10,0 l9,-7 v14 Z" fill="#f290ae" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><ellipse rx="11" ry="8" fill="#f290ae" stroke="${INK}" stroke-width="2"/><path d="M-4,-7 l-3,14 M3,-7 l-3,14" stroke="#fffaf0" stroke-width="2.5"/>` },
+  { name: 'lollipop', svg: `<path d="M0,6 V22" stroke="#fffaf0" stroke-width="4" stroke-linecap="round"/><path d="M0,6 V22" stroke="${INK}" stroke-width="1" opacity=".3"/><circle cx="0" cy="-4" r="11" fill="#e0a930" stroke="${INK}" stroke-width="2"/><path d="M0,-4 m-6,0 a6,6 0 1,1 6,6 a3,3 0 1,1 -3,-3" stroke="#c2452f" stroke-width="2.5" fill="none"/>` },
+  { name: 'toy car', svg: `<path d="M-15,4 V-2 Q-15,-5 -11,-5 L-6,-5 L-2,-12 L8,-12 L12,-5 L15,-5 Q18,-4 18,0 V4 Z" fill="#3f6fa8" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><circle cx="-8" cy="5" r="4.5" fill="${INK}"/><circle cx="10" cy="5" r="4.5" fill="${INK}"/><path d="M0,-11 V-5" stroke="${INK}" stroke-width="1.5"/>` },
+  { name: 'ball', svg: `<circle r="12" fill="${CREAM}" stroke="${INK}" stroke-width="2"/><path d="M0,-12 Q-8,0 0,12 Q-12,0 0,-12 Z" fill="#c2452f"/><path d="M0,-12 Q8,0 0,12 Q12,0 0,-12 Z" fill="#3f6fa8"/><circle r="12" fill="none" stroke="${INK}" stroke-width="2"/>` },
+  { name: 'T-Rex toy', svg: `<g transform="translate(-33,-25) scale(.32)">${REXHEAD}</g>` },
+  { name: 'star', svg: `<polygon points="${starPts(0, 0, 14, .45)}" fill="#e0a930" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><circle cx="-4" cy="-1" r="1.6" fill="${INK}"/><circle cx="4" cy="-1" r="1.6" fill="${INK}"/>` }
+];
+const WHEEL_COLS = ['#c2452f', '#e0a930', '#5f8f3a', '#3f6fa8', '#f290ae', '#e07a2a'];
+// ---- the little rocket, also used for its flight across the screen
+const ROCKET_SM = (flame) => `${flame ? `<path d="M132,178 Q142,214 152,178 Z" fill="#e0a930" ${sw}/><path d="M137,178 Q142,198 147,178 Z" fill="#c2452f"/>` : ''}
+  <path d="M130,150 L116,176 L130,170 Z M154,150 L168,176 L154,170 Z" fill="#c2452f" ${sw}/>
+  <path d="M130,176 L130,112 Q130,94 142,86 Q154,94 154,112 L154,176 Z" fill="#fffaf0" ${sw}/>
+  <path d="M131,104 Q134,92 142,86 Q150,92 153,104 Z" fill="#c2452f"/><circle cx="142" cy="128" r="8" fill="#9fcbd6" stroke="${INK}" stroke-width="2.5"/>`;
+// fly something across the whole screen from a starting box, then remove it
+function flyAcross(markup, from, frames, ms, cls = '') {
+  const el = document.createElement('div');
+  el.className = 'skyflyer ' + cls; el.innerHTML = markup;
+  Object.assign(el.style, { left: from.left + 'px', top: from.top + 'px', width: from.width + 'px', height: from.height + 'px' });
+  document.body.appendChild(el);
+  const a = el.animate(frames, { duration: ms, easing: 'ease-in', fill: 'forwards' });
+  return new Promise(res => { a.onfinish = () => { el.remove(); res(); }; });
+}
+function skyFlash(ms) {
+  const s = document.createElement('div'); s.className = 'skyflash'; document.body.appendChild(s);
+  s.animate([{ opacity: 0 }, { opacity: .92, offset: .15 }, { opacity: .92, offset: .8 }, { opacity: 0 }], { duration: ms, fill: 'forwards' }).onfinish = () => s.remove();
+}
 const BUSY_TILES = [
   { k: 'rex', bg: '#efe2c4', svg: () => `<svg viewBox="0 0 200 200" class="gadget">
       <g class="springup"><path d="M100,150 l-14,-8 l28,-8 l-28,-8 l28,-8 l-28,-8 l14,-8" stroke="#9aa3ad" stroke-width="6" fill="none" stroke-linejoin="round"/><g transform="translate(-3,0)">${REXHEAD}</g></g>
@@ -1922,20 +1983,18 @@ const BUSY_TILES = [
       <defs><clipPath id="rkClip"><rect x="96" y="10" width="92" height="180" rx="10"/></clipPath></defs>
       <rect x="96" y="10" width="92" height="180" rx="10" fill="#17233a" ${sw}/>
       <g clip-path="url(#rkClip)">${dots(14, CREAM, 18, 150, 1.6, 4).replace(/cx="(\d+)"/g, (m, v) => `cx="${100 + (+v % 84)}"`)}
-        <g class="rk"><g class="flame2"><path d="M132,178 Q142,210 152,178 Z" fill="#e0a930" ${sw}/></g>
-          <path d="M130,150 L116,176 L130,170 Z M154,150 L168,176 L154,170 Z" fill="#c2452f" ${sw}/>
-          <path d="M130,176 L130,112 Q130,94 142,86 Q154,94 154,112 L154,176 Z" fill="#fffaf0" ${sw}/>
-          <path d="M131,104 Q134,92 142,86 Q150,92 153,104 Z" fill="#c2452f"/><circle cx="142" cy="128" r="8" fill="#9fcbd6" stroke="${INK}" stroke-width="2.5"/></g></g>
+        <g class="rk">${ROCKET_SM(false)}</g></g>
       <rect x="96" y="10" width="92" height="180" rx="10" fill="none" ${sw}/>
       <rect x="14" y="146" width="64" height="44" rx="8" fill="#e0a930" ${sw}/><rect x="40" y="152" width="12" height="26" rx="5" fill="${INK}"/>
       <g class="stick" style="transform-origin:46px 166px"><rect x="41" y="80" width="10" height="88" rx="5" fill="#9aa3ad" ${sw}/><circle cx="46" cy="76" r="17" fill="#c2452f" ${sw}/><circle cx="40" cy="70" r="5" fill="#fff" opacity=".5"/></g></svg>` },
   { k: 'spin', bg: '#9fcbd6', svg: () => {
-      const cols = ['#c2452f', '#e0a930', '#5f8f3a', '#3f6fa8', '#f290ae', '#e07a2a'];
-      const seg = cols.map((c, i) => { const a1 = i * 60 * Math.PI / 180, a2 = (i + 1) * 60 * Math.PI / 180;
-        return `<path d="M100,92 L${(100 + 70 * Math.cos(a1)).toFixed(1)},${(92 + 70 * Math.sin(a1)).toFixed(1)} A70,70 0 0,1 ${(100 + 70 * Math.cos(a2)).toFixed(1)},${(92 + 70 * Math.sin(a2)).toFixed(1)} Z" fill="${c}" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/>`; }).join('');
+      const seg = WHEEL_COLS.map((c, i) => { const a1 = i * 60 * Math.PI / 180, a2 = (i + 1) * 60 * Math.PI / 180, am = (i + .5) * 60 * Math.PI / 180;
+        return `<path d="M100,92 L${(100 + 70 * Math.cos(a1)).toFixed(1)},${(92 + 70 * Math.sin(a1)).toFixed(1)} A70,70 0 0,1 ${(100 + 70 * Math.cos(a2)).toFixed(1)},${(92 + 70 * Math.sin(a2)).toFixed(1)} Z" fill="${c}" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/>
+          <circle cx="${(100 + 45 * Math.cos(am)).toFixed(1)}" cy="${(92 + 45 * Math.sin(am)).toFixed(1)}" r="17" fill="#fffaf0" stroke="${INK}" stroke-width="2"/>
+          <g transform="translate(${(100 + 45 * Math.cos(am)).toFixed(1)},${(92 + 45 * Math.sin(am)).toFixed(1)}) scale(.85)">${PRIZES[i].svg}</g>`; }).join('');
       return `<svg viewBox="0 0 200 200" class="gadget"><path d="M100,100 V194" stroke="#7a4e2d" stroke-width="9" stroke-linecap="round"/>
         <g class="wheel6" style="transform-origin:100px 92px">${seg}<circle cx="100" cy="92" r="70" fill="none" ${sw}/><circle cx="100" cy="92" r="12" fill="#fffaf0" ${sw}/></g>
-        <polygon points="92,12 108,12 100,28" fill="${INK}"/></svg>`; } }
+        <polygon points="90,8 110,8 100,28" fill="${INK}" stroke="#fffaf0" stroke-width="2"/><g class="prize"></g></svg>`; } }
 ];
 function busyTried(k) {
   BUSY.tried.add(k); busyArm();
@@ -1962,29 +2021,52 @@ const BUSY_DO = {
     await wait(1700); tile.classList.remove('pop'); await wait(450); delete tile.dataset.busy;
   },
   lamp(tile) {
+    if (tile.dataset.busy) return;
     const on = tile.classList.toggle('on'); busyTried('lamp');
-    sleepFace(tile.querySelector('.sleepbat svg'), !on);
-    if (on) { tone(1200, 0, .05, 'square', .06); setTimeout(() => squeak(2, 1.1), 250); } else tone(700, 0, .05, 'square', .06);
+    const sb = tile.querySelector('.sleepbat');
+    if (on) {
+      tone(1200, 0, .05, 'square', .06); setTimeout(() => squeak(3, 1.15), 150);
+      const r = sb.getBoundingClientRect(), b = BATS[0];
+      tile.dataset.busy = 1; setTimeout(() => delete tile.dataset.busy, 700);
+      sb.style.visibility = 'hidden';
+      const W = innerWidth, H = innerHeight;
+      flyAcross(`<div class="flying">${batSVG(b.color, { happy: true, hat: b.hat })}</div>`, r, [
+        { transform: 'translate(0,0) scale(1) rotate(0)' },
+        { transform: `translate(${-.25 * W}px,${-.15 * H}px) scale(1.8) rotate(-10deg)`, offset: .3 },
+        { transform: `translate(${.3 * W}px,${-.25 * H}px) scale(1.5) rotate(12deg)`, offset: .62 },
+        { transform: `translate(${.05 * W}px,${-(r.top + r.height + 60)}px) scale(.6) rotate(0)` }], 2600);
+      [600, 1300, 2000].forEach(t => setTimeout(() => squeak(2, 1.2, .05), t));
+    } else {
+      tone(700, 0, .05, 'square', .06);
+      sb.style.visibility = ''; sleepFace(sb.querySelector('svg'), true);
+      sb.classList.remove('home'); void sb.getBoundingClientRect(); sb.classList.add('home');
+      setTimeout(() => squeak(1, .8, .04), 300);
+    }
   },
   door(tile) {
     const open = tile.classList.toggle('open'); busyTried('door');
     if (!open) { tone(260, 0, .08, 'triangle', .12); return; }
-    const FR = [
-      { svg: `<g transform="translate(100,112) scale(.66)">${FROG}</g>`, s: () => sfx.ribbit() },
-      { svg: nestBat(rand(BATS).color, rand(BATS).hat, 44, 62, 112), s: () => squeak(3, 1.1) },
-      { svg: `<g transform="translate(-4,22)">${REXHEAD}</g>`, s: () => sfx.roar() },
-      { svg: `<polygon points="${starPts(100, 102, 42, .45)}" fill="#e0a930" ${sw}/><circle cx="88" cy="98" r="4" fill="${INK}"/><circle cx="112" cy="98" r="4" fill="${INK}"/><path d="M90,112 Q100,120 110,112" stroke="${INK}" stroke-width="3" fill="none"/>`, s: () => sfx.ding() }
-    ];
-    let i; do { i = Math.floor(Math.random() * FR.length); } while (i === BUSY.lastFriend);
+    let i; do { i = Math.floor(Math.random() * REX_HATS.length); } while (i === BUSY.lastFriend);
     BUSY.lastFriend = i;
-    tile.querySelector('.friend').innerHTML = FR[i].svg; tone(520, 0, .1, 'triangle', .1, 780); setTimeout(FR[i].s, 200);
+    tile.querySelector('.friend').innerHTML = `<g transform="translate(96,112) scale(1.05)">${TREX_FULL}${REX_HATS[i]}</g>`;
+    tone(520, 0, .1, 'triangle', .1, 780); setTimeout(() => { sfx.roar(); vibrate(20); }, 200);
   },
   async rocket(tile) {
     if (tile.dataset.busy) return; tile.dataset.busy = 1; busyTried('rocket');
     tile.classList.add('pulled'); sfx.clunk(); setTimeout(() => tile.classList.remove('pulled'), 300);
     [0, 350, 700].forEach(t => setTimeout(() => tone(880, 0, .1, 'square', .06), t));
-    await wait(1050); tile.classList.add('launch'); sfx.rumble();
-    await wait(2500); tile.classList.remove('launch'); delete tile.dataset.busy;
+    await wait(1050);
+    const rk = tile.querySelector('.rk'), r = rk.getBoundingClientRect();
+    rk.style.visibility = 'hidden'; sfx.rumble(); skyFlash(3300);
+    await flyAcross(`<svg viewBox="112 82 60 140" class="flyrocket">${ROCKET_SM(true)}</svg>`, r, [
+      { transform: 'translate(0,0) scale(1)' },
+      { transform: 'translate(-4px,0) scale(1)', offset: .06 }, { transform: 'translate(4px,0) scale(1)', offset: .12 },
+      { transform: 'translate(0,-12px) scale(1.15)', offset: .2 },
+      { transform: `translate(${(innerWidth / 2 - r.left - r.width / 2) * .5}px,${-(r.top + r.height) * .55}px) scale(2.6)`, offset: .6 },
+      { transform: `translate(${innerWidth / 2 - r.left - r.width / 2}px,${-(r.top + r.height + 120)}px) scale(.5)` }], 2900);
+    sparkle(innerWidth / 2, 40, 16); sfx.ding();
+    rk.style.visibility = ''; rk.classList.remove('land'); void rk.getBoundingClientRect(); rk.classList.add('land');
+    await wait(900); delete tile.dataset.busy;
   }
 };
 function busyCrank(tile) {
@@ -2018,13 +2100,14 @@ function busySpin(tile) {
   const setA = a => { BUSY.spinA = a; wheel.style.transform = `rotate(${a}deg)`; const s = Math.floor(a / 60); if (s !== lastSeg) { lastSeg = s; sfx.tick(); } };
   const coast = () => {
     cancelAnimationFrame(BUSY.spinRaf); let t0 = performance.now();
-    const step = now => { const dt = now - t0; t0 = now; setA(BUSY.spinA + BUSY.spinV * dt); BUSY.spinV *= Math.pow(.9975, dt); if (Math.abs(BUSY.spinV) > .01) BUSY.spinRaf = requestAnimationFrame(step); };
+    const step = now => { const dt = now - t0; t0 = now; setA(BUSY.spinA + BUSY.spinV * dt); BUSY.spinV *= Math.pow(.9975, dt); if (Math.abs(BUSY.spinV) > .01) BUSY.spinRaf = requestAnimationFrame(step); else busyPrize(tile); };
     BUSY.spinRaf = requestAnimationFrame(step);
   };
   let d = null;
   svg.addEventListener('pointerdown', e => {
     e.preventDefault(); try { svg.setPointerCapture(e.pointerId); } catch (err) {}
-    cancelAnimationFrame(BUSY.spinRaf); d = { id: e.pointerId, a: busyAngle(svg, e, 100, 92), t: performance.now(), v: 0, moved: 0 }; busyTried('spin');
+    cancelAnimationFrame(BUSY.spinRaf); clearTimeout(BUSY.prizeT); svg.querySelector('.prize').innerHTML = '';
+    d = { id: e.pointerId, a: busyAngle(svg, e, 100, 92), t: performance.now(), v: 0, moved: 0 }; busyTried('spin');
   });
   svg.addEventListener('pointermove', e => {
     if (!d || e.pointerId !== d.id) return;
@@ -2037,6 +2120,18 @@ function busySpin(tile) {
     d = null; coast();
   };
   svg.addEventListener('pointerup', end); svg.addEventListener('pointercancel', end);
+}
+function busyPrize(tile) {
+  // the segment under the pointer at the top: local angle -90deg minus the wheel's turn
+  const a = ((-90 - BUSY.spinA) % 360 + 720) % 360, i = Math.floor(a / 60) % 6;
+  BUSY.lastPrize = PRIZES[i].name;
+  const g = tile.querySelector('.prize');
+  g.innerHTML = `<g class="prize-pop"><circle cx="100" cy="96" r="58" fill="#fffaf0" stroke="${INK}" stroke-width="4"/>
+    ${Array.from({ length: 12 }, (_, k) => { const t = k * Math.PI / 6; return `<path d="M${100 + 62 * Math.cos(t)},${96 + 62 * Math.sin(t)} L${100 + 78 * Math.cos(t)},${96 + 78 * Math.sin(t)}" stroke="${WHEEL_COLS[i]}" stroke-width="6" stroke-linecap="round"/>`; }).join('')}
+    <g transform="translate(100,96) scale(3)">${PRIZES[i].svg}</g></g>`;
+  const r = tile.getBoundingClientRect(); sparkle(r.left + r.width / 2, r.top + r.height / 2, 12);
+  sfx.ding(); say('y_prize');
+  clearTimeout(BUSY.prizeT); BUSY.prizeT = setTimeout(() => { g.innerHTML = ''; }, 2400);
 }
 function busyStart() {
   BUSY.tried = new Set(); BUSY.allDone = false;
