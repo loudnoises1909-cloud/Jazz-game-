@@ -2347,9 +2347,49 @@ const TUFT_ANGLES = [-170, -150, -130, -110, -90, -70, -50, -30, -10, 10, 170];
 const BATH_TOOLS = { scrub: 'sponge', rinse: 'shower', dry: 'towel', fluff: 'dryer' };
 const BATH_LINES = { scrub: 'w_scrub', rinse: 'w_rinse', dry: 'w_dry', fluff: 'w_fluff' };
 const BATH = { round: 0, phase: 'idle', spots: [], bubbles: [], drips: [], tufts: 0, cfg: null, idleT: null, lastSnd: 0 };
-if (location.hash === '#test') window.__bath = BATH;
-const SPLAT = c => `<path d="M-16,0 Q-18,-13 -5,-15 Q6,-20 13,-8 Q20,2 12,11 Q2,18 -9,14 Q-18,9 -16,0 Z" fill="${c}" stroke="${mix(c, INK, .35)}" stroke-width="2"/>
-  <circle cx="18" cy="-13" r="4.5" fill="${c}"/><circle cx="-15" cy="13" r="3.5" fill="${c}"/>`;
+if (location.hash === '#test') { window.__bath = BATH; window.__bathRender = () => bathRender(); }
+// Every stain is generated, so no two look alike: an irregular blotch, a darker patch inside,
+// splatter droplets and sometimes a drip. Mud is blotchy, berry juice runs, paint splashes.
+const rr = (a, b) => a + Math.random() * (b - a);
+function blobD(r, n, wobble, spiky) {
+  const pts = [];
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2 + rr(-.25, .25) / n * 6;
+    const k = spiky ? (i % 2 ? rr(.45, .7) : rr(1, 1.45)) : rr(1 - wobble, 1 + wobble);
+    pts.push([Math.cos(a) * r * k, Math.sin(a) * r * k * rr(.8, 1)]);
+  }
+  const mid = (p, q) => [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2], f = v => v.toFixed(1);
+  let d = `M${f(mid(pts[n - 1], pts[0])[0])},${f(mid(pts[n - 1], pts[0])[1])}`;
+  for (let i = 0; i < n; i++) { const p = pts[i], m = mid(p, pts[(i + 1) % n]); d += ` Q${f(p[0])},${f(p[1])} ${f(m[0])},${f(m[1])}`; }
+  return d + ' Z';
+}
+function messSVG(kind, c) {
+  const dark = mix(c, INK, kind === 'mud' ? .35 : .3), light = mix(c, '#ffffff', .25), r = rr(13, 20), rot = rr(0, 360).toFixed(0);
+  const edge = `stroke="${dark}" stroke-width="1.4" stroke-linejoin="round"`;
+  let o = `<g transform="rotate(${rot})">`;
+  if (kind === 'paint') {
+    o += `<path d="${blobD(r * 1.05, 14, 0, true)}" fill="${c}" ${edge}/>`;
+    o += `<path d="${blobD(r * .45, 7, .25)}" fill="${light}" opacity=".55"/>`;
+  } else {
+    o += `<path d="${blobD(r, 9 + Math.floor(rr(0, 4)), kind === 'mud' ? .32 : .22)}" fill="${c}" ${edge} opacity="${kind === 'berry' ? .92 : 1}"/>`;
+    o += `<path transform="translate(${rr(-4, 4).toFixed(1)},${rr(-4, 4).toFixed(1)})" d="${blobD(r * rr(.35, .55), 7, .3)}" fill="${dark}" opacity="${kind === 'mud' ? .55 : .35}"/>`;
+    if (kind === 'mud') o += `<path transform="translate(${rr(-6, 2).toFixed(1)},${rr(-7, -2).toFixed(1)})" d="${blobD(r * .22, 6, .3)}" fill="${light}" opacity=".45"/>`;
+  }
+  o += '</g>';
+  // drips run straight down (outside the rotation)
+  const drips = kind === 'berry' ? Math.floor(rr(1, 4)) : kind === 'mud' ? (Math.random() < .5 ? 1 : 0) : (Math.random() < .35 ? 1 : 0);
+  for (let i = 0; i < drips; i++) {
+    const x = rr(-r * .6, r * .6), len = rr(8, kind === 'berry' ? 22 : 14), w = rr(2.5, 4.5);
+    o += `<path d="M${(x - w).toFixed(1)},${(r * .4).toFixed(1)} L${(x - w * .7).toFixed(1)},${(r * .4 + len).toFixed(1)} Q${x.toFixed(1)},${(r * .4 + len + w * 1.6).toFixed(1)} ${(x + w * .7).toFixed(1)},${(r * .4 + len).toFixed(1)} L${(x + w).toFixed(1)},${(r * .4).toFixed(1)} Z" fill="${c}" stroke="${dark}" stroke-width="1.2"/>`;
+  }
+  // splatter droplets around it
+  const nd = Math.floor(rr(2, kind === 'paint' ? 7 : 5));
+  for (let i = 0; i < nd; i++) {
+    const a = rr(0, Math.PI * 2), dist = r * rr(1.25, 2.1), s = rr(1.5, kind === 'paint' ? 4.5 : 3.5);
+    o += `<ellipse cx="${(Math.cos(a) * dist).toFixed(1)}" cy="${(Math.sin(a) * dist).toFixed(1)}" rx="${s.toFixed(1)}" ry="${(s * rr(.7, 1)).toFixed(1)}" fill="${c}" stroke="${dark}" stroke-width=".8"/>`;
+  }
+  return o;
+}
 const BATH_ICON = {
   sponge: `<g transform="rotate(-12)"><rect x="-44" y="-28" width="88" height="56" rx="14" fill="#e3c03a" ${sw}/>
     ${[[-26, -12], [-6, 6], [16, -10], [28, 12], [-30, 14], [6, -16]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="5" fill="#c49a20"/>`).join('')}</g>`,
@@ -2369,7 +2409,8 @@ function bathRenderProgress() {
 function bathRender() {
   const b = BATH.cfg, mess = MESS[BATH.round % MESS.length];
   const bat = batSVG(b.color, { hat: b.hat }).replace('class="batsvg"', 'class="bathbatsvg"').replace('<svg ', '<svg x="40" y="-18" width="320" height="240" ');
-  BATH.spots = shuffle(MESS_SPOTS.slice()).slice(0, 7).map(([x, y], i) => ({ x, y, d: 1, c: mess.c || ['#c2452f', '#3f6fa8', '#e0a930', '#5f8f3a'][i % 4] }));
+  BATH.spots = shuffle(MESS_SPOTS.slice()).slice(0, 7).map(([x, y], i) => ({ x: x + rr(-6, 6), y: y + rr(-5, 5), d: 1, kind: mess.name,
+    c: mess.c ? mix(mess.c, rand(['#231a14', '#c08a4a', '#7a4e2d']), rr(0, .25)) : ['#c2452f', '#3f6fa8', '#e0a930', '#5f8f3a', '#e07a2a'][i % 5] }));
   BATH.bubbles = []; BATH.drips = []; BATH.tufts = 0;
   const tufts = TUFT_ANGLES.map((a, i) => { const r = a * Math.PI / 180, x = 200 + 54 * Math.cos(r), y = 118 + 56 * Math.sin(r);
     return `<g class="tuft" data-i="${i}" style="display:none"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="10" fill="${b.color}" stroke="${INK}" stroke-width="2.5"/><circle cx="${(x + 6 * Math.cos(r)).toFixed(1)}" cy="${(y + 6 * Math.sin(r)).toFixed(1)}" r="6" fill="${b.color}" stroke="${INK}" stroke-width="2"/></g>`; }).join('');
@@ -2394,7 +2435,7 @@ function bathRender() {
     <ellipse cx="200" cy="284" rx="150" ry="9" fill="rgba(20,12,6,.3)"/>
     <g class="bathbat">${bat}</g>
     <g class="tufts">${tufts}</g>
-    <g class="mud">${BATH.spots.map((s, i) => `<g class="spot" data-i="${i}" transform="translate(${s.x},${s.y})">${SPLAT(s.c)}</g>`).join('')}</g>
+    <g class="mud">${BATH.spots.map((s, i) => `<g class="spot" data-i="${i}" transform="translate(${s.x},${s.y})">${messSVG(s.kind, s.c)}</g>`).join('')}</g>
     <g class="drips"></g><g class="bubbles"></g>
     <rect x="34" y="182" width="332" height="16" rx="8" fill="#f3e9d2" ${sw}/>
     <path d="M42,194 L358,194 Q354,262 300,272 L100,272 Q46,262 42,194 Z" fill="#fffaf0" ${sw}/>
