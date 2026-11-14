@@ -83,50 +83,50 @@
 'use strict';
 // Keep in sync with LINES in index.html (keys must match exactly).
 const LINES = [
-  { k: 'welcome',    t: 'Hi, Doctor! The bats need your help!', tip: 'Big, warm hello. Excited.' },
-  { k: 'n_doowy',    t: 'Here comes Doowy!', tip: 'Cheerful announcement.' },
-  { k: 'n_hoowy',    t: 'Here comes Hoowy!', tip: 'Cheerful announcement.' },
-  { k: 'n_tooby',    t: 'Here comes Tooby!', tip: 'Cheerful announcement.' },
-  { k: 'n_boopy',    t: 'Here comes Boopy!', tip: 'Cheerful announcement.' },
-  { k: 'n_zoomy',    t: 'Here comes Zoomy!', tip: 'Cheerful announcement.' },
-  { k: 'listen',     t: "First, let's listen to the heart.", tip: 'Calm, curious.' },
-  { k: 'heartOk',    t: 'Ba-dum, ba-dum. A strong heart!', tip: 'Do the heartbeat rhythm, then proud.' },
-  { k: 'heartWeak',  t: 'Ba... dum. A very tired heart.', tip: 'Slow and soft, a little worried, not scary.' },
-  { k: 'temp',       t: "Now let's check the temperature.", tip: 'Calm, step-by-step.' },
-  { k: 'tempOk',     t: 'Not too hot, not too cold.', tip: 'Relieved, sing-song.' },
-  { k: 'tempCold',   t: 'Brrr! This bat is cold.', tip: 'Shiver on the "Brrr".' },
-  { k: 'p_scrape',   t: 'Oh no, a scrape! Find the bandage that matches.', tip: 'Gentle "oh no", then encouraging.' },
-  { k: 'p_bump',     t: 'Bonk! A bump on the head. What will help?', tip: 'Funny "Bonk!", then a real question.' },
-  { k: 'p_splinter', t: 'Ouch, a splinter! What can pull it out?', tip: 'Small "ouch", then a question.' },
-  { k: 'p_hungry',   t: "This bat is hungry and weak. Let's take care of it.", tip: 'Soft and caring.' },
-  { k: 'box',        t: 'First, a cozy box.', tip: 'Cozy, gentle.' },
-  { k: 'blanket',    t: 'Now a warm blanket.', tip: 'Cozy, gentle.' },
-  { k: 'bottle',     t: 'And some yummy milk!', tip: 'Happy on "yummy".' },
-  { k: 'match',      t: 'You did it! Great job!', tip: 'Proud and excited.' },
-  { k: 'wrong',      t: "Hmm, not that one. Let's try another!", tip: 'Never disappointed: playful and encouraging.' },
-  { k: 'tap',        t: 'Now tap the bat to help it heal.', tip: 'Warm, inviting.' },
-  { k: 'healed',     t: 'Yay! All better!', tip: 'Big celebration.' },
-  { k: 'home',       t: 'Back home with the family!', tip: 'Happy and warm.' },
-  { k: 'party',      t: 'You healed all the bats! Thank you, Doctor!', tip: 'The biggest cheer of all.' },
-  { k: 'y_intro', t: "It's a busy board! Try every button and switch!", tip: 'Busy Board. Excited, inviting.' },
+  { k: 'welcome', t: 'Hi, friend! | Are you ready to be a doctor? | The bats need your help!', tip: 'Big, warm hello. Excited.' },
+  { k: 'n_doowy', t: 'Oh, look! | Here comes Doowy!', tip: 'Cheerful announcement.' },
+  { k: 'n_hoowy', t: 'Oh, look! | Here comes Hoowy!', tip: 'Cheerful announcement.' },
+  { k: 'n_tooby', t: 'Oh, look! | Here comes Tooby!', tip: 'Cheerful announcement.' },
+  { k: 'n_boopy', t: 'Oh, look! | Here comes Boopy!', tip: 'Cheerful announcement.' },
+  { k: 'n_zoomy', t: 'Oh, look! | Here comes Zoomy!', tip: 'Cheerful announcement.' },
+  { k: 'listen', t: "First... | let's listen to the heart.", tip: 'Calm, curious.' },
+  { k: 'heartOk', t: 'Ba-dum, ba-dum! | What a strong heart!', tip: 'Do the heartbeat rhythm, then proud.' },
+  { k: 'heartWeak', t: 'Ba... dum. | Ba... dum. | Oh, a very tired heart.', tip: 'Slow and soft, a little worried, not scary.' },
+  { k: 'temp', t: "Now... | let's check the temperature.", tip: 'Calm, step-by-step.' },
+  { k: 'tempOk', t: 'Not too hot, | not too cold. | Just right!', tip: 'Relieved, sing-song.' },
+  { k: 'tempCold', t: 'Brrr! | This bat is cold.', tip: 'Shiver on the "Brrr".' },
+  { k: 'p_scrape', t: 'Oh no, a scrape! | Can you find the bandage that matches?', tip: 'Gentle "oh no", then encouraging.' },
+  { k: 'p_bump', t: 'Bonk! | A bump on the head. | What can help?', tip: 'Funny "Bonk!", then a real question.' },
+  { k: 'p_splinter', t: 'Ouch, a splinter! | What can pull it out?', tip: 'Small "ouch", then a question.' },
+  { k: 'p_hungry', t: "This little bat is hungry, | and very tired. | Let's take care of it.", tip: 'Soft and caring.' },
+  { k: 'box', t: 'First, | a cozy box.', tip: 'Cozy, gentle.' },
+  { k: 'blanket', t: 'Now, | a warm blanket.', tip: 'Cozy, gentle.' },
+  { k: 'bottle', t: 'And some yummy milk!', tip: 'Happy on "yummy".' },
+  { k: 'match', t: 'You did it! | Great job!', tip: 'Proud and excited.' },
+  { k: 'wrong', t: "Hmm... | not that one. | Let's try another!", tip: 'Never disappointed: playful and encouraging.' },
+  { k: 'tap', t: 'Now tap the bat, | to help it feel better.', tip: 'Warm, inviting.' },
+  { k: 'healed', t: 'Yay! | All better!', tip: 'Big celebration.' },
+  { k: 'home', t: 'Back home, | with the family!', tip: 'Happy and warm.' },
+  { k: 'party', t: 'You healed all the bats! | Thank you, doctor!', tip: 'The biggest cheer of all.' },
+  { k: 'y_intro', t: 'Ooh, a busy board! | Can you try every button?', tip: 'Busy Board. Excited, inviting.' },
   { k: 'y_prize', t: 'You won a prize!', tip: 'Busy Board prize wheel. Excited!' },
-  { k: 'y_all', t: 'You tried everything! What a busy bat!', tip: 'Proud and playful.' },
-  { k: 'w_intro', t: "Uh oh! This bat is all messy. Let's give it a bath!", tip: 'Bat Bath. Playful "uh oh".' },
-  { k: 'w_scrub', t: 'Scrub, scrub, scrub with the sponge!', tip: 'Sing-song.' },
-  { k: 'w_rinse', t: 'Now rinse off all the bubbles!', tip: 'Cheerful.' },
-  { k: 'w_dry', t: 'Dry off with the fluffy towel!', tip: 'Cozy.' },
-  { k: 'w_fluff', t: 'Now the hair dryer, for super fluffy fur!', tip: 'Silly on "super fluffy".' },
-  { k: 'w_done', t: 'Squeaky clean and fluffy!', tip: 'Delighted.' },
-  { k: 'w_party', t: 'Every bat is squeaky clean! Bath time is over!', tip: 'Big cheer.' },
-  { k: 'n_intro', t: 'Welcome to the Bat Band! Tap the bats to make them sing!', tip: 'Bat Band. Like a show host.' },
+  { k: 'y_all', t: 'You tried everything! | What a busy bat!', tip: 'Proud and playful.' },
+  { k: 'w_intro', t: "Uh oh! | This bat is all messy. | Let's give it a bath!", tip: 'Bat Bath. Playful "uh oh".' },
+  { k: 'w_scrub', t: 'Scrub, scrub, scrub!', tip: 'Sing-song.' },
+  { k: 'w_rinse', t: "Now... | let's rinse the bubbles away.", tip: 'Cheerful.' },
+  { k: 'w_dry', t: 'Dry, dry, dry, | with the fluffy towel.', tip: 'Cozy.' },
+  { k: 'w_fluff', t: 'Now the hair dryer. | Whoosh! | Super fluffy!', tip: 'Silly on "super fluffy".' },
+  { k: 'w_done', t: 'Squeaky clean, | and so fluffy!', tip: 'Delighted.' },
+  { k: 'w_party', t: 'Every bat is squeaky clean! | Bath time is all done!', tip: 'Big cheer.' },
+  { k: 'n_intro', t: 'Welcome to the Bat Band! | Tap a bat, | and it will sing!', tip: 'Bat Band. Like a show host.' },
   { k: 'n_dance', t: "Let's dance!", tip: 'Big and bouncy.' },
-  { k: 'm_intro',    t: 'Froggy wants to play tag! Help the bat catch Froggy!', tip: 'Froggy Tag. Playful and excited.' },
-  { k: 'm_hop',      t: 'Ribbit! Catch me if you can!', tip: "Froggy's own cheeky voice. Ribbit like a frog!" },
-  { k: 'm_caught1',  t: 'Tag! You got Froggy!', tip: 'Big and happy.' },
-  { k: 'm_caught2',  t: 'Gotcha! Froggy is giggling!', tip: 'Happy; add a little giggle.' },
-  { k: 'm_next',     t: 'Froggy hopped into a new maze!', tip: 'Excited.' },
-  { k: 'm_hint',     t: 'Follow the glowing stars!', tip: 'Helpful, warm.' },
-  { k: 'm_party',    t: 'You caught Froggy in every maze! Hooray!', tip: 'Big cheer.' }
+  { k: 'm_intro', t: 'Froggy wants to play tag! | Can you help the bat catch Froggy?', tip: 'Froggy Tag. Playful and excited.' },
+  { k: 'm_hop', t: 'Ribbit! | Catch me if you can!', tip: "Froggy's own cheeky voice. Ribbit like a frog!" },
+  { k: 'm_caught1', t: 'Tag! | You got Froggy!', tip: 'Big and happy.' },
+  { k: 'm_caught2', t: 'Gotcha! | Froggy is giggling!', tip: 'Happy; add a little giggle.' },
+  { k: 'm_next', t: 'Froggy hopped | into a new maze!', tip: 'Excited.' },
+  { k: 'm_hint', t: 'Follow the glowing stars.', tip: 'Helpful, warm.' },
+  { k: 'm_party', t: 'You caught Froggy in every maze! | Hooray!', tip: 'Big cheer.' },
 ];
 
 const $ = s => document.querySelector(s);
@@ -194,7 +194,7 @@ function drawWave(peaks) {
 function render() {
   const L = LINES[i], t = takes[L.k];
   $('#count').textContent = `Line ${i + 1} of ${LINES.length} · file name: ${L.k}`;
-  $('#text').textContent = L.t;
+  $('#text').textContent = L.t.replace(/\s*\|\s*/g, ' ');
   $('#tip').textContent = L.tip;
   $('#play').disabled = !t; $('#one').disabled = !t;
   $('#prev').disabled = i === 0; $('#next').disabled = i === LINES.length - 1;
@@ -203,7 +203,7 @@ function render() {
   const doneN = LINES.filter(l => takes[l.k]).length;
   $('#done').textContent = `${doneN} of ${LINES.length} recorded`;
   $('#zip').disabled = doneN === 0; $('#try').disabled = doneN === 0;
-  $('#list').innerHTML = LINES.map((l, j) => `<div class="item ${j === i ? 'cur' : ''}" data-j="${j}"><span class="dot ${takes[l.k] ? 'ok' : ''}">${takes[l.k] ? '✓' : ''}</span><div>${l.t.replace(/</g, '&lt;')}<small>${l.k}</small></div></div>`).join('');
+  $('#list').innerHTML = LINES.map((l, j) => `<div class="item ${j === i ? 'cur' : ''}" data-j="${j}"><span class="dot ${takes[l.k] ? 'ok' : ''}">${takes[l.k] ? '✓' : ''}</span><div>${l.t.replace(/\s*\|\s*/g, ' ').replace(/</g, '&lt;')}<small>${l.k}</small></div></div>`).join('');
 }
 $('#list').addEventListener('click', e => { const it = e.target.closest('.item'); if (it && !rec) { i = +it.dataset.j; render(); } });
 

@@ -86,5 +86,10 @@ The voice ships with the app; players never record anything.
 3. Run `bash tools/build-voices.sh` (needs ffmpeg). It writes `voice/<line>.mp3`
    and `voice/voices.json`.
 
-Any line without a recording falls back to the device's built-in voice. The
+Any line without a recording falls back to the device's built-in voice. Each line
+is written as short phrases (separated by `|`) with a mood per phrase (happy,
+excited, celebrate, question, gentle, cozy, worried, slow), so the built-in voice
+changes pace and pitch phrase by phrase. The game prefers the most natural voice
+installed (Premium, Enhanced or Natural voices first), and a grown-up can choose
+another in settings. The
 line list in `studio.html` must match `LINES` in `index.html`.

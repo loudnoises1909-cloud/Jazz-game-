@@ -572,8 +572,10 @@
       <label><input type="checkbox" id="optMusic"> Music</label>
       <label><input type="checkbox" id="optSfx"> Sound effects</label>
       <label>Postcards: <select id="optTheme"></select></label>
+      <label>Voice: <select id="optVoice"></select> <button id="hearVoice" type="button">▶ Hear it</button></label>
     </div>
     <div class="soundcheck"><button id="soundCheck">🔊 Sound check</button><span id="soundState"></span></div>
+    <p class="hint">For the most natural voice on an iPad or iPhone, download an "Enhanced" or "Premium" English voice in Settings, Accessibility, Spoken Content, Voices, then pick it above.</p>
     <p class="hint">No sound on an iPad or iPhone? Turn the volume up and check that silent mode is off (the bell in Control Center or the side switch).</p>
     <div class="panelBtns"><button class="primary" id="closePanel">Done</button></div>
   </div>
@@ -628,52 +630,53 @@ const BUMP_SPOT = { x: 244, y: 124 };
 const TOTAL = 5;
 let TEETH = 'classic'; // 'classic' or 'goofy'
 const LINES = [
-  { k: 'welcome',   t: 'Hi, Doctor! The bats need your help!' },
-  { k: 'n_doowy',   t: 'Here comes Doowy!' },
-  { k: 'n_hoowy',   t: 'Here comes Hoowy!' },
-  { k: 'n_tooby',   t: 'Here comes Tooby!' },
-  { k: 'n_boopy',   t: 'Here comes Boopy!' },
-  { k: 'n_zoomy',   t: 'Here comes Zoomy!' },
-  { k: 'listen',    t: "First, let's listen to the heart." },
-  { k: 'heartOk',   t: 'Ba-dum, ba-dum. A strong heart!' },
-  { k: 'heartWeak', t: 'Ba... dum. A very tired heart.' },
-  { k: 'temp',      t: "Now let's check the temperature." },
-  { k: 'tempOk',    t: 'Not too hot, not too cold.' },
-  { k: 'tempCold',  t: 'Brrr! This bat is cold.' },
-  { k: 'p_scrape',  t: 'Oh no, a scrape! Find the bandage that matches.' },
-  { k: 'p_bump',    t: 'Bonk! A bump on the head. What will help?' },
-  { k: 'p_splinter', t: 'Ouch, a splinter! What can pull it out?' },
-  { k: 'p_hungry',  t: "This bat is hungry and weak. Let's take care of it." },
-  { k: 'box',       t: 'First, a cozy box.' },
-  { k: 'blanket',   t: 'Now a warm blanket.' },
-  { k: 'bottle',    t: 'And some yummy milk!' },
-  { k: 'match',     t: 'You did it! Great job!' },
-  { k: 'wrong',     t: "Hmm, not that one. Let's try another!" },
-  { k: 'tap',       t: 'Now tap the bat to help it heal.' },
-  { k: 'healed',    t: 'Yay! All better!' },
-  { k: 'home',      t: 'Back home with the family!' },
-  { k: 'party',     t: 'You healed all the bats! Thank you, Doctor!' },
-  { k: 'y_intro', t: "It's a busy board! Try every button and switch!" },
-  { k: 'y_prize', t: 'You won a prize!' },
-  { k: 'y_all', t: 'You tried everything! What a busy bat!' },
-  { k: 'w_intro', t: "Uh oh! This bat is all messy. Let's give it a bath!" },
-  { k: 'w_scrub', t: 'Scrub, scrub, scrub with the sponge!' },
-  { k: 'w_rinse', t: 'Now rinse off all the bubbles!' },
-  { k: 'w_dry', t: 'Dry off with the fluffy towel!' },
-  { k: 'w_fluff', t: 'Now the hair dryer, for super fluffy fur!' },
-  { k: 'w_done', t: 'Squeaky clean and fluffy!' },
-  { k: 'w_party', t: 'Every bat is squeaky clean! Bath time is over!' },
-  { k: 'n_intro', t: 'Welcome to the Bat Band! Tap the bats to make them sing!' },
-  { k: 'n_dance', t: "Let's dance!" },
-  { k: 'm_intro',   t: 'Froggy wants to play tag! Help the bat catch Froggy!' },
-  { k: 'm_hop',     t: 'Ribbit! Catch me if you can!' },
-  { k: 'm_caught1', t: 'Tag! You got Froggy!' },
-  { k: 'm_caught2', t: 'Gotcha! Froggy is giggling!' },
-  { k: 'm_next',    t: 'Froggy hopped into a new maze!' },
-  { k: 'm_hint',    t: 'Follow the glowing stars!' },
-  { k: 'm_party',   t: 'You caught Froggy in every maze! Hooray!' }
+  { k: 'welcome', t: 'Hi, friend! | Are you ready to be a doctor? | The bats need your help!', m: 'happy,question,excited' },
+  { k: 'n_doowy', t: 'Oh, look! | Here comes Doowy!', m: 'excited,happy' },
+  { k: 'n_hoowy', t: 'Oh, look! | Here comes Hoowy!', m: 'excited,happy' },
+  { k: 'n_tooby', t: 'Oh, look! | Here comes Tooby!', m: 'excited,happy' },
+  { k: 'n_boopy', t: 'Oh, look! | Here comes Boopy!', m: 'excited,happy' },
+  { k: 'n_zoomy', t: 'Oh, look! | Here comes Zoomy!', m: 'excited,happy' },
+  { k: 'listen', t: "First... | let's listen to the heart.", m: 'gentle' },
+  { k: 'heartOk', t: 'Ba-dum, ba-dum! | What a strong heart!', m: 'happy,excited' },
+  { k: 'heartWeak', t: 'Ba... dum. | Ba... dum. | Oh, a very tired heart.', m: 'slow,slow,gentle' },
+  { k: 'temp', t: "Now... | let's check the temperature.", m: 'gentle' },
+  { k: 'tempOk', t: 'Not too hot, | not too cold. | Just right!', m: 'happy,happy,excited' },
+  { k: 'tempCold', t: 'Brrr! | This bat is cold.', m: 'worried,gentle' },
+  { k: 'p_scrape', t: 'Oh no, a scrape! | Can you find the bandage that matches?', m: 'worried,question' },
+  { k: 'p_bump', t: 'Bonk! | A bump on the head. | What can help?', m: 'excited,gentle,question' },
+  { k: 'p_splinter', t: 'Ouch, a splinter! | What can pull it out?', m: 'worried,question' },
+  { k: 'p_hungry', t: "This little bat is hungry, | and very tired. | Let's take care of it.", m: 'gentle,gentle,cozy' },
+  { k: 'box', t: 'First, | a cozy box.', m: 'cozy' },
+  { k: 'blanket', t: 'Now, | a warm blanket.', m: 'cozy' },
+  { k: 'bottle', t: 'And some yummy milk!', m: 'happy' },
+  { k: 'match', t: 'You did it! | Great job!', m: 'celebrate,happy' },
+  { k: 'wrong', t: "Hmm... | not that one. | Let's try another!", m: 'gentle,gentle,happy' },
+  { k: 'tap', t: 'Now tap the bat, | to help it feel better.', m: 'gentle' },
+  { k: 'healed', t: 'Yay! | All better!', m: 'celebrate' },
+  { k: 'home', t: 'Back home, | with the family!', m: 'happy' },
+  { k: 'party', t: 'You healed all the bats! | Thank you, doctor!', m: 'celebrate,happy' },
+  { k: 'y_intro', t: 'Ooh, a busy board! | Can you try every button?', m: 'excited,question' },
+  { k: 'y_prize', t: 'You won a prize!', m: 'celebrate' },
+  { k: 'y_all', t: 'You tried everything! | What a busy bat!', m: 'celebrate,happy' },
+  { k: 'w_intro', t: "Uh oh! | This bat is all messy. | Let's give it a bath!", m: 'worried,gentle,happy' },
+  { k: 'w_scrub', t: 'Scrub, scrub, scrub!', m: 'happy' },
+  { k: 'w_rinse', t: "Now... | let's rinse the bubbles away.", m: 'gentle' },
+  { k: 'w_dry', t: 'Dry, dry, dry, | with the fluffy towel.', m: 'cozy' },
+  { k: 'w_fluff', t: 'Now the hair dryer. | Whoosh! | Super fluffy!', m: 'gentle,excited,happy' },
+  { k: 'w_done', t: 'Squeaky clean, | and so fluffy!', m: 'celebrate,happy' },
+  { k: 'w_party', t: 'Every bat is squeaky clean! | Bath time is all done!', m: 'celebrate,happy' },
+  { k: 'n_intro', t: 'Welcome to the Bat Band! | Tap a bat, | and it will sing!', m: 'excited,gentle,happy' },
+  { k: 'n_dance', t: "Let's dance!", m: 'celebrate' },
+  { k: 'm_intro', t: 'Froggy wants to play tag! | Can you help the bat catch Froggy?', m: 'happy,question' },
+  { k: 'm_hop', t: 'Ribbit! | Catch me if you can!', m: 'excited,happy' },
+  { k: 'm_caught1', t: 'Tag! | You got Froggy!', m: 'celebrate,happy' },
+  { k: 'm_caught2', t: 'Gotcha! | Froggy is giggling!', m: 'celebrate,happy' },
+  { k: 'm_next', t: 'Froggy hopped | into a new maze!', m: 'happy' },
+  { k: 'm_hint', t: 'Follow the glowing stars.', m: 'gentle' },
+  { k: 'm_party', t: 'You caught Froggy in every maze! | Hooray!', m: 'happy,celebrate' },
 ];
-const LINE = Object.fromEntries(LINES.map(l => [l.k, l.t]));
+const LINE = Object.fromEntries(LINES.map(l => [l.k, l]));
+const plainLine = t => t.replace(/\s*\|\s*/g, ' ');
 
 /* ================= settings ================= */
 const SET = { tts: true, sfx: true, music: true, theme: 'auto' };
@@ -1187,18 +1190,38 @@ const sfx = {
 /* ================= voice ================= */
 const BUF = {};
 let curSrc = null, voices = [];
-function pickVoice() {
-  if (!('speechSynthesis' in window)) return null;
+const VOICE_PREFS = [/ava.*(premium|enhanced)/i, /zoe.*(premium|enhanced)/i, /samantha.*(premium|enhanced)/i, /allison.*(premium|enhanced)/i,
+  /susan.*(premium|enhanced)/i, /evan|nicky.*(premium|enhanced)/i, /(premium|enhanced)/i, /aria.*natural/i, /jenny.*natural/i, /michelle.*natural/i,
+  /emma.*natural/i, /natural/i, /neural/i, /google us english/i, /samantha/i, /karen/i, /moira/i, /tessa/i, /female/i, /zira/i];
+function englishVoices() {
+  if (!('speechSynthesis' in window)) return [];
   if (!voices.length) voices = speechSynthesis.getVoices();
-  const en = voices.filter(v => /^en(-|_|$)/i.test(v.lang));
-  return en.find(v => /samantha|karen|moira|google us english|female|zira|aria|jenny/i.test(v.name)) ||
-         en.find(v => /en.US/i.test(v.lang)) || en[0] || null;
+  return voices.filter(v => /^en(-|_|$)/i.test(v.lang) && !/child|kid|novelty|whisper|bells|bubbles|organ|zarvox|trinoids|bahh|boing|cellos|deranged|hysterical|jester|superstar|wobble|albert|bad news|good news/i.test(v.name));
+}
+function pickVoice() {
+  const en = englishVoices(); if (!en.length) return null;
+  if (SET.voiceName) { const v = en.find(x => x.name === SET.voiceName); if (v) return v; }
+  const score = v => { const i = VOICE_PREFS.findIndex(r => r.test(v.name)); return (i < 0 ? 100 : i) + (/en.US/i.test(v.lang) ? 0 : .5); };
+  return en.slice().sort((a, b) => score(a) - score(b))[0];
 }
 if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = () => { voices = speechSynthesis.getVoices(); };
 function stopVoice() {
+  sayId++;
   if (curSrc) { try { curSrc.stop(); } catch (e) {} curSrc = null; }
   if ('speechSynthesis' in window && (speechSynthesis.speaking || speechSynthesis.pending)) speechSynthesis.cancel();
 }
+// how each kind of phrase is spoken (built-in voices only change pace and pitch)
+const MOODS = {
+  happy: { rate: .9, pitch: 1.22, pause: 140 },
+  excited: { rate: .96, pitch: 1.34, pause: 160 },
+  celebrate: { rate: .98, pitch: 1.42, pause: 180 },
+  question: { rate: .86, pitch: 1.3, pause: 200 },
+  gentle: { rate: .82, pitch: 1.14, pause: 220 },
+  cozy: { rate: .78, pitch: 1.1, pause: 260 },
+  worried: { rate: .84, pitch: 1.05, pause: 220 },
+  slow: { rate: .68, pitch: 1.0, pause: 380 }
+};
+let sayId = 0;
 function say(k) {
   stopVoice();
   if (S.paused) return Promise.resolve();
@@ -1213,13 +1236,23 @@ function say(k) {
       s.onended = () => { if (curSrc === s) curSrc = null; done(); };
       curSrc = s; s.start();
       to = setTimeout(done, buf.duration * 1000 + 600);
-    } else if (SET.tts && 'speechSynthesis' in window) {
-      const u = new SpeechSynthesisUtterance(LINE[k]);
-      u.lang = 'en-US'; u.rate = .92; u.pitch = 1.2;
-      const v = pickVoice(); if (v) u.voice = v;
-      u.onend = done; u.onerror = done;
-      speechSynthesis.speak(u);
-      to = setTimeout(done, 7000);
+    } else if (SET.tts && 'speechSynthesis' in window && LINE[k]) {
+      const id = ++sayId, L = LINE[k], parts = L.t.split('|').map(x => x.trim()).filter(Boolean), moods = (L.m || 'happy').split(',');
+      const v = pickVoice();
+      let n = 0;
+      const next = () => {
+        if (id !== sayId || fin) return;
+        if (n >= parts.length) { done(); return; }
+        const mood = MOODS[moods[Math.min(n, moods.length - 1)]] || MOODS.happy;
+        const u = new SpeechSynthesisUtterance(parts[n]);
+        u.lang = (v && v.lang) || 'en-US'; if (v) u.voice = v;
+        u.rate = mood.rate; u.pitch = mood.pitch; u.volume = 1;
+        u.onend = () => { n++; setTimeout(next, mood.pause); };
+        u.onerror = () => done();
+        speechSynthesis.speak(u);
+      };
+      next();
+      to = setTimeout(done, 3500 * parts.length + 1000);
     } else {
       to = setTimeout(done, 900); // short pause so pacing still feels natural
     }
@@ -2979,6 +3012,9 @@ $('#mzAgain').addEventListener('click', () => {
 /* ================= grown-up panel (settings only; the voice ships with the app) ================= */
 function renderPanel() {
   $('#optTts').checked = SET.tts; $('#optSfx').checked = SET.sfx; $('#optMusic').checked = SET.music;
+  const en = englishVoices(), auto = pickVoice.call(null);
+  $('#optVoice').innerHTML = `<option value="">Automatic (sweetest available)</option>` + en.map(v => `<option value="${v.name.replace(/"/g, '&quot;')}">${v.name} (${v.lang})</option>`).join('');
+  $('#optVoice').value = SET.voiceName || '';
   const hol = holidayFor(new Date());
   $('#optTheme').innerHTML = `<option value="auto">Automatic${hol ? ' (now: ' + THEME_NAMES[hol] + ')' : ' (holidays when close)'}</option>` +
     Object.keys(THEME_NAMES).map(k => `<option value="${k}">${THEME_NAMES[k]}</option>`).join('');
@@ -3008,6 +3044,8 @@ $('#optTts').onchange = e => { SET.tts = e.target.checked; saveSet(); };
 $('#optSfx').onchange = e => { SET.sfx = e.target.checked; saveSet(); };
 $('#optMusic').onchange = e => { SET.music = e.target.checked; saveSet(); };
 $('#optTheme').onchange = e => { SET.theme = e.target.value; saveSet(); };
+$('#optVoice').onchange = e => { SET.voiceName = e.target.value; saveSet(); };
+$('#hearVoice').onclick = () => { unlockAudio(); const p = S.paused; S.paused = false; say(rand(['welcome', 'match', 'p_scrape', 'w_fluff'])); S.paused = p; };
 
 // press-and-hold so little fingers don't open it by accident
 (() => {
