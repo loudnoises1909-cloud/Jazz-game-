@@ -107,3 +107,13 @@ changes pace and pitch phrase by phrase. The game prefers the most natural voice
 installed (Premium, Enhanced or Natural voices first), and a grown-up can choose
 another in settings. The
 line list in `studio.html` must match `LINES` in `index.html`.
+
+## River Falls (`river.html`)
+
+A separate 3D game, not linked from the Bat Cave menu: paddle a canoe around a
+looping river with eight waterfalls. Deer graze on the banks, ducks lead their
+ducklings, herons fly off when you get close, turtles slide off their logs, a
+bear fishes under one waterfall, fish jump and birds circle overhead. The bell
+makes the animals react. Keyboard (WASD/arrows, H for the bell) or touch
+(joystick + bell button); drag to look around. Uses Three.js 0.160 from the
+jsDelivr CDN, so it needs an internet connection.
