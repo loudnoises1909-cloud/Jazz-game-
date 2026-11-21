@@ -197,6 +197,7 @@ function stoneColor(n, m) {
 const DOME_C = V3(0, 4, -3), DOME_R = 20, HOLE_DIR = V3(4.3, -1.1, -9).normalize(), HOLE_ANG = .21;
 const HOLE_POS = DOME_C.clone().addScaledVector(HOLE_DIR, 17.2);
 const MOUTH = DOME_C.clone().addScaledVector(HOLE_DIR, 15.4);
+const MOON = V3();
 {
   const geo = new THREE.SphereGeometry(DOME_R, 180, 120), pos = geo.attributes.position, col = [], v = V3(), dirs = [];
   for (let i = 0; i < pos.count; i++) {
@@ -286,7 +287,7 @@ crystalCluster(-5.9, -2, 0x3fc9c0, 7, .15); crystalCluster(6.3, -2.8, 0x5d8cff, 
   sky.position.copy(DOME_C).addScaledVector(HOLE_DIR, 29); sky.lookAt(camBase); scene.add(sky);
   const up = V3(0, 1, 0), side = V3().crossVectors(HOLE_DIR, up).normalize(), upv = V3().crossVectors(side, HOLE_DIR).normalize();
   const moon = new THREE.Mesh(new THREE.CircleGeometry(1.9, 64), new THREE.MeshBasicMaterial({ map: moonTex, transparent: true, fog: false, color: new THREE.Color(1.75, 1.7, 1.6) }));
-  moon.position.copy(DOME_C).addScaledVector(HOLE_DIR, 27).addScaledVector(upv, .5).addScaledVector(side, -.9); moon.lookAt(camBase); scene.add(moon);
+  moon.position.copy(DOME_C).addScaledVector(HOLE_DIR, 27).addScaledVector(upv, .5).addScaledVector(side, -.9); moon.lookAt(camBase); scene.add(moon); MOON.copy(moon.position);
   const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0x8ea6ff, transparent: true, opacity: .45, depthWrite: false, blending: THREE.AdditiveBlending, fog: false }));
   halo.scale.setScalar(11); halo.material.opacity = .28; halo.position.copy(moon.position).addScaledVector(HOLE_DIR, .5); scene.add(halo);
   // boulders round the rim give the opening thickness
@@ -761,7 +762,7 @@ function makeTool(kind, obj, home) {
   hit.userData.tool = T; obj.rotation.x = T.restTilt;
   return T;
 }
-const TABLE_Y = .12, TOOL_Z = 2.35, TOOL_S = 1.3;
+const TABLE_Y = .12, TOOL_Z = 2.35, TOOL_S = 1.05;
 // where tools should rest: on the table about 80% of the way down the screen, and how wide the view is there
 function toolRow(ndcY = -.58) {
   camera.updateMatrixWorld();
@@ -805,9 +806,30 @@ const bez = (a, b, c, t) => V3().addScaledVector(a, (1 - t) * (1 - t)).addScaled
 
 // ───────────────────────── sound ─────────────────────────
 let AC = null, master, musicGain, voiceGain, lowpass;
+let unlockEl = null;
+function silentWavURL() {
+  const n = 4000, ab = new ArrayBuffer(44 + n * 2), v = new DataView(ab);
+  const w = (o, t) => { for (let j = 0; j < t.length; j++) v.setUint8(o + j, t.charCodeAt(j)); };
+  w(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); w(8, 'WAVE'); w(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, 8000, true); v.setUint32(28, 16000, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, 'data'); v.setUint32(40, n * 2, true);
+  return URL.createObjectURL(new Blob([ab], { type: 'audio/wav' }));
+}
+// called on every tap: create or wake the audio, and make iPhones/iPads treat the page as media playback,
+// so the silent switch does not mute the game (a silent looping <audio> element does this on older iOS)
 function audioOn() {
-  if (AC) { if (AC.state === 'suspended') AC.resume(); return; }
+  try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {}
+  try {
+    if (!unlockEl) { unlockEl = new Audio(silentWavURL()); unlockEl.loop = true; unlockEl.setAttribute('playsinline', ''); unlockEl.volume = .01; }
+    if (unlockEl.paused) { const pr = unlockEl.play(); if (pr && pr.catch) pr.catch(() => {}); }
+  } catch (e) {}
+  if (AC) {
+    if (AC.state !== 'running') AC.resume();
+    const b = AC.createBuffer(1, 1, 22050), s = AC.createBufferSource(); s.buffer = b; s.connect(AC.destination); s.start(0);
+    return;
+  }
   AC = new (window.AudioContext || window.webkitAudioContext)();
+  if (AC.state !== 'running') AC.resume();
+  { const b = AC.createBuffer(1, 1, 22050), s = AC.createBufferSource(); s.buffer = b; s.connect(AC.destination); s.start(0); }
   master = AC.createGain(); master.gain.value = .9; master.connect(AC.destination);
   musicGain = AC.createGain(); musicGain.gain.value = 0; musicGain.connect(master);
   voiceGain = AC.createGain(); voiceGain.gain.value = 1.05; voiceGain.connect(master);
@@ -930,7 +952,7 @@ function resetGame() {
   SESSION++;
   gameTimers.forEach(id => _clearTimeout(id)); gameTimers.clear();
   gameIntervals.forEach(id => _clearInterval(id)); gameIntervals.clear();
-  tweens.length = 0; hooks.length = 0;
+  tweens.length = 0; hooks.length = 0; camOv = null; shakeAmt = 0;
   input.down = input.move = input.up = null;
   BAT_LIST.slice().forEach(b => b.dispose());
   stage.clear();
@@ -959,6 +981,11 @@ function confetti(pos, n = 40) {
 
 // ───────────────────────── main loop ─────────────────────────
 const clock = new THREE.Clock();
+const swayPos = V3(), camLook = V3(), ovT = V3(), ovP = V3();
+let camOv = null, camBlend = 0, shakeAmt = 0;
+function camFollow(target, pos) { camOv = { target, pos }; }
+function camRelease() { camOv = null; }
+function shake(a) { shakeAmt = Math.max(shakeAmt, a); }
 let lowQ = false, qT = 0, qN = 0;
 renderer.setAnimationLoop(() => {
   const dt = Math.min(clock.getDelta(), .05); clockT += dt; const t = clockT;
@@ -975,7 +1002,13 @@ renderer.setAnimationLoop(() => {
   sleepers.forEach(b => b.g.rotation.z = Math.sin(t * .8 + b.ph) * .07);
   if ((zT -= dt) <= 0) { zT = rand(1.6, 2.8); const b = sleepers[Math.random() * sleepers.length | 0]; burst(b.g.position.clone().add(V3(.25, -.7, .3)), { n: 1, tex: zTex, color: 0xd7cfff, size: .38, speed: .15, up: .55, grav: 0, life: 2.4, additive: false }); }
   flies(t); updateParts(dt);
-  camera.position.set(camBase.x + Math.sin(t * .23) * .12, camBase.y + Math.sin(t * .31) * .06, camBase.z); camera.lookAt(camTarget);
+  swayPos.set(camBase.x + Math.sin(t * .23) * .12, camBase.y + Math.sin(t * .31) * .06, camBase.z);
+  camBlend += ((camOv ? 1 : 0) - camBlend) * Math.min(1, dt * 1.6);
+  if (camOv) { ovT.copy(camOv.target); ovP.copy(camOv.pos); }
+  const cb = E.io(clamp(camBlend, 0, 1));
+  camera.position.lerpVectors(swayPos, ovP, cb); camLook.lerpVectors(camTarget, ovT, cb);
+  if (shakeAmt > .001) { camera.position.add(V3(rand(-1, 1), rand(-1, 1), rand(-1, 1)).multiplyScalar(shakeAmt)); shakeAmt *= Math.exp(-dt * 3); }
+  camera.lookAt(camLook);
   composer.render();
   // if this device struggles, drop the glow and render at a lower resolution
   if (!TEST && !lowQ) { qT += dt; qN++; if (qN === 150) { if (qT / qN > 1 / 38) { lowQ = true; bloom.enabled = false; renderer.setPixelRatio(1); composer.setPixelRatio(1); resize(); } } }
@@ -985,5 +1018,5 @@ export {
   THREE, TEST, $, rand, clamp, V3, E, sleep, renderer, scene, stage, camera, setView, canvasTex, glowTex, sparkTex, heartTex, woodTex, zTex,
   M, mesh, RoundedBoxGeometry, SHAPES, BANDAGE_COLOR, BATS, makeBat, makeSteth, makeBandage, makeTool, TABLE_Y, TOOL_Z, TOOL_S, toolRow,
   burst, confetti, tween, bez, SFX, tone, noise, now, say, audioOn, duck, MOUTH, HOLE_POS, onFrame, input, ray, setNDC, sp, pick,
-  dragPlane, floorPlane, furShells, isSpeaking, musicLevel, getAudio, hideDecor, resetGame, rock, fbm, vnoise, showAgain, progress, BAT_LIST,
+  dragPlane, floorPlane, furShells, isSpeaking, musicLevel, getAudio, hideDecor, resetGame, camFollow, camRelease, shake, MOON, rock, fbm, vnoise, showAgain, progress, BAT_LIST,
 };

@@ -2,7 +2,7 @@
 // a door with a T-Rex behind it, a rocket that flies out of the cave, and a prize wheel whose prize rains down.
 import {
   THREE, TEST, rand, clamp, V3, E, sleep, stage, setView, glowTex, sparkTex, woodTex, M, mesh, RoundedBoxGeometry, BATS, makeBat,
-  burst, confetti, tween, bez, SFX, tone, noise, now, say, MOUTH, onFrame, input, pick, sp, progress, furShells, hideDecor,
+  burst, confetti, tween, bez, SFX, tone, noise, now, say, MOUTH, MOON, camera, camFollow, camRelease, shake, onFrame, input, pick, sp, progress, furShells, hideDecor,
 } from '../engine.js';
 
 const CELLS = ['rex', 'lamp', 'crank', 'door', 'rocket', 'spin'];
@@ -125,14 +125,24 @@ function buildLamp(G) {
   Object.assign(G, { bulbMat, light, hang, bat: b, tog, on: false, hue: 0 });
 }
 function buildCrank(G) {
-  const g1 = mesh(extr(gearShape(.48, .38, 10, .1)), gold); g1.position.set(-.38, .25, .05); G.g.add(g1);
-  const g2 = mesh(extr(gearShape(.32, .23, 7, .07)), M.metal(0xb8bcc6)); g2.position.set(.32, .52, .05); G.g.add(g2);
-  const chest = mesh(new RoundedBoxGeometry(1.1, .55, .45, 3, .05), new THREE.MeshPhysicalMaterial({ map: woodTex, color: 0x9a6a3a, roughness: .5 })); chest.position.set(-.3, -.55, .25); G.g.add(chest);
-  const handle = new THREE.Group(); handle.position.set(.6, -.4, .2); G.g.add(handle);
-  const disc = mesh(new THREE.CylinderGeometry(.25, .25, .08, 24), M.metal(0x8a929c)); disc.rotation.x = Math.PI / 2; handle.add(disc);
-  const arm = mesh(new RoundedBoxGeometry(.08, .36, .06, 2, .02), gold); arm.position.set(0, .18, .06); handle.add(arm);
-  const knob = mesh(new THREE.SphereGeometry(.09, 14, 10), M.gloss(0xd63b2a, .3)); knob.position.set(0, .36, .12); handle.add(knob);
-  Object.assign(G, { g1, g2, handle });
+  // three chunky toy gears that mesh, a smiley hub, and a crank handle on the big one
+  const toy = c => new THREE.MeshPhysicalMaterial({ color: c, roughness: .28, clearcoat: .9, clearcoatRoughness: .15, envMapIntensity: .6 });
+  const gear = (R, r, n, c, x, y) => {
+    const g = new THREE.Group(); g.position.set(x, y, .06); G.g.add(g);
+    const m = mesh(new THREE.ExtrudeGeometry(gearShape(R, r, n, .001), { depth: .14, bevelEnabled: true, bevelThickness: .04, bevelSize: .035, bevelSegments: 3, curveSegments: 24 }), toy(c)); g.add(m);
+    const hub = mesh(new THREE.CylinderGeometry(r * .45, r * .45, .1, 32), toy(0xf6f0e0)); hub.rotation.x = Math.PI / 2; hub.position.z = .2; g.add(hub);
+    const peg = mesh(new THREE.SphereGeometry(r * .14, 16, 10), gold); peg.position.z = .27; g.add(peg);
+    return g;
+  };
+  const big = gear(.56, .45, 12, 0xd63b2a, -.36, -.14), mid = gear(.4, .31, 9, 0xf0b93a, .43, .4), sm = gear(.3, .22, 7, 0x2c5fbf, .38, -.48);
+  // a smiley face on the big gear's hub
+  [-1, 1].forEach(sd => { const e = mesh(new THREE.SphereGeometry(.025, 10, 8), M.gloss(0x1a1a1a, .2), false); e.position.set(sd * .06, .05, .26); big.add(e); });
+  big.add(mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([V3(-.07, -.03, .26), V3(0, -.07, .265), V3(.07, -.03, .26)]), 12, .012, 6), M.gloss(0x1a1a1a, .3), false));
+  // crank: an arm from the hub with a big red knob sticking out towards you
+  const arm = mesh(new RoundedBoxGeometry(.08, .42, .06, 2, .025), gold); arm.position.set(0, .3, .28); big.add(arm);
+  const stem = mesh(new THREE.CylinderGeometry(.03, .03, .2, 10), gold); stem.rotation.x = Math.PI / 2; stem.position.set(0, .5, .36); big.add(stem);
+  const knob = mesh(new THREE.SphereGeometry(.1, 18, 12), M.gloss(0xd63b2a, .25)); knob.position.set(0, .5, .48); big.add(knob);
+  Object.assign(G, { big, mid, sm });
 }
 function buildDoor(G) {
   const frame = mesh(new RoundedBoxGeometry(1.15, 1.6, .12, 2, .04), new THREE.MeshPhysicalMaterial({ color: 0x3a2a1a, roughness: .6 })); frame.position.z = .02; G.g.add(frame);
@@ -212,8 +222,8 @@ const ACT = {
   },
   async crank(G) {
     let i = 0;
-    await tween(2, e => { const a = e * Math.PI * 4; G.handle.rotation.z = -a; G.g1.rotation.z = -a * .6; G.g2.rotation.z = a * .6 * 10 / 7; const n = e * 12 | 0; if (n !== i) { i = n; S.musicBox(n); S.tick(); } });
-    burst(G.g.localToWorld(V3(-.3, -.2, .6)), { n: 14, size: .3, color: 0xffe08a });
+    await tween(2.2, e => { const a = e * Math.PI * 4; G.big.rotation.z = -a; G.mid.rotation.z = a * 12 / 9; G.sm.rotation.z = a * 12 / 7; const n = e * 12 | 0; if (n !== i) { i = n; S.musicBox(n); S.tick(); } });
+    burst(G.g.localToWorld(V3(0, 0, .7)), { n: 16, size: .3, color: 0xffe08a });
   },
   async door(G) {
     S.creak();
@@ -227,18 +237,41 @@ const ACT = {
   async rocket(G) {
     await tween(.2, e => G.lever.rotation.z = .5 - e * 1.0); S.click();
     for (const f of [660, 660, 660]) { S.beep(f); await sleep(380); }
-    S.beep(1320); S.rumble();
+    S.beep(1320); S.rumble(); S.rumble(); shake(.14);
     const r = G.rocket; stage.attach(r);
-    const p0 = r.position.clone(), p1 = p0.clone().add(V3(0, 5, 2)), p2 = MOUTH.clone();
-    let last = 0;
-    await tween(2.6, (e, raw) => {
-      const p = bez(p0, p1, p2, e), q = bez(p0, p1, p2, Math.min(1, e + .02)); r.position.copy(p);
-      r.quaternion.setFromUnitVectors(V3(0, 1, 0), q.sub(p).normalize()); r.scale.setScalar(Math.max(.001, 1.6 * (1 - e * .6)));
-      if (raw - last > .03) { last = raw; burst(r.position.clone(), { n: 2, tex: glowTex, color: 0xffa24f, size: .35, speed: .4, up: -.5, grav: 0, life: .5 }); burst(r.position.clone(), { n: 1, tex: glowTex, color: 0x9a9aa8, size: .5, speed: .3, up: 0, grav: .3, life: 1.2, additive: false }); }
-    }, E.lin);
+    const p0 = r.position.clone(), s0 = r.scale.x;
+    burst(p0.clone(), { n: 18, tex: glowTex, color: 0xb0b0bc, size: 1.1, speed: 2.2, up: .3, grav: .4, life: 1.8, additive: false });
+    // out of the board and towards you (it grows), then a long arc up to the moon (it shrinks into the distance)
+    const path = new THREE.CatmullRomCurve3([p0, p0.clone().add(V3(0, 1.6, .8)), V3(1.6, 4.2, 3.6), V3(4, 6.5, -2), MOON.clone().lerp(V3(0, 4, 0), .25), MOON.clone()]);
+    const fly = path.getPoints(200), ptAt = e => path.getPointAt(Math.min(1, e));
+    const lookPos = camera.position.clone().add(V3(.6, 1.3, -1));
+    let last = 0, followed = false;
+    await tween(5.2, (e, raw) => {
+      const p = ptAt(e), q = ptAt(e + .01); r.position.copy(p);
+      r.quaternion.setFromUnitVectors(V3(0, 1, 0), q.sub(p).normalize());
+      const grow = e < .3 ? Math.sin(e / .3 * Math.PI / 2) : 1; r.scale.setScalar(s0 * (1 + 1.9 * grow));
+      if (!followed && e > .32) { followed = true; camFollow(MOON.clone(), lookPos); SFX.whoosh(); }
+      if (raw - last > .025) {
+        last = raw; const tail = r.position.clone().addScaledVector(V3(0, -1, 0).applyQuaternion(r.quaternion), .45 * r.scale.x);
+        burst(tail, { n: 2, tex: glowTex, color: 0xffb04f, size: .45 * r.scale.x, speed: .5, up: 0, grav: 0, life: .45 });
+        burst(tail, { n: 1, tex: glowTex, color: 0xfff4c0, size: .25 * r.scale.x, speed: .2, up: 0, grav: 0, life: .25 });
+        burst(tail, { n: 1, tex: glowTex, color: 0x8a8a96, size: .7 * r.scale.x, speed: .25, up: .1, grav: .2, life: 1.6, additive: false });
+      }
+    }, E.io);
     r.removeFromParent();
-    // fireworks through the cave mouth
-    for (let i = 0; i < 4; i++) { S.boom(); burst(MOUTH.clone().add(V3(rand(-1.5, 1.5), rand(-.5, 1.5), 0)), { n: 30, color: [0xffe08a, 0xff7a5c, 0x7ad0ff, 0x9dff8a][i], size: .5, speed: 4, up: .5, grav: -1.5, life: 1.4 }); await sleep(350); }
+    // it reaches the moon: a bright flash, then big fireworks all round it
+    const flash = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xfff6d8, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false }));
+    flash.position.copy(MOON).add(V3(0, 0, 1)); stage.add(flash); SFX.chime(); S.boom();
+    tween(1.2, e => { flash.scale.setScalar(2 + e * 22); flash.material.opacity = 1 - e; }).then(() => flash.removeFromParent());
+    const cols = [0xffe08a, 0xff7a5c, 0x7ad0ff, 0x9dff8a, 0xff8ad0, 0xffffff];
+    for (let i = 0; i < 7; i++) {
+      S.boom(); const c = MOON.clone().add(V3(rand(-5, 5), rand(-1, 5), rand(-2, 2)));
+      burst(c, { n: 46, color: cols[i % cols.length], size: 1.3, speed: 9, up: .5, grav: -2.5, life: 1.8 });
+      burst(c, { n: 1, tex: glowTex, color: cols[i % cols.length], size: 6, speed: 0, up: 0, grav: 0, life: .4 });
+      await sleep(420);
+    }
+    await sleep(900);
+    camRelease();
     await tween(.2, e => G.lever.rotation.z = -.5 + e * 1.0);
     G.rocket = newRocket(G);
   },

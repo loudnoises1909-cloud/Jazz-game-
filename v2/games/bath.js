@@ -316,7 +316,7 @@ export function start() {
     G, get bat() { return bat; }, get bubbles() { return bubbles.length; }, get drops() { return drops.length; }, get dirtLeft() { return dirt ? countDirty(dirt) / dirt.start : 0; },
     toolScreen: () => tool && sp(tool.g.position.clone()), batScreen: () => sp(bat.root.position.clone()),
     bubbleScreens: () => bubbles.map(b => sp(b.m.getWorldPosition(V3()))), dropScreens: () => drops.map(m => sp(m.getWorldPosition(V3()))),
-    faceScreen: () => sp(bat.inner.localToWorld(V3(0, .05, 1))),
+    faceScreen: () => sp(bat.inner.localToWorld(V3(0, .05, 1))), skip: () => cleanDone(),
   };
   startRound();
 }
