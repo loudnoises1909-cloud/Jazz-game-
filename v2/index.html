@@ -569,9 +569,7 @@ function makeBat(cfg, scrapeKind) {
   const stick = (m, x, y, off = 0) => { const s = surf(x, y, off); m.position.copy(s.p); m.quaternion.setFromUnitVectors(Z, s.n); return add(m); };
 
   // belly patch
-  const bellyGeo = new THREE.SphereGeometry(.5, 48, 32);
-  const belly = mesh(bellyGeo, furLight); belly.scale.set(1.05, .95, .5); belly.position.set(0, -.58, .57); add(belly);
-  const bellyFur = furShells(bellyGeo, new THREE.Color(cfg.fur).lerp(new THREE.Color(0xe8c4cc), .12), { n: 16, len: .06, den: 2.8, droop: .012, root: .6, tip: 1.08 }); bellyFur.scale.copy(belly.scale); bellyFur.position.copy(belly.position); B.inner.add(bellyFur);
+
 
   // ears
   const earPts = [[0, 0], [.36, .04], [.37, .36], [.25, .74], [.09, 1.02], [0, 1.08]].map(([x, y]) => new THREE.Vector2(x, y));
