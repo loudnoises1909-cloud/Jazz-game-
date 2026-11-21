@@ -392,7 +392,9 @@ function sleepyBat(x, y, z, col, s = 1) {
 sleepyBat(-1.9, 4.3, -7, 0x40384f); sleepyBat(-1.05, 4.55, -7.6, 0x4a3e5a, .85); sleepyBat(1.6, 4.4, -7.2, 0x40384f, .95);
 let zT = 0;
 
-// exam table, cushion and a first-aid kit
+// exam table and a first-aid kit (games that need the table space can hide the props)
+const DECOR = [];
+const hideDecor = () => DECOR.forEach(d => d.visible = false);
 {
   const table = mesh(new RoundedBoxGeometry(9.4, .7, 4.4, 5, .22), new THREE.MeshPhysicalMaterial({ map: woodTex, roughness: .5, clearcoat: .35, clearcoatRoughness: .3, envMapIntensity: .5 }), false, true);
   table.position.set(0, -.72, 1.2); scene.add(table);
@@ -402,8 +404,8 @@ let zT = 0;
   const c1 = mesh(new RoundedBoxGeometry(.46, .14, .06, 2, .03), crossM); c1.position.z = .38; kit.add(c1);
   const c2 = mesh(new RoundedBoxGeometry(.14, .46, .06, 2, .03), crossM); c2.position.z = .38; kit.add(c2);
   const handle = mesh(new THREE.TorusGeometry(.22, .045, 10, 24, Math.PI), M.metal(0xb8bcc6)); handle.position.y = .42; kit.add(handle);
-  scene.add(kit);
-  const jar = new THREE.Group(); jar.position.set(-3.55, -.37, -.15); scene.add(jar);
+  scene.add(kit); DECOR.push(kit);
+  const jar = new THREE.Group(); jar.position.set(-3.55, -.37, -.15); scene.add(jar); DECOR.push(jar);
   const jg = mesh(new THREE.CylinderGeometry(.34, .34, .72, 32, 1, true), new THREE.MeshPhysicalMaterial({ color: 0xdff1ff, roughness: .05, clearcoat: 1, transparent: true, opacity: .28, side: THREE.DoubleSide, envMapIntensity: 1.4 }), false);
   jg.position.y = .36; jar.add(jg);
   for (let i = 0; i < 9; i++) { const c = mesh(new THREE.SphereGeometry(.13, 14, 10), M.cloth(0xffffff), false); c.position.set(rand(-.16, .16), .14 + (i / 9) * .45, rand(-.16, .16)); jar.add(c); }
@@ -939,5 +941,5 @@ export {
   THREE, TEST, $, rand, clamp, V3, E, sleep, renderer, scene, stage, camera, setView, canvasTex, glowTex, sparkTex, heartTex, woodTex, zTex,
   M, mesh, RoundedBoxGeometry, SHAPES, BANDAGE_COLOR, BATS, makeBat, makeSteth, makeBandage, makeTool, TABLE_Y, TOOL_Z,
   burst, confetti, tween, bez, SFX, tone, noise, now, say, audioOn, duck, MOUTH, HOLE_POS, onFrame, input, ray, setNDC, sp, pick,
-  dragPlane, floorPlane, furShells, isSpeaking, musicLevel, getAudio, rock, fbm, vnoise, showAgain, progress, BAT_LIST,
+  dragPlane, floorPlane, furShells, isSpeaking, musicLevel, getAudio, hideDecor, rock, fbm, vnoise, showAgain, progress, BAT_LIST,
 };

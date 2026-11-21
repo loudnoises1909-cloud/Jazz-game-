@@ -2,7 +2,7 @@
 // tap the record player and everyone dances under the spotlights.
 import {
   THREE, TEST, rand, V3, E, sleep, stage, setView, canvasTex, glowTex, sparkTex, woodTex, M, mesh, RoundedBoxGeometry, BATS, makeBat,
-  burst, tween, SFX, tone, noise, say, onFrame, input, pick, sp, progress, musicLevel, getAudio,
+  burst, tween, SFX, tone, noise, say, onFrame, input, pick, sp, progress, musicLevel, getAudio, hideDecor,
 } from '../engine.js';
 
 const hz = n => 440 * Math.pow(2, n / 12);
@@ -75,10 +75,10 @@ function buildStage() {
     const b = mesh(new THREE.SphereGeometry(.045, 10, 8), m, false); b.position.set(x, y, .09); sign.add(b); sign.userData.bulbs.push(m);
   }
   // footlights along the front of the table
-  for (let i = 0; i < 11; i++) { const m = new THREE.MeshStandardMaterial({ color: 0xfff2c4, emissive: 0xffb860, emissiveIntensity: 2.2 }); const b = mesh(new THREE.SphereGeometry(.09, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), m, false); b.position.set(-4.2 + i * .84, -.37, 3.25); stage.add(b); foot.push(m); }
+  for (let i = 0; i < 11; i++) { const m = new THREE.MeshStandardMaterial({ color: 0xfff2c4, emissive: 0xffb860, emissiveIntensity: 1.2 }); const b = mesh(new THREE.SphereGeometry(.09, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), m, false); b.position.set(-4.2 + i * .84, -.37, 3.25); stage.add(b); foot.push(m); }
   // spotlights from above
   [[-3, 0xff8ad0], [0, 0xfff0c0], [3, 0x8ad0ff]].forEach(([x, c], i) => {
-    const s = new THREE.SpotLight(c, i === 1 ? 30 : 0, 16, .32, .6, 1.4); s.position.set(x, 7.5, 3); s.target.position.set(x * .6, 1, -.4); stage.add(s); stage.add(s.target); spots.push(s);
+    const s = new THREE.SpotLight(c, i === 1 ? 12 : 0, 16, .32, .6, 1.4); s.position.set(x, 7.5, 3); s.target.position.set(x * .6, 1, -.4); stage.add(s); stage.add(s.target); spots.push(s);
   });
 }
 function buildInstruments() {
@@ -148,12 +148,12 @@ function hitBar(i) {
 async function toggleDance() {
   dancing = !dancing; SFX.pick();
   if (dancing) {
-    startBeat(); spots.forEach(s => s.intensity = 30);
+    startBeat(); spots.forEach(s => s.intensity = 12);
     bats.forEach(b => { b.flapAmp = .4; b.flapSpeed = 10; b.setMood('open'); });
     if (!danceSaid) { danceSaid = true; say('n_dance'); }
     progress(1, 1);
   } else {
-    stopBeat(); spots.forEach((s, i) => s.intensity = i === 1 ? 30 : 0);
+    stopBeat(); spots.forEach((s, i) => s.intensity = i === 1 ? 12 : 0);
     bats.forEach(b => { b.flapAmp = .18; b.flapSpeed = 5; b.setMood('happy'); b.base.copy(b.userData.home); b.inner.rotation.y = 0; });
   }
 }
@@ -176,7 +176,7 @@ function armHint() {
 function update(t, dt) {
   // chasing sign bulbs and twinkling footlights
   sign.userData.bulbs.forEach((m, i) => m.emissiveIntensity = ((i + (t * (dancing ? 10 : 4) | 0)) % 3 === 0) ? 3 : .6);
-  foot.forEach((m, i) => m.emissiveIntensity = dancing ? (((i + (t * 4 | 0)) % 2) ? 3 : .8) : 2.2);
+  foot.forEach((m, i) => m.emissiveIntensity = dancing ? (((i + (t * 4 | 0)) % 2) ? 1.8 : .5) : 1.2);
   if (dancing) {
     player.userData.disc.rotation.y -= dt * 3.5;
     const beat = t * 116 / 60 * Math.PI;
@@ -188,7 +188,7 @@ function update(t, dt) {
 
 export async function start() {
   setView({ x: 0, y: 1.55, z: .6, w: 9.0, h: 5.6, pitch: .2, lift: .25 });
-  musicLevel(0);
+  musicLevel(0); hideDecor();
   buildStage(); buildInstruments(); buildBats();
   Object.assign(input, { down, move, up });
   onFrame(update);

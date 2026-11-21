@@ -2,7 +2,7 @@
 // a door with a T-Rex behind it, a rocket that flies out of the cave, and a prize wheel whose prize rains down.
 import {
   THREE, TEST, rand, clamp, V3, E, sleep, stage, setView, glowTex, sparkTex, woodTex, M, mesh, RoundedBoxGeometry, BATS, makeBat,
-  burst, confetti, tween, bez, SFX, tone, noise, now, say, MOUTH, onFrame, input, pick, sp, progress, furShells,
+  burst, confetti, tween, bez, SFX, tone, noise, now, say, MOUTH, onFrame, input, pick, sp, progress, furShells, hideDecor,
 } from '../engine.js';
 
 const CELLS = ['rex', 'lamp', 'crank', 'door', 'rocket', 'spin'];
@@ -315,7 +315,7 @@ function update(t, dt) {
 
 export async function start() {
   setView({ x: 0, y: 1.8, z: -.2, w: 8.4, h: 5.4, pitch: .12, lift: .25 });
-  buildBoard();
+  hideDecor(); buildBoard();
   input.down = down; input.move = null; input.up = null;
   onFrame(update);
   progress(6, 0);
