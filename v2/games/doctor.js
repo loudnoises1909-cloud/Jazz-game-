@@ -182,7 +182,7 @@ function update(t, dt) {
 }
 
 export function start() {
-  setView({ x: 0, y: 1.3, z: .8, w: 6.8, h: 5.3, pitch: .197, lift: .3 });
+  setView({ x: 0, y: 1.3, z: .8, w: 6.8, wTall: 5.0, h: 5.3, pitch: .197, lift: .12 });
   // the exam cushion the bat hovers over
   const cushion = mesh(new THREE.CylinderGeometry(1.5, 1.55, .26, 64), M.cloth(0x5a86ad), true, true);
   cushion.position.set(0, -.23, .25); stage.add(cushion);

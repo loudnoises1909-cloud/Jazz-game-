@@ -307,7 +307,7 @@ function update(t, dt) {
 }
 
 export function start() {
-  setView({ x: 0, y: 1.0, z: .9, w: 7.0, h: 5.0, pitch: .26, lift: .3 });
+  setView({ x: 0, y: 1.0, z: .9, w: 7.0, wTall: 5.0, h: 5.0, pitch: .26, lift: .12 });
   buildTub();
   Object.assign(input, { down, move, up });
   onFrame(update);

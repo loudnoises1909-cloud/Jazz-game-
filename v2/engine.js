@@ -51,7 +51,7 @@ const camTarget = V3(0, 1.3, .8);
 const camBase = V3();
 // each game frames the camera on its own set: a target, how much must fit, and how steeply to look down
 const VIEW = { x: 0, y: 1.3, z: .8, w: 7.4, h: 5.3, pitch: .197, lift: .3 };
-function setView(v) { Object.assign(VIEW, v); resize(); }
+function setView(v) { VIEW.wTall = 0; Object.assign(VIEW, v); resize(); }
 const composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(innerWidth, innerHeight, { type: THREE.HalfFloatType, samples: 4 }));
 composer.addPass(new RenderPass(scene, camera));
 const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), .5, .5, 1.55);
@@ -60,7 +60,9 @@ composer.addPass(new OutputPass());
 function resize() {
   const w = innerWidth, h = innerHeight;
   renderer.setSize(w, h); composer.setSize(w, h); camera.aspect = w / h;
-  const need = Math.max(VIEW.h, VIEW.w / camera.aspect), d = need / (2 * Math.tan(THREE.MathUtils.degToRad(17.5)));
+  // on tall, narrow screens a game may accept cropping the sides (wTall) so things stay big
+  const wNeed = camera.aspect < .8 && VIEW.wTall ? VIEW.wTall : VIEW.w;
+  const need = Math.max(VIEW.h, wNeed / camera.aspect), d = need / (2 * Math.tan(THREE.MathUtils.degToRad(17.5)));
   camTarget.set(VIEW.x, VIEW.y + (need - VIEW.h) * VIEW.lift, VIEW.z); // tall screens: aim higher so the empty floor drops out of view
   camBase.set(VIEW.x, camTarget.y + Math.sin(VIEW.pitch) * d, camTarget.z + Math.cos(VIEW.pitch) * d);
   camera.position.copy(camBase); camera.lookAt(camTarget); camera.updateProjectionMatrix();
@@ -308,7 +310,7 @@ crystalCluster(-5.9, -2, 0x3fc9c0, 7, .15); crystalCluster(6.3, -2.8, 0x5d8cff, 
   const n = 160, g2 = new THREE.BufferGeometry(), p2 = new Float32Array(n * 3), base = [];
   for (let i = 0; i < n; i++) { const t = rand(.05, .85), q = floorPt.clone().addScaledVector(dir, t), r = rimR * (1.2 - t * .5) * Math.sqrt(Math.random()), a = rand(0, 6.28); q.addScaledVector(side, Math.cos(a) * r).addScaledVector(upv, Math.sin(a) * r * .8); base.push([q.x, q.y, q.z, rand(0, 6)]); }
   g2.setAttribute('position', new THREE.BufferAttribute(p2, 3));
-  scene.add(new THREE.Points(g2, new THREE.PointsMaterial({ size: .07, map: glowTex, color: 0xc4d2ff, transparent: true, opacity: .8, depthWrite: false, blending: THREE.AdditiveBlending })));
+  scene.add(new THREE.Points(g2, new THREE.PointsMaterial({ size: .045, map: glowTex, color: 0xc4d2ff, transparent: true, opacity: .6, alphaTest: .01, depthWrite: false, blending: THREE.AdditiveBlending })));
   window.__dust = t => { base.forEach(([x, y, z, ph], i) => { p2[i * 3] = x + Math.sin(t * .13 + ph) * .35; p2[i * 3 + 1] = y + Math.sin(t * .09 + ph * 3) * .3; p2[i * 3 + 2] = z + Math.cos(t * .11 + ph) * .3; }); g2.attributes.position.needsUpdate = true; };
 }
 // water drips from a few stalactites
