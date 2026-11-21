@@ -12,6 +12,7 @@
     touch-action: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent;
     font-family: Fredoka, 'Baloo 2', system-ui, sans-serif; }
   canvas { display: block; }
+  #vig { position: fixed; inset: 0; pointer-events: none; z-index: 1; background: radial-gradient(ellipse at 50% 46%, rgba(0,0,0,0) 52%, rgba(0,0,0,.5) 100%); }
   .ov { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
     background: radial-gradient(ellipse at center, rgba(20,14,50,.25), rgba(12,8,32,.7)); transition: opacity .5s; z-index: 5; }
   .ov.hide { opacity: 0; pointer-events: none; }
@@ -38,6 +39,7 @@
 </style>
 </head>
 <body>
+<div id="vig"></div>
 <div id="start" class="ov"><div class="card">
   <div class="title">Bat Doctor</div>
   <div class="sub">3D preview</div>
@@ -51,6 +53,10 @@
 import * as THREE from './three.module.min.js';
 import { RoomEnvironment } from './addons/environments/RoomEnvironment.js';
 import { RoundedBoxGeometry } from './addons/geometries/RoundedBoxGeometry.js';
+import { EffectComposer } from './addons/postprocessing/EffectComposer.js';
+import { RenderPass } from './addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from './addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from './addons/postprocessing/OutputPass.js';
 
 const TEST = location.hash.includes('test');
 const $ = s => document.querySelector(s);
@@ -75,18 +81,23 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.prepend(renderer.domElement);
 
 const scene = new THREE.Scene();
-const BG = 0x1c1744;
+const BG = 0x090a14;
 scene.background = new THREE.Color(BG);
-scene.fog = new THREE.Fog(BG, 16, 48);
+scene.fog = new THREE.FogExp2(0x0d0f1d, .03);
 const pmrem = new THREE.PMREMGenerator(renderer);
 scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), .04).texture;
 
 const camera = new THREE.PerspectiveCamera(35, 1, .1, 120);
 const camTarget = V3(0, 1.3, .8);
 const camBase = V3();
+const composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(innerWidth, innerHeight, { type: THREE.HalfFloatType, samples: 4 }));
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), .5, .5, 1.55);
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
 function resize() {
   const w = innerWidth, h = innerHeight;
-  renderer.setSize(w, h); camera.aspect = w / h;
+  renderer.setSize(w, h); composer.setSize(w, h); camera.aspect = w / h;
   const need = Math.max(5.3, 7.4 / camera.aspect), d = need / (2 * Math.tan(THREE.MathUtils.degToRad(17.5)));
   camTarget.y = 1.3 + (need - 5.3) * .3; // tall screens: aim higher so the empty floor drops out of view
   camBase.set(0, camTarget.y + d * .2, camTarget.z + d);
@@ -136,16 +147,20 @@ const woodTex = canvasTex(1024, 256, (g, w, h) => {
   }
 });
 woodTex.wrapS = woodTex.wrapT = THREE.RepeatWrapping; woodTex.repeat.set(1.4, 1);
-const skyTex = canvasTex(512, 512, (g, w) => {
-  const r = g.createRadialGradient(256, 256, 20, 256, 256, 256);
-  r.addColorStop(0, '#2d4590'); r.addColorStop(1, '#0d1440'); g.fillStyle = r; g.fillRect(0, 0, w, w);
-  for (let i = 0; i < 160; i++) { g.fillStyle = `rgba(255,250,230,${rand(.3, 1)})`; g.beginPath(); g.arc(rand(0, w), rand(0, w), rand(.6, 2.2), 0, 7); g.fill(); }
-  const mg = g.createRadialGradient(300, 210, 40, 300, 210, 150);
-  mg.addColorStop(0, 'rgba(255,240,190,.55)'); mg.addColorStop(1, 'rgba(255,240,190,0)'); g.fillStyle = mg; g.fillRect(0, 0, w, w);
-  const mm = g.createRadialGradient(285, 195, 10, 300, 210, 72);
-  mm.addColorStop(0, '#fffbe6'); mm.addColorStop(1, '#f6dfa0'); g.fillStyle = mm; g.beginPath(); g.arc(300, 210, 70, 0, 7); g.fill();
-  g.fillStyle = 'rgba(214,186,120,.45)';
-  [[275, 190, 14], [320, 235, 10], [318, 180, 7], [285, 240, 6]].forEach(([x, y, s]) => { g.beginPath(); g.arc(x, y, s, 0, 7); g.fill(); });
+const skyTex = canvasTex(1024, 1024, (g, w) => {
+  const r = g.createRadialGradient(w * .55, w * .4, 30, w / 2, w / 2, w * .7);
+  r.addColorStop(0, '#1d2d63'); r.addColorStop(.6, '#0f1840'); r.addColorStop(1, '#05081b'); g.fillStyle = r; g.fillRect(0, 0, w, w);
+  for (let i = 0; i < 700; i++) { const b = Math.pow(Math.random(), 3); g.fillStyle = `rgba(255,250,235,${.25 + b * .75})`; g.beginPath(); g.arc(rand(0, w), rand(0, w), .5 + b * 1.6, 0, 7); g.fill(); }
+  for (let i = 0; i < 5; i++) { const c = g.createRadialGradient(rand(0, w), rand(0, w), 0, rand(0, w), rand(0, w), 260); c.addColorStop(0, 'rgba(120,140,220,.10)'); c.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = c; g.fillRect(0, 0, w, w); }
+});
+const moonTex = canvasTex(512, 512, (g, w) => {
+  const m = g.createRadialGradient(220, 210, 20, 256, 256, 250);
+  m.addColorStop(0, '#fffdf2'); m.addColorStop(.85, '#e9dcb8'); m.addColorStop(1, '#cdbb92');
+  g.fillStyle = m; g.beginPath(); g.arc(256, 256, 250, 0, 7); g.fill();
+  g.save(); g.beginPath(); g.arc(256, 256, 250, 0, 7); g.clip();
+  for (let i = 0; i < 26; i++) { const x = rand(40, 470), y = rand(40, 470), r = rand(8, 46); g.fillStyle = `rgba(150,130,95,${rand(.12, .3)})`; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); g.strokeStyle = 'rgba(255,250,230,.25)'; g.lineWidth = 2; g.beginPath(); g.arc(x - 2, y - 2, r, 2.5, 5); g.stroke(); }
+  [[180, 200, 90], [320, 330, 70], [300, 160, 50]].forEach(([x, y, r]) => { g.fillStyle = 'rgba(140,120,90,.22)'; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); });
+  g.restore();
 });
 
 // ───────────────────────── materials ─────────────────────────
@@ -153,111 +168,190 @@ const M = {
   fur: c => new THREE.MeshPhysicalMaterial({ color: c, roughness: .62, sheen: 1, sheenRoughness: .32, sheenColor: new THREE.Color(0xf3d2dc), envMapIntensity: .45 }),
   gloss: (c, r = .25) => new THREE.MeshPhysicalMaterial({ color: c, roughness: r, clearcoat: .7, clearcoatRoughness: .15, envMapIntensity: .7 }),
   matte: (c, r = .9) => new THREE.MeshStandardMaterial({ color: c, roughness: r, envMapIntensity: .3 }),
-  metal: c => new THREE.MeshStandardMaterial({ color: c, metalness: 1, roughness: .16, envMapIntensity: 1.3 }),
+  metal: c => new THREE.MeshStandardMaterial({ color: c, metalness: 1, roughness: .22, envMapIntensity: .75 }),
   cloth: c => new THREE.MeshPhysicalMaterial({ color: c, roughness: .85, sheen: .8, sheenRoughness: .5, sheenColor: new THREE.Color(0xffffff), envMapIntensity: .3 }),
 };
 function mesh(geo, mat, cast = true, recv = false) { const m = new THREE.Mesh(geo, mat); m.castShadow = cast; m.receiveShadow = recv; return m; }
 
 // ───────────────────────── lights ─────────────────────────
-scene.add(new THREE.HemisphereLight(0xb9b0ff, 0x3a2620, .85));
-const key = new THREE.DirectionalLight(0xffe2c6, 2.2);
+// a warm lantern key on the patient, cool moonlight from the cave mouth, very little ambient
+scene.add(new THREE.HemisphereLight(0x8a9ad6, 0x2a1d16, .5));
+const key = new THREE.DirectionalLight(0xffd6a8, 2.1);
 key.position.set(-4, 8, 7); key.castShadow = true;
 key.shadow.mapSize.set(2048, 2048);
 Object.assign(key.shadow.camera, { left: -6, right: 6, top: 6, bottom: -4, near: 1, far: 30 });
 key.shadow.bias = -.0004; key.shadow.normalBias = .03;
 scene.add(key);
-const rimBlue = new THREE.DirectionalLight(0x9cc6ff, 3.2); rimBlue.position.set(5, 5, -6); scene.add(rimBlue);
-const rimPink = new THREE.DirectionalLight(0xb7a0ff, 1.4); rimPink.position.set(-6, 2, -5); scene.add(rimPink);
-const fill = new THREE.DirectionalLight(0xbcaeff, .7); fill.position.set(6, 2, 6); scene.add(fill);
+const fill = new THREE.DirectionalLight(0x8f9ccc, .55); fill.position.set(6, 2, 6); scene.add(fill);
 
 // ───────────────────────── cave set ─────────────────────────
 function hash(a, b, c) {
   let n = (Math.imul(a, 374761393) + Math.imul(b, 668265263) + Math.imul(c, 1274126177)) | 0;
   n = Math.imul(n ^ (n >>> 13), 1274126177); return ((n ^ (n >>> 16)) >>> 0) / 4294967295;
 }
-function vnoise(x, y, z) {
+function vnoise(x, y, z, p = 0) {
   const ix = Math.floor(x), iy = Math.floor(y), iz = Math.floor(z), fx = x - ix, fy = y - iy, fz = z - iz;
-  const s = t => t * t * (3 - 2 * t), u = s(fx), v = s(fy), w = s(fz), L = (a, b, t) => a + (b - a) * t;
-  return L(L(L(hash(ix, iy, iz), hash(ix + 1, iy, iz), u), L(hash(ix, iy + 1, iz), hash(ix + 1, iy + 1, iz), u), v),
-           L(L(hash(ix, iy, iz + 1), hash(ix + 1, iy, iz + 1), u), L(hash(ix, iy + 1, iz + 1), hash(ix + 1, iy + 1, iz + 1), u), v), w);
+  const w = p ? (a => ((a % p) + p) % p) : (a => a);
+  const H = (a, b, c) => hash(w(a), w(b), c);
+  const s = t => t * t * (3 - 2 * t), u = s(fx), v = s(fy), q = s(fz), L = (a, b, t) => a + (b - a) * t;
+  return L(L(L(H(ix, iy, iz), H(ix + 1, iy, iz), u), L(H(ix, iy + 1, iz), H(ix + 1, iy + 1, iz), u), v),
+           L(L(H(ix, iy, iz + 1), H(ix + 1, iy, iz + 1), u), L(H(ix, iy + 1, iz + 1), H(ix + 1, iy + 1, iz + 1), u), v), q);
 }
 const fbm = (x, y, z) => vnoise(x, y, z) * .55 + vnoise(x * 2.1, y * 2.1, z * 2.1) * .3 + vnoise(x * 4.3, y * 4.3, z * 4.3) * .15;
 
-{ // cave dome
-  const geo = new THREE.SphereGeometry(20, 120, 80), pos = geo.attributes.position, col = [], v = V3();
-  const dark = new THREE.Color(0x140f33), mid = new THREE.Color(0x352a74), lite = new THREE.Color(0x6a58c0);
+// fine stone detail: a tiling normal map made from noise, with crack-like ridges
+const rockNormal = (() => {
+  const S = 512, P = 8, h = new Float32Array(S * S);
+  for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+    let v = 0, a = .5, f = 1;
+    for (let o = 0; o < 5; o++) { v += vnoise(x / S * P * f, y / S * P * f, o, P * f) * a; a *= .5; f *= 2; }
+    const r = 1 - Math.abs(vnoise(x / S * P * 2, y / S * P * 2, 9, P * 2) - .5) * 2;
+    h[y * S + x] = v + Math.pow(r, 10) * -.12;
+  }
+  const c = document.createElement('canvas'); c.width = c.height = S;
+  const g = c.getContext('2d'), img = g.createImageData(S, S), k = 6;
+  for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+    const H = (xx, yy) => h[((yy + S) % S) * S + ((xx + S) % S)];
+    let nx = (H(x - 1, y) - H(x + 1, y)) * k, ny = (H(x, y - 1) - H(x, y + 1)) * k, nz = 1;
+    const l = Math.hypot(nx, ny, nz), i = (y * S + x) * 4;
+    img.data[i] = (nx / l * .5 + .5) * 255; img.data[i + 1] = (ny / l * .5 + .5) * 255; img.data[i + 2] = (nz / l * .5 + .5) * 255; img.data[i + 3] = 255;
+  }
+  g.putImageData(img, 0, 0);
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4; return t;
+})();
+function rockMat(rx, ry, extra = {}) {
+  const n = rockNormal.clone(); n.repeat.set(rx, ry); n.needsUpdate = true;
+  return new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .84, normalMap: n, normalScale: new THREE.Vector2(.9, .9), envMapIntensity: .12, ...extra });
+}
+// stone colours: cool grey, warm brown-grey, near-black in the cracks
+const STONE = { deep: new THREE.Color(0x121117), base: new THREE.Color(0x37343d), warm: new THREE.Color(0x5a4f47), lite: new THREE.Color(0x857b72), cool: new THREE.Color(0x3d3a52) };
+function stoneColor(n, m) {
+  return STONE.deep.clone().lerp(STONE.base, clamp(n * 2.2 - .35, 0, 1)).lerp(m > .5 ? STONE.warm : STONE.cool, clamp((m - .3) * 1.6, 0, 1) * .6).lerp(STONE.lite, clamp(n * 2.4 - 1.5, 0, 1) * .55);
+}
+
+// the cave dome, with a ragged opening to the night sky
+const DOME_C = V3(0, 4, -3), DOME_R = 20, HOLE_DIR = V3(4.3, -1.1, -9).normalize(), HOLE_ANG = .21;
+const HOLE_POS = DOME_C.clone().addScaledVector(HOLE_DIR, 17.2);
+const MOUTH = DOME_C.clone().addScaledVector(HOLE_DIR, 15.4);
+{
+  const geo = new THREE.SphereGeometry(DOME_R, 180, 120), pos = geo.attributes.position, col = [], v = V3(), dirs = [];
   for (let i = 0; i < pos.count; i++) {
-    v.fromBufferAttribute(pos, i);
-    const n = fbm(v.x * .22 + 9, v.y * .22, v.z * .22);
-    v.multiplyScalar(1 - n * .22); pos.setXYZ(i, v.x, v.y, v.z);
-    const c = dark.clone().lerp(mid, clamp(n * 1.5 - .2, 0, 1)).lerp(lite, clamp(n * 2 - 1.2, 0, 1) * .6);
-    col.push(c.r, c.g, c.b);
+    v.fromBufferAttribute(pos, i); const u = v.clone().normalize(); dirs.push(u);
+    const n = fbm(v.x * .17 + 9, v.y * .17, v.z * .17), d2 = fbm(v.x * .7, v.y * .7 + 3, v.z * .7), m = vnoise(v.x * .08, v.y * .08 + 5, v.z * .08);
+    const lip = Math.max(0, 1 - Math.abs(u.angleTo(HOLE_DIR) - HOLE_ANG) / .08); // thicker rock round the opening
+    v.multiplyScalar(1 - n * .26 - d2 * .05 - lip * .05); pos.setXYZ(i, v.x, v.y, v.z);
+    const c = stoneColor(n * .85 + d2 * .3, m); col.push(c.r, c.g, c.b);
+  }
+  const idx = geo.index.array, keep = [], cd = V3();
+  for (let i = 0; i < idx.length; i += 3) {
+    cd.copy(dirs[idx[i]]).add(dirs[idx[i + 1]]).add(dirs[idx[i + 2]]).normalize();
+    const edge = HOLE_ANG * (1 + (vnoise(cd.x * 9, cd.y * 9, cd.z * 9) - .5) * .55);
+    if (cd.angleTo(HOLE_DIR) > edge) keep.push(idx[i], idx[i + 1], idx[i + 2]);
+  }
+  geo.setIndex(keep);
+  geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); geo.computeVertexNormals();
+  const cave = mesh(geo, rockMat(30, 16, { side: THREE.BackSide }), false, false);
+  cave.position.copy(DOME_C); scene.add(cave);
+}
+{ // uneven stone floor
+  const geo = new THREE.PlaneGeometry(64, 64, 180, 180).rotateX(-Math.PI / 2), pos = geo.attributes.position, col = [], v = V3();
+  for (let i = 0; i < pos.count; i++) {
+    v.fromBufferAttribute(pos, i); const n = fbm(v.x * .25 + 3, 0, v.z * .25), m = vnoise(v.x * .1, 7, v.z * .1);
+    pos.setY(i, (n - .45) * .9 + fbm(v.x * 1.3, 2, v.z * 1.3) * .12);
+    const c = stoneColor(n * .9, m).multiplyScalar(.85); col.push(c.r, c.g, c.b);
   }
   geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); geo.computeVertexNormals();
-  const cave = mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, side: THREE.BackSide, envMapIntensity: .2 }), false, false);
-  cave.position.set(0, 4, -3); scene.add(cave);
+  const floor = mesh(geo, rockMat(26, 26), false, true); floor.position.y = -1.35; scene.add(floor);
 }
-{ // floor
-  const floor = mesh(new THREE.CircleGeometry(24, 64), M.matte(0x2e2360, 1), false, true);
-  floor.rotation.x = -Math.PI / 2; floor.position.y = -1.3; scene.add(floor);
-}
+// stalactites: knobbly, dark at the root, wet and paler at the tip
 function spikeGeo(r, h, seed) {
-  const pts = []; for (let i = 0; i <= 14; i++) { const t = i / 14; pts.push(new THREE.Vector2(r * Math.pow(1 - t, 1.25) * (1 + .1 * Math.sin(t * 9 + seed)) + .015, h * t)); }
-  return new THREE.LatheGeometry(pts, 20);
-}
-{ // stalactites + stalagmites
-  const mat = M.matte(0x3b2e78, .95), matB = M.matte(0x4a3b8c, .9);
-  for (let i = 0; i < 22; i++) {
-    const x = rand(-12, 12), z = rand(-9, -2.5), h = rand(2.2, 5), r = rand(.35, .9);
-    const m = mesh(spikeGeo(r, h, i), i % 3 ? mat : matB, false, false);
-    m.rotation.x = Math.PI; m.position.set(x, 10.5 + rand(-1, .5), z); scene.add(m);
+  const pts = []; for (let i = 0; i <= 18; i++) { const t = i / 18; pts.push(new THREE.Vector2(r * Math.pow(1 - t, 1.35) * (1 + .12 * Math.sin(t * 11 + seed)) + .012, h * t)); }
+  const geo = new THREE.LatheGeometry(pts, 28), pos = geo.attributes.position, col = [], v = V3();
+  for (let i = 0; i < pos.count; i++) {
+    v.fromBufferAttribute(pos, i); const t = v.y / h, n = fbm(v.x * 2.2 + seed, v.y * 1.4, v.z * 2.2);
+    const k = 1 + (n - .5) * .5 * (1 - t * .6); pos.setXYZ(i, v.x * k, v.y, v.z * k);
+    const c = stoneColor(.32 + n * .35, .7).lerp(new THREE.Color(0x9a9088), Math.pow(t, 3) * .7); col.push(c.r, c.g, c.b);
   }
+  geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); geo.computeVertexNormals(); return geo;
+}
+const drips = [];
+{
+  const mat = rockMat(2, 5, { roughness: .55 });
+  mat.metalness = 0; Object.assign(mat, { roughness: .5 });
+  const wet = new THREE.MeshPhysicalMaterial({ vertexColors: true, roughness: .45, clearcoat: .8, clearcoatRoughness: .25, normalMap: mat.normalMap, normalScale: new THREE.Vector2(.8, .8), envMapIntensity: .2 });
+  const hang = (x, y, z, h, r, seed) => { const m = mesh(spikeGeo(r, h, seed), wet, false, false); m.rotation.x = Math.PI; m.rotation.y = rand(0, 6); m.position.set(x, y, z); scene.add(m); return m; };
+  for (let i = 0; i < 26; i++) hang(rand(-13, 13), 10.6 + rand(-1, .4), rand(-10, -2.5), rand(2.2, 5.2), rand(.35, .95), i);
   for (let i = 0; i < 9; i++) {
-    const sd = i % 2 ? 1 : -1, x = sd * rand(3.2, 8), z = rand(-5, -2), h = rand(1.6, 3.2), r = rand(.3, .6);
-    const m = mesh(spikeGeo(r, h, i + 40), i % 3 ? matB : mat, false, false);
-    m.rotation.x = Math.PI; m.position.set(x, rand(7.4, 8.2), z); scene.add(m);
+    const sd = i % 2 ? 1 : -1, x = sd * rand(3.2, 8), y = rand(7.4, 8.2), h = rand(1.6, 3.4), z = rand(-5, -2);
+    hang(x, y, z, h, rand(.3, .6), i + 40);
+    if (i < 4) drips.push({ tip: V3(x, y - h, z), t: rand(0, 3) });
   }
-  for (let i = 0; i < 10; i++) {
-    const x = (i % 2 ? 1 : -1) * rand(5.5, 12), z = rand(-9, -1.5), h = rand(1, 2.6), r = rand(.4, .8);
-    const m = mesh(spikeGeo(r, h, i * 3), mat, false, true); m.position.set(x, -1.35, z); scene.add(m);
+  for (let i = 0; i < 12; i++) {
+    const x = (i % 2 ? 1 : -1) * rand(5.5, 13), z = rand(-10, -1.5), m = mesh(spikeGeo(rand(.4, .85), rand(1, 2.8), i * 3), wet, false, true);
+    m.position.set(x, -1.45, z); scene.add(m);
   }
 }
-function rock(x, y, z, r, sy = .7) {
-  const geo = new THREE.SphereGeometry(r, 48, 32), pos = geo.attributes.position, v = V3();
-  for (let i = 0; i < pos.count; i++) { v.fromBufferAttribute(pos, i); v.multiplyScalar(1 + (fbm(v.x * .8 + x, v.y * .8, v.z * .8) - .5) * .5); pos.setXYZ(i, v.x, v.y, v.z); }
-  geo.computeVertexNormals();
-  const m = mesh(geo, M.matte(0x3a2e78, .95), false, true); m.scale.y = sy; m.position.set(x, y, z); scene.add(m); return m;
+function rock(x, y, z, r, sy = .7, sx = 1) {
+  const geo = new THREE.SphereGeometry(r, 64, 40), pos = geo.attributes.position, col = [], v = V3();
+  for (let i = 0; i < pos.count; i++) {
+    v.fromBufferAttribute(pos, i); const n = fbm(v.x * .8 + x, v.y * .8, v.z * .8 + z), d = fbm(v.x * 2.6, v.y * 2.6 + x, v.z * 2.6);
+    v.multiplyScalar(1 + (n - .5) * .55 + (d - .5) * .1); pos.setXYZ(i, v.x, v.y, v.z);
+    const c = stoneColor(.25 + n * .55 + (v.y / r) * .15, vnoise(v.x * .5 + x, v.y * .5, z)); col.push(c.r, c.g, c.b);
+  }
+  geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); geo.computeVertexNormals();
+  const m = mesh(geo, rockMat(3, 2), false, true); m.scale.set(sx, sy, 1); m.position.set(x, y, z); m.rotation.y = rand(0, 6); scene.add(m); return m;
 }
-rock(-6.4, -1.2, -2.2, 2.4, .62); rock(6.8, -1.3, -3, 2.6, .55); rock(-9.5, -1, -6.5, 2.8, .7);
+rock(-6.4, -1.2, -2.2, 2.4, .62); rock(6.8, -1.3, -3, 2.6, .55); rock(-9.5, -1, -6.5, 2.8, .7); rock(9.5, -1, -7.5, 3, .6, 1.3);
 const crystals = [];
 function crystalCluster(x, z, color, n = 6, y = -1.3) {
   const g = new THREE.Group(); g.position.set(x, y, z);
-  const mat = new THREE.MeshPhysicalMaterial({ color, emissive: color, emissiveIntensity: .55, roughness: .12, clearcoat: 1, transparent: true, opacity: .9, envMapIntensity: 1 });
+  const mat = new THREE.MeshPhysicalMaterial({ color, emissive: color, emissiveIntensity: 2.6, roughness: .1, clearcoat: 1, transparent: true, opacity: .92, envMapIntensity: 1 });
   for (let i = 0; i < n; i++) {
     const s = rand(.35, .75), m = mesh(new THREE.OctahedronGeometry(.5, 0), mat, false, false);
-    m.scale.set(s * .55, s * 2, s * .55); m.position.set(rand(-.6, .6), s * .6, rand(-.5, .5));
+    m.scale.set(s * .5, s * 2, s * .5); m.position.set(rand(-.6, .6), s * .6, rand(-.5, .5));
     m.rotation.set(rand(-.4, .4), rand(0, 3), rand(-.45, .45)); g.add(m);
   }
-  const l = new THREE.PointLight(color, 9, 7, 2); l.position.set(0, 1.4, .6); g.add(l);
+  const l = new THREE.PointLight(color, 7, 6, 2); l.position.set(0, 1.4, .6); g.add(l);
   scene.add(g); crystals.push({ g, mat, l, ph: rand(0, 6) });
 }
-crystalCluster(-5.9, -2, 0x47e2d4, 7, .15); crystalCluster(6.3, -2.8, 0xff79c6, 6, -.05); crystalCluster(-9.2, -6.2, 0x7aa8ff, 5, .6);
+crystalCluster(-5.9, -2, 0x3fc9c0, 7, .15); crystalCluster(6.3, -2.8, 0x5d8cff, 6, -.05); crystalCluster(-9.2, -6.2, 0x3fc9c0, 5, .6);
 
-// cave mouth with the night sky and the moon (where healed bats fly home)
-const MOUTH = V3(4.3, 2.9, -12);
+// beyond the opening: the night sky, the moon, and moonlight falling into the cave
 {
-  const g = new THREE.Group(); g.position.copy(MOUTH); g.lookAt(camBase.x, MOUTH.y - 1, camBase.z);
-  const sky = new THREE.Mesh(new THREE.CircleGeometry(2.25, 64), new THREE.MeshBasicMaterial({ map: skyTex, fog: false }));
-  g.add(sky);
-  const rg = new THREE.TorusGeometry(2.35, .62, 20, 80), rp = rg.attributes.position, v = V3();
-  for (let i = 0; i < rp.count; i++) { v.fromBufferAttribute(rp, i); const n = fbm(v.x * .9, v.y * .9, v.z * .9 + 4); v.multiplyScalar(1 + (n - .5) * .22); rp.setXYZ(i, v.x, v.y, v.z); }
-  rg.computeVertexNormals();
-  g.add(mesh(rg, M.matte(0x3e3080, .95), false, false));
-  const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0x8fa8ff, transparent: true, opacity: .35, depthWrite: false, blending: THREE.AdditiveBlending, fog: false }));
-  glow.scale.setScalar(9); glow.position.z = -.2; g.add(glow);
-  const moonLight = new THREE.PointLight(0xa9bcff, 14, 16, 2); moonLight.position.set(0, 0, 1.5); g.add(moonLight);
-  scene.add(g);
+  const sky = new THREE.Mesh(new THREE.PlaneGeometry(34, 34), new THREE.MeshBasicMaterial({ map: skyTex, fog: false, color: new THREE.Color(.75, .78, .9) }));
+  sky.position.copy(DOME_C).addScaledVector(HOLE_DIR, 29); sky.lookAt(camBase); scene.add(sky);
+  const up = V3(0, 1, 0), side = V3().crossVectors(HOLE_DIR, up).normalize(), upv = V3().crossVectors(side, HOLE_DIR).normalize();
+  const moon = new THREE.Mesh(new THREE.CircleGeometry(1.9, 64), new THREE.MeshBasicMaterial({ map: moonTex, transparent: true, fog: false, color: new THREE.Color(1.75, 1.7, 1.6) }));
+  moon.position.copy(DOME_C).addScaledVector(HOLE_DIR, 27).addScaledVector(upv, .5).addScaledVector(side, -.9); moon.lookAt(camBase); scene.add(moon);
+  const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0x8ea6ff, transparent: true, opacity: .45, depthWrite: false, blending: THREE.AdditiveBlending, fog: false }));
+  halo.scale.setScalar(11); halo.material.opacity = .28; halo.position.copy(moon.position).addScaledVector(HOLE_DIR, .5); scene.add(halo);
+  // boulders round the rim give the opening thickness
+  const rimR = 17.2 * Math.tan(HOLE_ANG);
+  for (let i = 0; i < 12; i++) {
+    const a = i / 12 * Math.PI * 2 + rand(-.15, .15), rr = rimR * rand(.98, 1.15);
+    const p = DOME_C.clone().addScaledVector(HOLE_DIR, 16.4 + rand(-.4, .4)).addScaledVector(side, Math.cos(a) * rr).addScaledVector(upv, Math.sin(a) * rr);
+    rock(p.x, p.y, p.z, rand(1.3, 2.4), rand(.7, 1), 1);
+  }
+  const moonLight = new THREE.DirectionalLight(0x9cb6ff, 2.4); moonLight.position.copy(HOLE_POS); scene.add(moonLight);
+  // a soft beam of moonlight, brightest where it enters and fading towards the floor
+  const floorPt = V3(1.4, -1.3, -3.6), dir = V3().subVectors(HOLE_POS, floorPt), len = dir.length();
+  const beam = new THREE.Mesh(new THREE.CylinderGeometry(rimR * .78, rimR * 1.35, len, 48, 1, true), new THREE.ShaderMaterial({
+    uniforms: { uC: { value: new THREE.Color(0x8fa9ff) }, uO: { value: .2 } },
+    vertexShader: 'varying vec3 vN; varying vec3 vV; varying float vY; void main(){ vY = uv.y; vec4 mv = modelViewMatrix * vec4(position, 1.); vV = normalize(-mv.xyz); vN = normalize(normalMatrix * normal); gl_Position = projectionMatrix * mv; }',
+    fragmentShader: 'uniform vec3 uC; uniform float uO; varying vec3 vN; varying vec3 vV; varying float vY; void main(){ float f = pow(abs(dot(vN, vV)), 3.); float a = f * smoothstep(0., 1., vY) * uO; gl_FragColor = vec4(uC * a, a); }',
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+  }));
+  beam.position.copy(floorPt).addScaledVector(dir, .5); beam.quaternion.setFromUnitVectors(V3(0, 1, 0), dir.clone().normalize()); scene.add(beam);
+  // dust drifting in the beam
+  const n = 160, g2 = new THREE.BufferGeometry(), p2 = new Float32Array(n * 3), base = [];
+  for (let i = 0; i < n; i++) { const t = rand(.05, .85), q = floorPt.clone().addScaledVector(dir, t), r = rimR * (1.2 - t * .5) * Math.sqrt(Math.random()), a = rand(0, 6.28); q.addScaledVector(side, Math.cos(a) * r).addScaledVector(upv, Math.sin(a) * r * .8); base.push([q.x, q.y, q.z, rand(0, 6)]); }
+  g2.setAttribute('position', new THREE.BufferAttribute(p2, 3));
+  scene.add(new THREE.Points(g2, new THREE.PointsMaterial({ size: .07, map: glowTex, color: 0xc4d2ff, transparent: true, opacity: .8, depthWrite: false, blending: THREE.AdditiveBlending })));
+  window.__dust = t => { base.forEach(([x, y, z, ph], i) => { p2[i * 3] = x + Math.sin(t * .13 + ph) * .35; p2[i * 3 + 1] = y + Math.sin(t * .09 + ph * 3) * .3; p2[i * 3 + 2] = z + Math.cos(t * .11 + ph) * .3; }); g2.attributes.position.needsUpdate = true; };
 }
+// water drips from a few stalactites
+const dripMat = new THREE.MeshPhysicalMaterial({ color: 0xcfe0ff, roughness: .05, clearcoat: 1, transparent: true, opacity: .8, envMapIntensity: 1.5 });
+drips.forEach(d => { d.m = mesh(new THREE.SphereGeometry(.045, 12, 10), dripMat, false); d.m.scale.y = 1.6; d.m.visible = false; scene.add(d.m); });
 
 // hanging lantern
 const lantern = new THREE.Group();
@@ -265,12 +359,12 @@ const lantern = new THREE.Group();
   lantern.position.set(-4.1, 5.0, -.6);
   const rope = mesh(new THREE.CylinderGeometry(.025, .025, 2.4, 6), M.matte(0x6b4a2a), false); rope.position.y = 1.2; lantern.add(rope);
   const cap = mesh(new THREE.ConeGeometry(.42, .35, 6), M.metal(0x9a6a3a)); cap.position.y = -.05; lantern.add(cap);
-  const glass = mesh(new THREE.SphereGeometry(.34, 32, 20), new THREE.MeshStandardMaterial({ color: 0xffd28a, emissive: 0xffa94a, emissiveIntensity: 2.4, roughness: .3 }), false);
+  const glass = mesh(new THREE.SphereGeometry(.34, 32, 20), new THREE.MeshStandardMaterial({ color: 0xffd28a, emissive: 0xffa94a, emissiveIntensity: 3.2, roughness: .3 }), false); lantern.userData.glass = glass;
   glass.scale.y = 1.15; glass.position.y = -.45; lantern.add(glass);
   const base = mesh(new THREE.CylinderGeometry(.3, .24, .14, 6), M.metal(0x9a6a3a)); base.position.y = -.86; lantern.add(base);
   const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xffb35c, transparent: true, opacity: .55, depthWrite: false, blending: THREE.AdditiveBlending }));
   halo.scale.setScalar(3.2); halo.position.y = -.45; lantern.add(halo);
-  const l = new THREE.PointLight(0xffa24f, 22, 11, 2); l.position.y = -.5; lantern.add(l);
+  const l = new THREE.PointLight(0xffa24f, 24, 12, 2); l.position.y = -.5; lantern.add(l); lantern.userData.light = l;
   scene.add(lantern);
 }
 
@@ -280,7 +374,7 @@ function shroom(x, z, h, r, col, bend = .2) {
   const g = new THREE.Group(); g.position.set(x, -1.3, z);
   const stemC = new THREE.CatmullRomCurve3([V3(0, 0, 0), V3(bend * .5, h * .5, 0), V3(bend, h, 0)]);
   g.add(mesh(new THREE.TubeGeometry(stemC, 20, r * .2, 14), M.matte(0xe6d8bf, .7), false, false));
-  const capMat = new THREE.MeshStandardMaterial({ color: col, emissive: new THREE.Color(col).multiplyScalar(.55), emissiveIntensity: .5, roughness: .45 });
+  const capMat = new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: 1.1, roughness: .5 });
   const cap = mesh(new THREE.SphereGeometry(r, 40, 20, 0, Math.PI * 2, 0, Math.PI / 2), capMat, false, false);
   cap.scale.y = .62; cap.position.set(bend, h - .05, 0); cap.rotation.z = -bend * .4; g.add(cap);
   const under = new THREE.Mesh(new THREE.CircleGeometry(r * .98, 40), new THREE.MeshStandardMaterial({ color: new THREE.Color(col).multiplyScalar(.5), emissive: col, emissiveIntensity: .25, side: THREE.DoubleSide }));
@@ -291,9 +385,9 @@ function shroom(x, z, h, r, col, bend = .2) {
   }
   scene.add(g); shrooms.push({ mat: capMat, ph: rand(0, 6) }); return g;
 }
-shroom(3.7, -2.5, 1.9, .62, 0xe8642a, .25); shroom(4.55, -3.3, 2.5, .8, 0x1fa6a0, -.2); shroom(3.05, -3.4, 1.45, .42, 0xe8642a, -.15);
-shroom(-3.0, -3.8, 1.7, .5, 0x1fa6a0, .2);
-{ const l = new THREE.PointLight(0xff9a4a, 8, 6, 2); l.position.set(3.8, .9, -1.8); scene.add(l); }
+shroom(3.7, -2.5, 1.9, .62, 0xc8461c, .25); shroom(4.55, -3.3, 2.5, .8, 0x138a86, -.2); shroom(3.05, -3.4, 1.45, .42, 0xc8461c, -.15);
+shroom(-3.0, -3.8, 1.7, .5, 0x138a86, .2);
+{ const l = new THREE.PointLight(0xff8a3a, 4, 5, 2); l.position.set(4.1, 1.1, -2.8); scene.add(l); }
 
 // a crate of potions and books behind the table
 {
@@ -318,8 +412,8 @@ function vine(x, z, top, bot, seed) {
   const piv = new THREE.Group(); piv.position.set(x, top, z); scene.add(piv);
   const pts = []; for (let i = 0; i <= 10; i++) pts.push(V3(Math.sin(i * 1.1 + seed) * .22, -(top - bot) * i / 10, Math.cos(i * .9 + seed) * .12));
   const c = new THREE.CatmullRomCurve3(pts);
-  piv.add(mesh(new THREE.TubeGeometry(c, 60, .035, 6), M.matte(0x2b5c49, .8), false));
-  const leafM = M.matte(0x3d8a5c, .7), leafG = new THREE.SphereGeometry(.1, 10, 6);
+  piv.add(mesh(new THREE.TubeGeometry(c, 60, .035, 6), M.matte(0x22402f, .8), false));
+  const leafM = M.matte(0x2f6342, .7), leafG = new THREE.SphereGeometry(.1, 10, 6);
   for (let t = .05; t < 1; t += .045) { const lf = mesh(leafG, leafM, false); lf.position.copy(c.getPointAt(t)).add(V3(rand(-.05, .05), 0, .03)); lf.scale.set(1.6, .45, .9); lf.rotation.set(rand(-.5, .5), rand(0, 3), rand(-.8, .8)); piv.add(lf); }
   vines.push({ piv, ph: seed });
 }
@@ -330,7 +424,7 @@ const zTex = canvasTex(128, 128, g => { g.font = '700 96px Fredoka, system-ui, s
 const sleepers = [];
 function sleepyBat(x, y, z, col, s = 1) {
   const g = new THREE.Group(); g.position.set(x, y, z); g.scale.setScalar(s); scene.add(g);
-  const sp = mesh(spikeGeo(.3, 1.6, x), M.matte(0x3b2e78, .95), false); sp.rotation.x = Math.PI; sp.position.y = 1.55; g.add(sp);
+  const sp = mesh(spikeGeo(.3, 1.6, x), rockMat(1, 3), false); sp.rotation.x = Math.PI; sp.position.y = 1.55; g.add(sp);
   const fm = M.fur(col), wm = M.fur(new THREE.Color(col).multiplyScalar(.75));
   [-1, 1].forEach(sd => { const ft = mesh(new THREE.CylinderGeometry(.03, .03, .16, 8), M.matte(0x221c2e), false); ft.position.set(sd * .07, -.06, 0); g.add(ft); });
   const body = mesh(new THREE.SphereGeometry(.42, 32, 24), fm, false); body.scale.set(1, 1.15, .9); body.position.y = -.55; g.add(body);
@@ -354,7 +448,7 @@ let zT = 0;
   const puff = mesh(new THREE.TorusGeometry(1.5, .14, 18, 72), M.cloth(0x4d779c), true, true);
   puff.rotation.x = Math.PI / 2; puff.position.set(0, -.2, .25); scene.add(puff);
   const kit = new THREE.Group(); kit.position.set(3.45, .07, -.35); kit.rotation.y = -.45;
-  kit.add(mesh(new RoundedBoxGeometry(1.25, .85, .75, 4, .13), M.gloss(0xfbf4e8, .35), true, true));
+  kit.add(mesh(new RoundedBoxGeometry(1.25, .85, .75, 4, .13), M.gloss(0xe6ddcf, .4), true, true));
   const crossM = M.gloss(0xe0383f, .3);
   const c1 = mesh(new RoundedBoxGeometry(.46, .14, .06, 2, .03), crossM); c1.position.z = .38; kit.add(c1);
   const c2 = mesh(new RoundedBoxGeometry(.14, .46, .06, 2, .03), crossM); c2.position.z = .38; kit.add(c2);
@@ -369,10 +463,10 @@ let zT = 0;
 
 // fireflies
 const flies = (() => {
-  const n = 46, geo = new THREE.BufferGeometry(), p = new Float32Array(n * 3), base = [];
-  for (let i = 0; i < n; i++) { base.push([rand(-9, 9), rand(0, 7.5), rand(-8, 1.5), rand(0, 6)]); }
+  const n = 16, geo = new THREE.BufferGeometry(), p = new Float32Array(n * 3), base = [];
+  for (let i = 0; i < n; i++) { const sd = i % 2 ? 1 : -1; base.push([sd * rand(2.6, 6), rand(.2, 3), rand(-4.5, -1.5), rand(0, 6)]); }
   geo.setAttribute('position', new THREE.BufferAttribute(p, 3));
-  const pts = new THREE.Points(geo, new THREE.PointsMaterial({ size: .22, map: glowTex, color: 0xfff0a8, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+  const pts = new THREE.Points(geo, new THREE.PointsMaterial({ size: .16, map: glowTex, color: new THREE.Color(4, 3.2, 1.6), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
   scene.add(pts);
   return t => { base.forEach(([x, y, z, ph], i) => { p[i * 3] = x + Math.sin(t * .3 + ph) * .6; p[i * 3 + 1] = y + Math.sin(t * .5 + ph * 2) * .4; p[i * 3 + 2] = z + Math.cos(t * .4 + ph) * .4; }); geo.attributes.position.needsUpdate = true; };
 })();
@@ -934,6 +1028,7 @@ $('#againBtn').addEventListener('click', () => { audioOn(); $('#again').classLis
 // a bat idles on the cushion behind the title screen
 bat = makeBat(BATS[0], 'heart'); bat.scrape.visible = false;
 const clock = new THREE.Clock();
+let lowQ = false, qT = 0, qN = 0;
 renderer.setAnimationLoop(() => {
   const dt = Math.min(clock.getDelta(), .05); clockT += dt; const t = clockT;
   updateTweens();
@@ -949,14 +1044,19 @@ renderer.setAnimationLoop(() => {
   tools.forEach(T => { if (!T.active) T.wiggle = 0; if (T.wiggle > 0) { T.wiggle -= dt; T.obj.rotation.z = Math.sin(t * 22) * .22 * Math.min(1, T.wiggle); if (T.wiggle <= 0) T.obj.rotation.z = 0; } });
   if (bat) { bat.lookTarget = drag ? drag.T.holder.position : null; updateBat(bat, t, dt); }
   lantern.rotation.z = Math.sin(t * .9) * .05; lantern.rotation.x = Math.sin(t * .7) * .03;
-  crystals.forEach(c => { c.mat.emissiveIntensity = .45 + Math.sin(t * 1.3 + c.ph) * .2; c.l.intensity = 8 + Math.sin(t * 1.3 + c.ph) * 2.5; });
-  shrooms.forEach(m => m.mat.emissiveIntensity = .42 + Math.sin(t * 1.1 + m.ph) * .14);
+  { const fl = .9 + vnoise(t * 7, 0, 0) * .16 + Math.sin(t * 23) * .02; lantern.userData.light.intensity = 24 * fl; lantern.userData.glass.material.emissiveIntensity = 3.2 * fl; }
+  window.__dust(t);
+  drips.forEach(d => { d.t -= dt; if (d.t <= 0) { d.m.visible = true; d.m.position.copy(d.tip); d.v = 0; d.t = rand(2.5, 5); } if (d.m.visible) { d.v += 9.8 * dt; d.m.position.y -= d.v * dt; if (d.m.position.y < -1.2) d.m.visible = false; } });
+  crystals.forEach(c => { c.mat.emissiveIntensity = 2.4 + Math.sin(t * 1.3 + c.ph) * .5; c.l.intensity = 6 + Math.sin(t * 1.3 + c.ph) * 2; });
+  shrooms.forEach(m => m.mat.emissiveIntensity = 1 + Math.sin(t * 1.1 + m.ph) * .18);
   vines.forEach(v => { v.piv.rotation.z = Math.sin(t * .6 + v.ph) * .03; v.piv.rotation.x = Math.sin(t * .45 + v.ph) * .02; });
   sleepers.forEach(b => b.g.rotation.z = Math.sin(t * .8 + b.ph) * .07);
   if ((zT -= dt) <= 0) { zT = rand(1.6, 2.8); const b = sleepers[Math.random() * sleepers.length | 0]; burst(b.g.position.clone().add(V3(.25, -.7, .3)), { n: 1, tex: zTex, color: 0xd7cfff, size: .38, speed: .15, up: .55, grav: 0, life: 2.4, additive: false }); }
   flies(t); updateParts(dt);
   camera.position.set(camBase.x + Math.sin(t * .23) * .12, camBase.y + Math.sin(t * .31) * .06, camBase.z); camera.lookAt(camTarget);
-  renderer.render(scene, camera);
+  composer.render();
+  // if this device struggles, drop the glow and render at a lower resolution
+  if (!TEST && !lowQ) { qT += dt; qN++; if (qN === 150) { if (qT / qN > 1 / 38) { lowQ = true; bloom.enabled = false; renderer.setPixelRatio(1); composer.setPixelRatio(1); resize(); } } }
 });
 
 if (TEST) window.__v2 = {
