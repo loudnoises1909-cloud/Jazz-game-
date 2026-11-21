@@ -314,7 +314,7 @@ function update(t, dt) {
 }
 
 export async function start() {
-  setView({ x: 0, y: 1.8, z: -.2, w: 8.4, h: 5.4, pitch: .12, lift: .25 });
+  setView({ x: 0, y: 1.85, z: -.2, w: 7.75, h: 4.85, pitch: .12, lift: .25 });
   hideDecor(); buildBoard();
   input.down = down; input.move = null; input.up = null;
   onFrame(update);

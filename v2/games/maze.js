@@ -143,7 +143,7 @@ async function startRound() {
   let tries = 0;
   do { M_ = genMaze(cols, rows); pos = [0, 0]; frogAt = farthest([0, 0]); tries++; }
   while (bfs([0, 0]).dist[frogAt[0]][frogAt[1]] < Math.max(3, cols + rows - 2) && tries < 40);
-  setView({ x: 0, y: TOP, z: cz0 + .15, w: cols * C + 1.4, h: rows * C * .9 + 1.6, pitch: .95, lift: .15 });
+  setView({ x: 0, y: TOP, z: cz0 + .1, w: cols * C + .55, h: rows * C * .82 + .75, pitch: .95, lift: .1 });
   buildBoard();
   // the bat: small, so it fits a maze cell
   if (bat) bat.dispose();

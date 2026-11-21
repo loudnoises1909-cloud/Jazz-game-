@@ -1,7 +1,7 @@
 // Bat Doctor: listen to the heart, match the bandage to the scrape, tap to heal, and the bat flies home.
 import {
   THREE, TEST, $, rand, clamp, V3, E, sleep, stage, camera, setView, heartTex, M, mesh, BATS, makeBat, makeSteth, makeBandage, makeTool,
-  TABLE_Y, TOOL_Z, burst, confetti, tween, bez, SFX, say, MOUTH, onFrame, input, ray, pick, dragPlane, sp, progress, showAgain, isSpeaking,
+  TABLE_Y, TOOL_Z, TOOL_S, toolRow, burst, confetti, tween, bez, SFX, say, MOUTH, onFrame, input, ray, pick, dragPlane, sp, progress, showAgain, isSpeaking,
 } from '../engine.js';
 
 // ───────────────────────── game flow ─────────────────────────
@@ -35,7 +35,7 @@ async function playRound() {
   await squashHop(); bat.setMood('open'); SFX.squeak();
   await say('n_' + cfg.name); bat.setMood('happy');
   // stethoscope
-  const st = makeTool('steth', makeSteth(), V3(-.7, TABLE_Y - .12, TOOL_Z)); tools.push(st);
+  const row = toolRow(), st = makeTool('steth', makeSteth(), V3(-.9, TABLE_Y - .12, row.z)); tools.push(st);
   await popIn(st);
   phase = 'listen'; await say('listen');
   armHint(() => hint());
@@ -57,7 +57,7 @@ async function onStethOnChest(T) {
   const target = () => bat.worldOf(bat.chest).add(V3(0, 0, .22));
   const from = T.holder.position.clone();
   const rz0 = T.obj.rotation.z, s0 = T.holder.scale.x;
-  await tween(.45, e => { T.holder.position.lerpVectors(from, target(), e); T.obj.rotation.x = 0; T.obj.rotation.z = rz0 + (-Math.PI / 2 - .2 - rz0) * e; T.holder.scale.setScalar(s0 + (.8 - s0) * e); }, E.out);
+  await tween(.45, e => { T.holder.position.lerpVectors(from, target(), e); T.obj.rotation.x = 0; T.obj.rotation.z = rz0 + (-Math.PI / 2 - .2 - rz0) * e; T.holder.scale.setScalar(s0 + (.8 / TOOL_S - s0) * e); }, E.out);
   bat.setMood('happy'); bat.bobAmt = .3; bat.flapAmp = .25;
   // four heartbeats: the heart glows and the bat swells a little with each one
   for (let i = 0; i < 4; i++) {
@@ -75,7 +75,8 @@ async function onStethOnChest(T) {
   setTimeout(() => bat && (bat.wobble = 0), 600);
   SFX.boing();
   const kinds = ['heart', 'star', 'circle'].sort(() => Math.random() - .5);
-  kinds.forEach((k, i) => { const T2 = makeTool(k, makeBandage(k), V3((i - 1) * 2.05, TABLE_Y + .08, TOOL_Z)); T2.obj.scale.setScalar(.82); tools.push(T2); });
+  const row = toolRow(), gap = Math.min(2.3, row.half * .62);
+  kinds.forEach((k, i) => { const T2 = makeTool(k, makeBandage(k), V3((i - 1) * gap, TABLE_Y + .08, row.z)); T2.obj.scale.setScalar(.82 * TOOL_S); tools.push(T2); });
   await Promise.all(tools.filter(t => !t.gone).map((t, i) => popIn(t, i * 160)));
   phase = 'bandage';
   await say('p_scrape');
@@ -94,7 +95,7 @@ async function onRightBandage(T) {
   wing.attach(T.holder);
   const p0 = T.holder.position.clone(), q0 = T.holder.quaternion.clone(), s0 = T.holder.scale.x, oz = T.obj.rotation.clone();
   const pEnd = bat.scrape.position.clone().add(V3(0, 0, .07)), qEnd = new THREE.Quaternion();
-  await tween(.4, e => { T.holder.position.lerpVectors(p0, pEnd, e); T.holder.quaternion.slerpQuaternions(q0, qEnd, e); T.holder.scale.setScalar(s0 + (.64 - s0) * e); T.obj.rotation.set(oz.x * (1 - e), oz.y * (1 - e), oz.z * (1 - e)); }, E.out);
+  await tween(.4, e => { T.holder.position.lerpVectors(p0, pEnd, e); T.holder.quaternion.slerpQuaternions(q0, qEnd, e); T.holder.scale.setScalar(s0 + (.64 / TOOL_S - s0) * e); T.obj.rotation.set(oz.x * (1 - e), oz.y * (1 - e), oz.z * (1 - e)); }, E.out);
   bat.scrape.visible = false; bat.hurt = false;
   SFX.chime(); burst(bat.scrapeWorld(), { n: 30 });
   bat.setMood('open'); bat.flapAmp = .42; bat.flapSpeed = 7;
@@ -181,7 +182,7 @@ function update(t, dt) {
 }
 
 export function start() {
-  setView({ x: 0, y: 1.3, z: .8, w: 7.4, h: 5.3, pitch: .197, lift: .3 });
+  setView({ x: 0, y: 1.3, z: .8, w: 6.8, h: 5.3, pitch: .197, lift: .3 });
   // the exam cushion the bat hovers over
   const cushion = mesh(new THREE.CylinderGeometry(1.5, 1.55, .26, 64), M.cloth(0x5a86ad), true, true);
   cushion.position.set(0, -.23, .25); stage.add(cushion);

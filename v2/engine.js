@@ -132,7 +132,7 @@ scene.add(new THREE.HemisphereLight(0x8a9ad6, 0x2a1d16, .5));
 const key = new THREE.DirectionalLight(0xffd6a8, 2.1);
 key.position.set(-4, 8, 7); key.castShadow = true;
 key.shadow.mapSize.set(2048, 2048);
-Object.assign(key.shadow.camera, { left: -6, right: 6, top: 6, bottom: -4, near: 1, far: 30 });
+Object.assign(key.shadow.camera, { left: -8, right: 8, top: 7, bottom: -6, near: 1, far: 34 });
 key.shadow.bias = -.0004; key.shadow.normalBias = .03;
 scene.add(key);
 const fill = new THREE.DirectionalLight(0x8f9ccc, .55); fill.position.set(6, 2, 6); scene.add(fill);
@@ -396,8 +396,10 @@ let zT = 0;
 const DECOR = [];
 const hideDecor = () => DECOR.forEach(d => d.visible = false);
 {
-  const table = mesh(new RoundedBoxGeometry(9.4, .7, 4.4, 5, .22), new THREE.MeshPhysicalMaterial({ map: woodTex, roughness: .5, clearcoat: .35, clearcoatRoughness: .3, envMapIntensity: .5 }), false, true);
-  table.position.set(0, -.72, 1.2); scene.add(table);
+  // a deep table that runs off the bottom of the screen on any shape of screen
+  const tableWood = woodTex.clone(); tableWood.repeat.set(2.4, 2.4); tableWood.needsUpdate = true;
+  const table = mesh(new RoundedBoxGeometry(16, .7, 14, 5, .22), new THREE.MeshPhysicalMaterial({ map: tableWood, roughness: .5, clearcoat: .35, clearcoatRoughness: .3, envMapIntensity: .5 }), false, true);
+  table.position.set(0, -.72, 5.5); scene.add(table);
   const kit = new THREE.Group(); kit.position.set(3.45, .07, -.35); kit.rotation.y = -.45;
   kit.add(mesh(new RoundedBoxGeometry(1.25, .85, .75, 4, .13), M.gloss(0xe6ddcf, .4), true, true));
   const crossM = M.gloss(0xe0383f, .3);
@@ -742,13 +744,21 @@ function makeBandage(kind) {
 const hitMat = new THREE.MeshBasicMaterial({ visible: false });
 function makeTool(kind, obj, home) {
   const holder = new THREE.Group(); holder.add(obj); holder.position.copy(home); holder.scale.setScalar(.001); stage.add(holder);
-  const hit = new THREE.Mesh(new THREE.SphereGeometry(kind === 'steth' ? 1 : .8, 12, 8), hitMat); holder.add(hit);
-  if (kind === 'steth') hit.position.x = .55;
+  const hit = new THREE.Mesh(new THREE.SphereGeometry((kind === 'steth' ? 1 : .8) * TOOL_S, 12, 8), hitMat); holder.add(hit); obj.scale.multiplyScalar(TOOL_S);
+  if (kind === 'steth') hit.position.x = .55 * TOOL_S;
   const T = { kind, holder, obj, hit, home: home.clone(), restTilt: kind === 'steth' ? -.95 : -.42, active: false, gone: false, wiggle: 0 };
   hit.userData.tool = T; obj.rotation.x = T.restTilt;
   return T;
 }
-const TABLE_Y = .12, TOOL_Z = 2.35;
+const TABLE_Y = .12, TOOL_Z = 2.35, TOOL_S = 1.3;
+// where tools should rest: on the table about 80% of the way down the screen, and how wide the view is there
+function toolRow(ndcY = -.58) {
+  camera.updateMatrixWorld();
+  const r = new THREE.Raycaster(); r.setFromCamera(new THREE.Vector2(0, ndcY), camera);
+  const p = V3(); if (!r.ray.intersectPlane(new THREE.Plane(V3(0, 1, 0), -TABLE_Y), p)) return { z: TOOL_Z, half: 3 };
+  const z = clamp(p.z, TOOL_Z, 8), dist = camera.position.distanceTo(V3(0, TABLE_Y, z));
+  return { z, half: dist * Math.tan(THREE.MathUtils.degToRad(17.5)) * camera.aspect };
+}
 
 // ───────────────────────── particles ─────────────────────────
 const parts = [];
@@ -939,7 +949,7 @@ renderer.setAnimationLoop(() => {
 
 export {
   THREE, TEST, $, rand, clamp, V3, E, sleep, renderer, scene, stage, camera, setView, canvasTex, glowTex, sparkTex, heartTex, woodTex, zTex,
-  M, mesh, RoundedBoxGeometry, SHAPES, BANDAGE_COLOR, BATS, makeBat, makeSteth, makeBandage, makeTool, TABLE_Y, TOOL_Z,
+  M, mesh, RoundedBoxGeometry, SHAPES, BANDAGE_COLOR, BATS, makeBat, makeSteth, makeBandage, makeTool, TABLE_Y, TOOL_Z, TOOL_S, toolRow,
   burst, confetti, tween, bez, SFX, tone, noise, now, say, audioOn, duck, MOUTH, HOLE_POS, onFrame, input, ray, setNDC, sp, pick,
   dragPlane, floorPlane, furShells, isSpeaking, musicLevel, getAudio, hideDecor, rock, fbm, vnoise, showAgain, progress, BAT_LIST,
 };

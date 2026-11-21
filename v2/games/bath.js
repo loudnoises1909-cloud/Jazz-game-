@@ -2,7 +2,7 @@
 // fluff with the hair dryer. The dirt is painted into the bat's fur, so the sponge cleans exactly where it rubs.
 import {
   THREE, TEST, rand, clamp, V3, E, sleep, stage, setView, glowTex, sparkTex, M, mesh, RoundedBoxGeometry, BATS, makeBat,
-  TABLE_Y, TOOL_Z, burst, confetti, tween, bez, SFX, tone, noise, say, MOUTH, onFrame, input, pick, dragPlane, sp, progress, showAgain, BAT_LIST,
+  TABLE_Y, TOOL_Z, TOOL_S, toolRow, burst, confetti, tween, bez, SFX, tone, noise, say, MOUTH, onFrame, input, pick, dragPlane, sp, progress, showAgain, BAT_LIST,
 } from '../engine.js';
 
 const ROUNDS = 3, MESS = ['mud', 'berry', 'paint'];
@@ -91,12 +91,13 @@ function makeToolObj(k) {
   return g;
 }
 const HOME = V3(0, TABLE_Y + .15, TOOL_Z);
+function placeHome() { HOME.z = toolRow().z; }
 const hitMat = new THREE.MeshBasicMaterial({ visible: false });
 async function showTool(k) {
   if (tool) { const old = tool; tool = null; tween(.3, e => old.g.scale.setScalar(Math.max(.001, 1 - e))).then(() => old.g.removeFromParent()); }
   if (!k) return;
-  const g = new THREE.Group(), obj = makeToolObj(k); g.add(obj); g.position.copy(HOME); g.scale.setScalar(.001); stage.add(g);
-  const hit = new THREE.Mesh(new THREE.SphereGeometry(.85, 12, 8), hitMat); g.add(hit);
+  placeHome(); const g = new THREE.Group(), obj = makeToolObj(k); obj.scale.setScalar(TOOL_S); g.add(obj); g.position.copy(HOME); g.scale.setScalar(.001); stage.add(g);
+  const hit = new THREE.Mesh(new THREE.SphereGeometry(.85 * TOOL_S, 12, 8), hitMat); g.add(hit);
   obj.rotation.x = k === 'shower' ? .95 : -.35; if (k === 'dryer') obj.rotation.y = -.3;
   tool = { k, g, obj, hit, wig: 0 };
   SFX.pop(); await tween(.5, e => g.scale.setScalar(Math.max(.001, e)), E.back);
@@ -306,7 +307,7 @@ function update(t, dt) {
 }
 
 export function start() {
-  setView({ x: 0, y: 1.0, z: .9, w: 7.6, h: 5.0, pitch: .26, lift: .3 });
+  setView({ x: 0, y: 1.0, z: .9, w: 7.0, h: 5.0, pitch: .26, lift: .3 });
   buildTub();
   Object.assign(input, { down, move, up });
   onFrame(update);
