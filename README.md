@@ -122,4 +122,4 @@ How it is built:
 - [three.js](https://threejs.org) r160 (MIT, see `v2/THREE-LICENSE.txt`) and its bloom post-processing add-ons, bundled in `v2/` so it works offline. No other dependencies.
 - `v2/engine.js` holds what the games share: renderer, the cave set, the furry bat (real-time fur, textured eyes with eyelids, veined wings), sound effects, the voice lines in `voice/`, particles, tweens and input. `v2/main.js` is the menu; each game is one file in `v2/games/`.
 - The cave is lit like a film set: a flickering lantern, moonlight and a light beam through a ragged opening, soft glow on light sources, fog and a vignette. On devices that cannot keep up it turns the glow off and lowers the resolution by itself.
-- Hold the house button for 1 second to go back to the menu. The menu links to the classic 2D game.
+- Tap the house button to go back to the menu of all five games (the running game is stopped cleanly, no page reload). The menu links to the classic 2D game.

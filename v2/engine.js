@@ -18,6 +18,15 @@ const E = {
   back: t => { const c = 1.9; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); },
   lin: t => t,
 };
+// Timers started by a game are tracked so the house button can stop that game cleanly and return to the menu.
+const _setTimeout = window.setTimeout.bind(window), _setInterval = window.setInterval.bind(window);
+const _clearTimeout = window.clearTimeout.bind(window), _clearInterval = window.clearInterval.bind(window);
+const gameTimers = new Set(), gameIntervals = new Set();
+window.setTimeout = (fn, ms, ...a) => { const id = _setTimeout(() => { gameTimers.delete(id); fn(...a); }, ms); gameTimers.add(id); return id; };
+window.setInterval = (fn, ms, ...a) => { const id = _setInterval(fn, ms, ...a); gameIntervals.add(id); return id; };
+window.clearTimeout = id => { gameTimers.delete(id); _clearTimeout(id); };
+window.clearInterval = id => { gameIntervals.delete(id); _clearInterval(id); };
+let SESSION = 0;
 const sleep = ms => new Promise(r => setTimeout(r, TEST ? Math.min(ms, 120) : ms));
 
 // ───────────────────────── renderer, scene, camera ─────────────────────────
@@ -840,7 +849,7 @@ function startMusic() {
   const mel = [0, 2, 4, 2, 3, 2, 1, -1, 0, 2, 4, 5, 4, 2, 1, -1], step = 60 / 92 / 2;
   let nextT = AC.currentTime + .1, i = 0;
   const mallet = (f, at, v) => { tone({ f, at, d: .55, v, dest: musicGain }); tone({ f: f * 3.98, at, d: .07, v: v * .22, dest: musicGain }); };
-  setInterval(() => {
+  _setInterval(() => {
     while (nextT < AC.currentTime + .4) {
       const m = mel[i % 16]; if (m >= 0) mallet(notes[m], nextT, .045);
       if (i % 4 === 0) tone({ f: bass[(i / 4 | 0) % 4], at: nextT, d: .9, v: .06, dest: musicGain });
@@ -871,18 +880,23 @@ function loadVoice(k) {
 }
 let speaking = 0;
 const isSpeaking = () => speaking > 0;
+let voiceSrc = null;
+const hang = () => new Promise(() => {}); // a stopped game's code waits here for ever
 async function say(k) {
+  const ses = SESSION;
   if (TEST) { await sleep(60); return; }
   speaking++; duck(true);
   const buf = await loadVoice(k);
+  if (ses !== SESSION) return hang();
   await new Promise(res => {
-    if (buf) { const s = AC.createBufferSource(); s.buffer = buf; s.connect(voiceGain); s.onended = res; s.start(); return; }
+    if (buf) { const s = AC.createBufferSource(); s.buffer = buf; s.connect(voiceGain); s.onended = res; s.start(); voiceSrc = s; return; }
     if ('speechSynthesis' in window && LINE[k]) {
       const u = new SpeechSynthesisUtterance(LINE[k]); u.rate = .92; u.pitch = 1.15; u.onend = res; u.onerror = res;
       speechSynthesis.cancel(); speechSynthesis.speak(u); setTimeout(res, 7000); return;
     }
     setTimeout(res, 1500);
   });
+  if (ses !== SESSION) return hang();
   if (--speaking === 0) duck(false);
 }
 
@@ -907,6 +921,24 @@ cv.addEventListener('pointerdown', e => { audioOn(); setNDC(e); if (input.down) 
 cv.addEventListener('pointermove', e => { setNDC(e); if (input.move) input.move(e); });
 const upH = e => { setNDC(e); if (input.up) input.up(e); };
 cv.addEventListener('pointerup', upH); cv.addEventListener('pointercancel', upH);
+
+// ───────────────────────── leaving a game ─────────────────────────
+// stop everything the current game started: timers, tweens, frame hooks, input, its objects, bats and voice
+function resetGame() {
+  SESSION++;
+  gameTimers.forEach(id => _clearTimeout(id)); gameTimers.clear();
+  gameIntervals.forEach(id => _clearInterval(id)); gameIntervals.clear();
+  tweens.length = 0; hooks.length = 0;
+  input.down = input.move = input.up = null;
+  BAT_LIST.slice().forEach(b => b.dispose());
+  stage.clear();
+  try { if (voiceSrc) voiceSrc.stop(); } catch (e) {}
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+  speaking = 0; musicLevel(.55);
+  DECOR.forEach(d => d.visible = true);
+  $('#again').classList.add('hide'); progress(0, 0);
+  if (TEST) window.__v2 = undefined;
+}
 
 // ───────────────────────── shared overlays ─────────────────────────
 function showAgain(fn) {
@@ -951,5 +983,5 @@ export {
   THREE, TEST, $, rand, clamp, V3, E, sleep, renderer, scene, stage, camera, setView, canvasTex, glowTex, sparkTex, heartTex, woodTex, zTex,
   M, mesh, RoundedBoxGeometry, SHAPES, BANDAGE_COLOR, BATS, makeBat, makeSteth, makeBandage, makeTool, TABLE_Y, TOOL_Z, TOOL_S, toolRow,
   burst, confetti, tween, bez, SFX, tone, noise, now, say, audioOn, duck, MOUTH, HOLE_POS, onFrame, input, ray, setNDC, sp, pick,
-  dragPlane, floorPlane, furShells, isSpeaking, musicLevel, getAudio, hideDecor, rock, fbm, vnoise, showAgain, progress, BAT_LIST,
+  dragPlane, floorPlane, furShells, isSpeaking, musicLevel, getAudio, hideDecor, resetGame, rock, fbm, vnoise, showAgain, progress, BAT_LIST,
 };
