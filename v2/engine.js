@@ -8,6 +8,7 @@ import { UnrealBloomPass } from './addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from './addons/postprocessing/OutputPass.js';
 
 const TEST = location.hash.includes('test');
+const FAST = TEST && !location.hash.includes('real'); // tests run animations fast unless asked for real speed
 const $ = s => document.querySelector(s);
 const rand = (a, b) => a + Math.random() * (b - a);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -27,7 +28,7 @@ window.setInterval = (fn, ms, ...a) => { const id = _setInterval(fn, ms, ...a); 
 window.clearTimeout = id => { gameTimers.delete(id); _clearTimeout(id); };
 window.clearInterval = id => { gameIntervals.delete(id); _clearInterval(id); };
 let SESSION = 0;
-const sleep = ms => new Promise(r => setTimeout(r, TEST ? Math.min(ms, 120) : ms));
+const sleep = ms => new Promise(r => setTimeout(r, FAST ? Math.min(ms, 120) : ms));
 
 // ───────────────────────── renderer, scene, camera ─────────────────────────
 const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
@@ -774,9 +775,9 @@ function toolRow(ndcY = -.58) {
 
 // ───────────────────────── particles ─────────────────────────
 const parts = [];
-function burst(pos, { n = 26, tex = sparkTex, color = 0xfff1a6, speed = 3.2, life = 1.1, size = .42, up = 1.2, grav = -2.4, additive = true } = {}) {
+function burst(pos, { n = 26, tex = sparkTex, color = 0xfff1a6, speed = 3.2, life = 1.1, size = .42, up = 1.2, grav = -2.4, additive = true, fog = true } = {}) {
   for (let i = 0; i < n; i++) {
-    const m = new THREE.SpriteMaterial({ map: tex, color, transparent: true, depthWrite: false, blending: additive ? THREE.AdditiveBlending : THREE.NormalBlending });
+    const m = new THREE.SpriteMaterial({ map: tex, color, transparent: true, depthWrite: false, fog, blending: additive ? THREE.AdditiveBlending : THREE.NormalBlending });
     const s = new THREE.Sprite(m); s.position.copy(pos); s.scale.setScalar(size); scene.add(s);
     const v = V3(rand(-1, 1), rand(-.4, 1), rand(-.6, .8)).normalize().multiplyScalar(speed * rand(.4, 1)); v.y += up;
     parts.push({ s, v, life: life * rand(.7, 1.2), t: 0, size: size * rand(.6, 1.2), grav, spin: rand(-3, 3) });
@@ -795,7 +796,7 @@ function updateParts(dt) {
 // ───────────────────────── tweens ─────────────────────────
 let clockT = 0;
 const tweens = [];
-function tween(dur, fn, ease = E.io) { return new Promise(res => tweens.push({ t0: clockT, dur: TEST ? Math.min(dur, .15) : dur, fn, ease, res })); }
+function tween(dur, fn, ease = E.io) { return new Promise(res => tweens.push({ t0: clockT, dur: FAST ? Math.min(dur, .15) : dur, fn, ease, res })); }
 function updateTweens() {
   for (let i = tweens.length - 1; i >= 0; i--) {
     const w = tweens[i], e = clamp((clockT - w.t0) / w.dur, 0, 1); w.fn(w.ease(e), e);
@@ -908,7 +909,7 @@ let voiceSrc = null;
 const hang = () => new Promise(() => {}); // a stopped game's code waits here for ever
 async function say(k) {
   const ses = SESSION;
-  if (TEST) { await sleep(60); return; }
+  if (FAST) { await sleep(60); return; }
   speaking++; duck(true);
   const buf = await loadVoice(k);
   if (ses !== SESSION) return hang();

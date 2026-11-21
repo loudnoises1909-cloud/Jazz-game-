@@ -242,9 +242,9 @@ const ACT = {
     const p0 = r.position.clone(), s0 = r.scale.x;
     burst(p0.clone(), { n: 18, tex: glowTex, color: 0xb0b0bc, size: 1.1, speed: 2.2, up: .3, grav: .4, life: 1.8, additive: false });
     // out of the board and towards you (it grows), then a long arc up to the moon (it shrinks into the distance)
-    const path = new THREE.CatmullRomCurve3([p0, p0.clone().add(V3(0, 1.6, .8)), V3(1.6, 4.2, 3.6), V3(4, 6.5, -2), MOON.clone().lerp(V3(0, 4, 0), .25), MOON.clone()]);
+    const path = new THREE.CatmullRomCurve3([p0, p0.clone().add(V3(0, 1.6, .8)), V3(1.4, 4.0, 3.4), V3(2.6, 5.0, -1), MOON.clone().lerp(V3(1, 4.5, 0), .55), MOON.clone().lerp(V3(1, 4.5, 0), .2), MOON.clone()]);
     const fly = path.getPoints(200), ptAt = e => path.getPointAt(Math.min(1, e));
-    const lookPos = camera.position.clone().add(V3(.6, 1.3, -1));
+    const lookPos = V3(1.5, 6.6, 4.5); // up above the board: from here the moon sits in the cave opening
     let last = 0, followed = false;
     await tween(5.2, (e, raw) => {
       const p = ptAt(e), q = ptAt(e + .01); r.position.copy(p);
@@ -265,12 +265,12 @@ const ACT = {
     tween(1.2, e => { flash.scale.setScalar(2 + e * 22); flash.material.opacity = 1 - e; }).then(() => flash.removeFromParent());
     const cols = [0xffe08a, 0xff7a5c, 0x7ad0ff, 0x9dff8a, 0xff8ad0, 0xffffff];
     for (let i = 0; i < 7; i++) {
-      S.boom(); const c = MOON.clone().add(V3(rand(-5, 5), rand(-1, 5), rand(-2, 2)));
-      burst(c, { n: 46, color: cols[i % cols.length], size: 1.3, speed: 9, up: .5, grav: -2.5, life: 1.8 });
-      burst(c, { n: 1, tex: glowTex, color: cols[i % cols.length], size: 6, speed: 0, up: 0, grav: 0, life: .4 });
-      await sleep(420);
+      S.boom(); const c = MOON.clone().lerp(lookPos, .38).add(V3(rand(-3.2, 3.2), rand(-1, 3), rand(-1, 1)));
+      burst(c, { n: 50, color: cols[i % cols.length], size: .9, speed: 6.5, up: .4, grav: -2, life: 1.7, fog: false });
+      burst(c, { n: 1, tex: glowTex, color: cols[i % cols.length], size: 4.5, speed: 0, up: 0, grav: 0, life: .35, fog: false });
+      await tween(.42, () => {});
     }
-    await sleep(900);
+    await tween(1.6, () => {});
     camRelease();
     await tween(.2, e => G.lever.rotation.z = -.5 + e * 1.0);
     G.rocket = newRocket(G);

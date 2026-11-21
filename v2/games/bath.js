@@ -69,12 +69,16 @@ function makeToolObj(k) {
     for (let i = 0; i < 14; i++) { const h = mesh(new THREE.SphereGeometry(rand(.03, .06), 10, 8), hole, false); h.position.set(rand(-.4, .4), rand(-.22, .22), .19); h.scale.z = .3; g.add(h); }
     const top = mesh(new RoundedBoxGeometry(.95, .14, .38, 3, .05), M.cloth(0x2f8a4e)); top.position.y = .3; g.add(top);
   } else if (k === 'shower') {
-    const head = mesh(new THREE.CylinderGeometry(.34, .26, .16, 40), chrome); g.add(head);
-    const face = mesh(new THREE.CircleGeometry(.3, 40), M.matte(0x9aa3ad, .5), false); face.rotation.x = Math.PI / 2; face.position.y = -.081; g.add(face);
-    for (let i = 0; i < 19; i++) { const a = i * 2.4, r = Math.sqrt(i / 19) * .24, h = mesh(new THREE.CircleGeometry(.022, 8), M.matte(0x2a2f36, .6), false); h.rotation.x = Math.PI / 2; h.position.set(Math.cos(a) * r, -.083, Math.sin(a) * r); g.add(h); }
-    const handle = mesh(new THREE.CylinderGeometry(.07, .08, .9, 16), chrome); handle.position.set(.5, .3, 0); handle.rotation.z = -1.0; g.add(handle);
-    const hose = new THREE.CatmullRomCurve3([V3(.88, .55, 0), V3(1.2, .4, -.1), V3(1.35, -.2, -.2), V3(1.2, -.6, -.3)]);
-    g.add(mesh(new THREE.TubeGeometry(hose, 24, .045, 8), M.metal(0xb8bcc6)));
+    // a teal plastic hand shower: the nozzle face (with its holes) points down at the bat
+    const teal = new THREE.MeshPhysicalMaterial({ color: 0x2fa3a0, roughness: .3, clearcoat: .9, clearcoatRoughness: .2, envMapIntensity: .5 });
+    const head = new THREE.Group(); g.add(head);
+    head.add(mesh(new THREE.CylinderGeometry(.34, .28, .14, 40), teal));
+    const face = mesh(new THREE.CylinderGeometry(.27, .27, .02, 40), M.gloss(0xe8eef2, .35), false); face.position.y = -.075; head.add(face);
+    for (let i = 0; i < 19; i++) { const a = i * 2.4, r = Math.sqrt(i / 19) * .22, h = mesh(new THREE.CylinderGeometry(.018, .018, .02, 8), M.matte(0x2a5a6a, .6), false); h.position.set(Math.cos(a) * r, -.088, Math.sin(a) * r); head.add(h); }
+    const handle = mesh(new THREE.CapsuleGeometry(.075, .62, 6, 14), teal); handle.position.set(.42, .26, 0); handle.rotation.z = -1.05; g.add(handle);
+    const grip = mesh(new THREE.CylinderGeometry(.085, .085, .2, 16), M.gloss(0xf0b93a, .35)); grip.position.set(.62, .38, 0); grip.rotation.z = -1.05; g.add(grip);
+    const hose = new THREE.CatmullRomCurve3([V3(.74, .45, 0), V3(1.05, .5, -.1), V3(1.25, .15, -.2), V3(1.2, -.35, -.3)]);
+    g.add(mesh(new THREE.TubeGeometry(hose, 30, .045, 10), M.gloss(0xb8c4cc, .3)));
   } else if (k === 'towel') {
     g.add(mesh(new RoundedBoxGeometry(1.15, .55, .3, 4, .12), M.cloth(0x2f8f8a)));
     [-.14, .14].forEach(y => { const st = mesh(new RoundedBoxGeometry(1.17, .07, .32, 2, .03), M.cloth(0xf4e8cf), false); st.position.y = y; g.add(st); });
@@ -98,7 +102,7 @@ async function showTool(k) {
   if (!k) return;
   placeHome(); const g = new THREE.Group(), obj = makeToolObj(k); obj.scale.setScalar(TOOL_S); g.add(obj); g.position.copy(HOME); g.scale.setScalar(.001); stage.add(g);
   const hit = new THREE.Mesh(new THREE.SphereGeometry(.85 * TOOL_S, 12, 8), hitMat); g.add(hit);
-  obj.rotation.x = k === 'shower' ? .95 : -.35; if (k === 'dryer') obj.rotation.y = -.3;
+  obj.rotation.x = k === 'shower' ? .7 : -.35; if (k === 'dryer') obj.rotation.y = -.3;
   tool = { k, g, obj, hit, wig: 0 };
   SFX.pop(); await tween(.5, e => g.scale.setScalar(Math.max(.001, e)), E.back);
 }
@@ -257,7 +261,7 @@ function move(e) {
     // the sponge or towel sits on the bat where the finger is
     if (hit) { const n = hit.face.normal.clone().transformDirection(bat.body.matrixWorld); drag.goal.copy(hit.point).addScaledVector(n, .3); }
     else drag.goal.copy(p).add(V3(0, .25, 0));
-  } else if (k === 'shower') drag.goal.copy(p).add(V3(0, .75, .2));
+  } else if (k === 'shower') drag.goal.copy(p).add(V3(0, 1.05, -.1));
   else drag.goal.copy(p).add(V3(.95, .1, .3));
   if (!moved) return;
   if (k === 'sponge' && phase === 'scrub' && hit) {
@@ -296,9 +300,9 @@ function update(t, dt) {
     const s = drag ? 1.15 : 1; tool.g.scale.setScalar(tool.g.scale.x + (s - tool.g.scale.x) * Math.min(1, dt * 10));
     tool.obj.rotation.z = tool.wig > 0 ? Math.sin(t * 22) * .2 * Math.min(1, tool.wig) : tool.obj.rotation.z * .85;
     if (tool.wig > 0) tool.wig -= dt;
-    if (tool.k === 'shower') tool.obj.rotation.x += ((drag ? .3 : .95) - tool.obj.rotation.x) * Math.min(1, dt * 8);
+    if (tool.k === 'shower') tool.obj.rotation.x += ((drag ? .25 : .7) - tool.obj.rotation.x) * Math.min(1, dt * 8);
     // shower water and dryer wind
-    if (drag && tool.k === 'shower' && Math.random() < .8) { burst(tool.g.position.clone().add(V3(rand(-.2, .2), -.12, rand(-.2, .2))), { n: 1, tex: glowTex, color: 0x9fd4ff, size: .1, speed: .3, up: -3, grav: -6, life: .5, additive: false }); sound('water'); }
+    if (drag && tool.k === 'shower') { for (let i = 0; i < 2; i++) burst(tool.g.position.clone().add(V3(rand(-.22, .22), -.15, rand(-.22, .22))), { n: 1, tex: glowTex, color: 0x9fd4ff, size: .09, speed: .1, up: -3.5, grav: -5, life: .3, additive: false }); sound('water'); }
     if (drag && tool.k === 'dryer' && Math.random() < .4) burst(tool.g.position.clone().add(V3(-.75, 0, 0)), { n: 1, tex: sparkTex, color: 0xffffff, size: .14, speed: .2, up: 0, grav: 0, life: .5 });
   }
   if (bat) bat.lookTarget = drag && tool ? tool.g.position : null;
