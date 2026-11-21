@@ -823,7 +823,7 @@ const SFX = {
 let musicOn = false;
 function startMusic() {
   if (musicOn || !AC) return; musicOn = true;
-  musicGain.gain.setTargetAtTime(.55, AC.currentTime, 1.5);
+  musicGain.gain.setTargetAtTime(musicBase, AC.currentTime, 1.5);
   const notes = [523.25, 587.33, 659.25, 783.99, 880, 1046.5], bass = [130.81, 174.61, 196, 130.81];
   const mel = [0, 2, 4, 2, 3, 2, 1, -1, 0, 2, 4, 5, 4, 2, 1, -1], step = 60 / 92 / 2;
   let nextT = AC.currentTime + .1, i = 0;
@@ -836,7 +836,11 @@ function startMusic() {
     }
   }, 100);
 }
-function duck(on) { if (musicGain) musicGain.gain.setTargetAtTime(on ? .18 : .55, AC.currentTime, .15); }
+let musicBase = .55;
+function duck(on) { if (musicGain) musicGain.gain.setTargetAtTime(on ? Math.min(.18, musicBase) : musicBase, AC.currentTime, .15); }
+// a game can turn the background loop down or off (the band makes its own music)
+function musicLevel(v) { musicBase = v; if (musicGain) musicGain.gain.setTargetAtTime(v, AC.currentTime, .3); }
+const getAudio = () => ({ AC, master });
 
 // voice lines, shared with the 2D game
 const LINE = {
@@ -935,5 +939,5 @@ export {
   THREE, TEST, $, rand, clamp, V3, E, sleep, renderer, scene, stage, camera, setView, canvasTex, glowTex, sparkTex, heartTex, woodTex, zTex,
   M, mesh, RoundedBoxGeometry, SHAPES, BANDAGE_COLOR, BATS, makeBat, makeSteth, makeBandage, makeTool, TABLE_Y, TOOL_Z,
   burst, confetti, tween, bez, SFX, tone, noise, now, say, audioOn, duck, MOUTH, HOLE_POS, onFrame, input, ray, setNDC, sp, pick,
-  dragPlane, floorPlane, furShells, isSpeaking, rock, fbm, vnoise, showAgain, progress, BAT_LIST,
+  dragPlane, floorPlane, furShells, isSpeaking, musicLevel, getAudio, rock, fbm, vnoise, showAgain, progress, BAT_LIST,
 };

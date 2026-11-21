@@ -44,7 +44,7 @@ const cellPos = (r, k, y = TOP) => V3(cx0 + (k - (M_.cols - 1) / 2) * C, y, cz0 
 const rockGeos = Array.from({ length: 4 }, (_, j) => { const g = new THREE.SphereGeometry(1, 24, 16), p = g.attributes.position, v = V3();
   for (let i = 0; i < p.count; i++) { v.fromBufferAttribute(p, i); v.multiplyScalar(1 + (fbm(v.x * 1.5 + j * 3, v.y * 1.5, v.z * 1.5) - .5) * .6); p.setXYZ(i, v.x, v.y, v.z); }
   g.computeVertexNormals(); return g; });
-const leafGeo = (() => { const g = new THREE.IcosahedronGeometry(1, 3), p = g.attributes.position, v = V3();
+const leafGeo = (() => { const g = new THREE.SphereGeometry(1, 28, 20), p = g.attributes.position, v = V3();
   for (let i = 0; i < p.count; i++) { v.fromBufferAttribute(p, i); v.multiplyScalar(1 + (fbm(v.x * 2.5, v.y * 2.5, v.z * 2.5) - .5) * .45); p.setXYZ(i, v.x, v.y, v.z); }
   g.computeVertexNormals(); return g; })();
 const MAT = {
@@ -152,7 +152,7 @@ async function startRound() {
   bat.root.visible = false;
   if (!frog) { frog = makeFrog(); pad = makePad(); stage.add(pad); stage.add(frog); }
   const s = C * .62; frog.scale.setScalar(s); pad.scale.setScalar(C * .95);
-  pad.position.copy(cellPos(frogAt[0], frogAt[1], TOP + .03)); frog.position.copy(pad.position).add(V3(0, .02, 0)); frog.rotation.y = 0;
+  pad.position.copy(cellPos(frogAt[0], frogAt[1], TOP + .1)); frog.position.copy(pad.position).add(V3(0, .02, 0)); frog.rotation.y = 0;
   SFX.whoosh();
   await tween(.6, e => board.scale.setScalar(Math.max(.001, e)), E.back);
   // the board grows in place: scale it around its own centre
@@ -210,7 +210,7 @@ async function frogHop() {
   if (to[0] === frogAt[0] && to[1] === frogAt[1]) { phase = 'play'; return; }
   ribbit(); say('m_hop');
   frogAt = to;
-  const a = frog.position.clone(), b = cellPos(to[0], to[1], TOP + .05), pa = pad.position.clone(), pb = cellPos(to[0], to[1], TOP + .03);
+  const a = frog.position.clone(), b = cellPos(to[0], to[1], TOP + .12), pa = pad.position.clone(), pb = cellPos(to[0], to[1], TOP + .1);
   await tween(.8, e => { frog.position.lerpVectors(a, b, e); frog.position.y += Math.sin(e * Math.PI) * C * 1.4; pad.position.lerpVectors(pa, pb, e); frog.rotation.y = e * Math.PI * 2; }, E.io);
   frog.rotation.y = 0; phase = 'play';
 }
@@ -218,7 +218,7 @@ async function caught() {
   phase = 'caught'; clearTimeout(idleT);
   const c = frog.position.clone().add(V3(0, C * .5, 0));
   burst(c, { n: 26, size: .3 }); SFX.chime(); SFX.giggle(); setTimeout(ribbit, 350);
-  tween(.6, e => { frog.position.y = TOP + .05 + Math.abs(Math.sin(e * Math.PI * 2)) * C * .5; });
+  tween(.6, e => { frog.position.y = TOP + .12 + Math.abs(Math.sin(e * Math.PI * 2)) * C * .5; });
   bat.setMood('open'); bat.wobble = .08; setTimeout(() => { if (bat) { bat.wobble = 0; bat.setMood('happy'); } }, 900);
   round++; progress(ROUNDS, round);
   await say(pick(['m_caught1', 'm_caught2']));

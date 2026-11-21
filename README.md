@@ -108,13 +108,18 @@ installed (Premium, Enhanced or Natural voices first), and a grown-up can choose
 another in settings. The
 line list in `studio.html` must match `LINES` in `index.html`.
 
-## Version 2 (3D preview): `v2/index.html`
+## Version 2 (3D): `v2/index.html`
 
-A one-screen prototype of Bat Doctor in real-time 3D, to judge a softer, animated-movie look before converting all five games.
+All five games in real-time 3D, in a moonlit cave. Open it over http (e.g. `python3 -m http.server`), like the main game.
 
-- Built with [three.js](https://threejs.org) r160 (MIT, see `v2/THREE-LICENSE.txt`), bundled in `v2/` with its bloom post-processing add-ons so it works offline. No other dependencies.
-- The cave is stone-coloured and lit like a film set: a flickering lantern, moonlight and a light beam through a ragged opening, soft glow on light sources, fog and a vignette. On devices that cannot keep up it turns the glow off and lowers the resolution by itself.
-- Everything is modelled in code: the bat (fuzzy "sheen" fur, glossy eyes that follow what the child is holding, blinking, buck teeth, propeller cap), the cave, the exam table and the tools.
-- Flow: the bat flies in, listen to the heart with the stethoscope, match the bandage to the scrape's shape, tap the bat three times, and it flies out of the cave to the moon. Each round is a new bat with a new cap and scrape shape.
-- Reuses the voice lines in `voice/`. Open it over http (e.g. `python3 -m http.server`), like the main game.
-- Hold the house button for 1 second to go back to the 2D game.
+- **Bat Doctor**: listen to the heart with the stethoscope, match the bandage to the scrape's shape, tap to heal; the bat flies out of the cave to the moon.
+- **Froggy Tag**: a grassy maze diorama on the table with hedges, rocks, logs, streams and trees. Hold a finger down and the bat steps towards it; catch the frog on its lily pad. Five mazes, each bigger; from the second, Froggy hops away when the bat gets close.
+- **Busy Board**: a T-Rex jack-in-the-box, a lamp that wakes a sleepy bat, gears with a music-box tune, a door with a T-Rex behind it, a rocket that flies out of the cave into fireworks, and a prize wheel whose prize rains onto the table. Trying all six sends a flock of bats across the cave.
+- **Bat Bath**: a clawfoot tub. The dirt (mud, berry, paint) is painted into the bat's fur; the sponge cleans where it rubs, the shower pops the bubbles, the towel dries the wet fur, the hair dryer fluffs it up. Three bats.
+- **Bat Band**: five bats on a curtained stage sing their own note when tapped; a xylophone, drum and maracas to play; the record player starts a dance with sweeping spotlights.
+
+How it is built:
+- [three.js](https://threejs.org) r160 (MIT, see `v2/THREE-LICENSE.txt`) and its bloom post-processing add-ons, bundled in `v2/` so it works offline. No other dependencies.
+- `v2/engine.js` holds what the games share: renderer, the cave set, the furry bat (real-time fur, textured eyes with eyelids, veined wings), sound effects, the voice lines in `voice/`, particles, tweens and input. `v2/main.js` is the menu; each game is one file in `v2/games/`.
+- The cave is lit like a film set: a flickering lantern, moonlight and a light beam through a ragged opening, soft glow on light sources, fog and a vignette. On devices that cannot keep up it turns the glow off and lowers the resolution by itself.
+- Hold the house button for 1 second to go back to the menu. The menu links to the classic 2D game.
