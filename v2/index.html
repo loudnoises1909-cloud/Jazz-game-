@@ -17,23 +17,23 @@
   .ov.hide { opacity: 0; pointer-events: none; }
   .card { text-align: center; }
   .title { font-size: clamp(44px, 11vw, 96px); font-weight: 700; line-height: 1; letter-spacing: .01em;
-    color: #fff; background: linear-gradient(180deg, #fff 0%, #ffd2ea 45%, #ff8ccb 100%);
+    color: #fff; background: linear-gradient(180deg, #fff 0%, #ffe6b0 45%, #ffad45 100%);
     -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 4px 0 #b23c80) drop-shadow(0 10px 18px rgba(0,0,0,.45)); }
+    filter: drop-shadow(0 4px 0 #8a3b12) drop-shadow(0 10px 18px rgba(0,0,0,.45)); }
   .sub { margin-top: 10px; font-size: clamp(16px, 3.4vw, 24px); font-weight: 600; color: #cfc6ff; letter-spacing: .12em; text-transform: uppercase; }
   .big { margin-top: 28px; width: 132px; height: 132px; border-radius: 50%; border: 0; cursor: pointer;
-    background: radial-gradient(circle at 35% 28%, #ffd8ee 0 12%, #ff8cc8 40%, #e2549d 75%, #b93a7c 100%);
-    box-shadow: 0 10px 0 #8e2b60, 0 18px 30px rgba(0,0,0,.45), inset 0 -8px 14px rgba(120,20,70,.35);
+    background: radial-gradient(circle at 35% 28%, #ffe0c4 0 12%, #ff9a5c 40%, #e2582e 75%, #b23e1c 100%);
+    box-shadow: 0 10px 0 #7e2a14, 0 18px 30px rgba(0,0,0,.45), inset 0 -8px 14px rgba(120,40,10,.35);
     display: inline-flex; align-items: center; justify-content: center; animation: bob 1.6s ease-in-out infinite; }
-  .big:active { transform: translateY(6px); box-shadow: 0 4px 0 #8e2b60, 0 8px 16px rgba(0,0,0,.45); }
-  .big svg { width: 58px; height: 58px; filter: drop-shadow(0 3px 0 rgba(120,20,70,.5)); }
+  .big:active { transform: translateY(6px); box-shadow: 0 4px 0 #7e2a14, 0 8px 16px rgba(0,0,0,.45); }
+  .big svg { width: 58px; height: 58px; filter: drop-shadow(0 3px 0 rgba(120,40,10,.5)); }
   @keyframes bob { 50% { transform: translateY(-8px) scale(1.03); } }
   #home { position: fixed; left: max(14px, env(safe-area-inset-left)); top: max(14px, env(safe-area-inset-top)); z-index: 6;
     width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
     background: rgba(255,255,255,.12); box-shadow: inset 0 0 0 2px rgba(255,255,255,.18); }
   #home svg { width: 26px; height: 26px; }
   #home .ring { position: absolute; inset: -4px; }
-  #home .ring circle { fill: none; stroke: #ff9ad2; stroke-width: 4; stroke-dasharray: 176; stroke-dashoffset: 176; stroke-linecap: round; }
+  #home .ring circle { fill: none; stroke: #ffb347; stroke-width: 4; stroke-dasharray: 176; stroke-dashoffset: 176; stroke-linecap: round; }
   #home.hold .ring circle { transition: stroke-dashoffset 1s linear; stroke-dashoffset: 0; }
 </style>
 </head>
@@ -122,7 +122,7 @@ function heartPath(g, cx, cy, s) {
 }
 const heartTex = canvasTex(128, 128, g => {
   heartPath(g, 64, 66, 110); const gr = g.createLinearGradient(0, 10, 0, 120);
-  gr.addColorStop(0, '#ff9ccc'); gr.addColorStop(1, '#ec3f86'); g.fillStyle = gr; g.fill();
+  gr.addColorStop(0, '#ff8a76'); gr.addColorStop(1, '#cf2f3b'); g.fillStyle = gr; g.fill();
   g.fillStyle = 'rgba(255,255,255,.75)'; g.beginPath(); g.ellipse(42, 44, 12, 8, -.6, 0, 7); g.fill();
 });
 const woodTex = canvasTex(1024, 256, (g, w, h) => {
@@ -150,7 +150,7 @@ const skyTex = canvasTex(512, 512, (g, w) => {
 
 // ───────────────────────── materials ─────────────────────────
 const M = {
-  fur: c => new THREE.MeshPhysicalMaterial({ color: c, roughness: .62, sheen: 1, sheenRoughness: .32, sheenColor: new THREE.Color(0xffd6ea), envMapIntensity: .45 }),
+  fur: c => new THREE.MeshPhysicalMaterial({ color: c, roughness: .62, sheen: 1, sheenRoughness: .32, sheenColor: new THREE.Color(0xf3d2dc), envMapIntensity: .45 }),
   gloss: (c, r = .25) => new THREE.MeshPhysicalMaterial({ color: c, roughness: r, clearcoat: .7, clearcoatRoughness: .15, envMapIntensity: .7 }),
   matte: (c, r = .9) => new THREE.MeshStandardMaterial({ color: c, roughness: r, envMapIntensity: .3 }),
   metal: c => new THREE.MeshStandardMaterial({ color: c, metalness: 1, roughness: .16, envMapIntensity: 1.3 }),
@@ -167,7 +167,7 @@ Object.assign(key.shadow.camera, { left: -6, right: 6, top: 6, bottom: -4, near:
 key.shadow.bias = -.0004; key.shadow.normalBias = .03;
 scene.add(key);
 const rimBlue = new THREE.DirectionalLight(0x9cc6ff, 3.2); rimBlue.position.set(5, 5, -6); scene.add(rimBlue);
-const rimPink = new THREE.DirectionalLight(0xff86c8, 1.8); rimPink.position.set(-6, 2, -5); scene.add(rimPink);
+const rimPink = new THREE.DirectionalLight(0xb7a0ff, 1.4); rimPink.position.set(-6, 2, -5); scene.add(rimPink);
 const fill = new THREE.DirectionalLight(0xbcaeff, .7); fill.position.set(6, 2, 6); scene.add(fill);
 
 // ───────────────────────── cave set ─────────────────────────
@@ -274,13 +274,84 @@ const lantern = new THREE.Group();
   scene.add(lantern);
 }
 
+// giant glowing mushrooms
+const shrooms = [];
+function shroom(x, z, h, r, col, bend = .2) {
+  const g = new THREE.Group(); g.position.set(x, -1.3, z);
+  const stemC = new THREE.CatmullRomCurve3([V3(0, 0, 0), V3(bend * .5, h * .5, 0), V3(bend, h, 0)]);
+  g.add(mesh(new THREE.TubeGeometry(stemC, 20, r * .2, 14), M.matte(0xe6d8bf, .7), false, false));
+  const capMat = new THREE.MeshStandardMaterial({ color: col, emissive: new THREE.Color(col).multiplyScalar(.55), emissiveIntensity: .5, roughness: .45 });
+  const cap = mesh(new THREE.SphereGeometry(r, 40, 20, 0, Math.PI * 2, 0, Math.PI / 2), capMat, false, false);
+  cap.scale.y = .62; cap.position.set(bend, h - .05, 0); cap.rotation.z = -bend * .4; g.add(cap);
+  const under = new THREE.Mesh(new THREE.CircleGeometry(r * .98, 40), new THREE.MeshStandardMaterial({ color: new THREE.Color(col).multiplyScalar(.5), emissive: col, emissiveIntensity: .25, side: THREE.DoubleSide }));
+  under.rotation.x = Math.PI / 2; under.position.y = .01; cap.add(under);
+  for (let i = 0; i < 7; i++) {
+    const th = rand(.25, 1.2), ph = rand(0, Math.PI * 2), sp = mesh(new THREE.SphereGeometry(r * rand(.07, .12), 12, 8), M.matte(0xfff3dc, .6), false, false);
+    sp.position.set(Math.sin(th) * Math.cos(ph) * r, Math.cos(th) * r, Math.sin(th) * Math.sin(ph) * r); sp.scale.y = .5; cap.add(sp);
+  }
+  scene.add(g); shrooms.push({ mat: capMat, ph: rand(0, 6) }); return g;
+}
+shroom(3.7, -2.5, 1.9, .62, 0xe8642a, .25); shroom(4.55, -3.3, 2.5, .8, 0x1fa6a0, -.2); shroom(3.05, -3.4, 1.45, .42, 0xe8642a, -.15);
+shroom(-3.0, -3.8, 1.7, .5, 0x1fa6a0, .2);
+{ const l = new THREE.PointLight(0xff9a4a, 8, 6, 2); l.position.set(3.8, .9, -1.8); scene.add(l); }
+
+// a crate of potions and books behind the table
+{
+  const crateMat = new THREE.MeshPhysicalMaterial({ map: woodTex, color: 0xb9a28a, roughness: .7, envMapIntensity: .3 });
+  const crate = new THREE.Group(); crate.position.set(-4.2, -.35, -2.7); crate.rotation.y = .28; scene.add(crate);
+  crate.add(mesh(new RoundedBoxGeometry(1.6, 1.9, 1.1, 3, .07), crateMat, true, true));
+  for (const y of [-.45, .35]) { const slat = mesh(new RoundedBoxGeometry(1.66, .16, 1.16, 2, .04), M.matte(0x6e4426, .8), false); slat.position.y = y; crate.add(slat); }
+  const glass = c => new THREE.MeshPhysicalMaterial({ color: c, roughness: .08, clearcoat: 1, transparent: true, opacity: .78, emissive: c, emissiveIntensity: .25, envMapIntensity: 1.1 });
+  [[-.45, .1, 0x3fc8c0, .55, .16], [-.02, -.2, 0xe8a13a, .4, .2], [.42, .15, 0xd24c3a, .5, .14]].forEach(([x, z, c, h, r]) => {
+    const b = new THREE.Group(); b.position.set(x, .95, z); crate.add(b);
+    const body = mesh(new THREE.CylinderGeometry(r, r, h, 24), glass(c), true); body.position.y = h / 2; b.add(body);
+    const sh = mesh(new THREE.SphereGeometry(r, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), glass(c), false); sh.position.y = h; b.add(sh);
+    const nk = mesh(new THREE.CylinderGeometry(r * .38, r * .38, .16, 16), glass(c), false); nk.position.y = h + r * .9; b.add(nk);
+    const cork = mesh(new THREE.CylinderGeometry(r * .42, r * .36, .1, 16), M.matte(0xa8774a, .8), false); cork.position.y = h + r * .9 + .12; b.add(cork);
+  });
+  [[0x24407a, 0], [0xd24c3a, .13]].forEach(([c, y], i) => { const bk = mesh(new RoundedBoxGeometry(.7, .12, .5, 2, .03), M.matte(c, .7), true); bk.position.set(.5 - i * .05, 1.02 + y, -.32); bk.rotation.y = .3 + i * .25; crate.add(bk); });
+}
+
+// hanging vines
+const vines = [];
+function vine(x, z, top, bot, seed) {
+  const piv = new THREE.Group(); piv.position.set(x, top, z); scene.add(piv);
+  const pts = []; for (let i = 0; i <= 10; i++) pts.push(V3(Math.sin(i * 1.1 + seed) * .22, -(top - bot) * i / 10, Math.cos(i * .9 + seed) * .12));
+  const c = new THREE.CatmullRomCurve3(pts);
+  piv.add(mesh(new THREE.TubeGeometry(c, 60, .035, 6), M.matte(0x2b5c49, .8), false));
+  const leafM = M.matte(0x3d8a5c, .7), leafG = new THREE.SphereGeometry(.1, 10, 6);
+  for (let t = .05; t < 1; t += .045) { const lf = mesh(leafG, leafM, false); lf.position.copy(c.getPointAt(t)).add(V3(rand(-.05, .05), 0, .03)); lf.scale.set(1.6, .45, .9); lf.rotation.set(rand(-.5, .5), rand(0, 3), rand(-.8, .8)); piv.add(lf); }
+  vines.push({ piv, ph: seed });
+}
+vine(-3.4, -4.4, 10, 4.2, 1); vine(-2.6, -5.2, 10, 4.9, 2.3); vine(2.9, -4.6, 10, 4.5, 3.7); vine(3.6, -5.6, 10, 5.3, 5.1);
+
+// sleepy dark bats hanging upside down, with floating z's
+const zTex = canvasTex(128, 128, g => { g.font = '700 96px Fredoka, system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#fff'; g.fillText('z', 64, 70); });
+const sleepers = [];
+function sleepyBat(x, y, z, col, s = 1) {
+  const g = new THREE.Group(); g.position.set(x, y, z); g.scale.setScalar(s); scene.add(g);
+  const sp = mesh(spikeGeo(.3, 1.6, x), M.matte(0x3b2e78, .95), false); sp.rotation.x = Math.PI; sp.position.y = 1.55; g.add(sp);
+  const fm = M.fur(col), wm = M.fur(new THREE.Color(col).multiplyScalar(.75));
+  [-1, 1].forEach(sd => { const ft = mesh(new THREE.CylinderGeometry(.03, .03, .16, 8), M.matte(0x221c2e), false); ft.position.set(sd * .07, -.06, 0); g.add(ft); });
+  const body = mesh(new THREE.SphereGeometry(.42, 32, 24), fm, false); body.scale.set(1, 1.15, .9); body.position.y = -.55; g.add(body);
+  [-1, 1].forEach(sd => {
+    const w = mesh(new THREE.SphereGeometry(.44, 28, 20), wm, false); w.scale.set(.5, 1.12, .95); w.position.set(sd * .3, -.5, .04); w.rotation.z = sd * .22; g.add(w);
+    const ear = mesh(new THREE.ConeGeometry(.12, .3, 16), fm, false); ear.position.set(sd * .2, -1.02, 0); ear.rotation.z = Math.PI + sd * .35; g.add(ear);
+    const eye = mesh(new THREE.TorusGeometry(.06, .016, 6, 16, Math.PI), M.matte(0x120c18, .6), false); eye.position.set(sd * .14, -.74, .37); g.add(eye);
+  });
+  const tooth = mesh(new RoundedBoxGeometry(.07, .08, .04, 2, .015), M.gloss(0xffffff, .2), false); tooth.position.set(0, -.9, .36); g.add(tooth);
+  sleepers.push({ g, ph: rand(0, 6) });
+}
+sleepyBat(-1.9, 4.3, -7, 0x40384f); sleepyBat(-1.05, 4.55, -7.6, 0x4a3e5a, .85); sleepyBat(1.6, 4.4, -7.2, 0x40384f, .95);
+let zT = 0;
+
 // exam table, cushion and a first-aid kit
 {
   const table = mesh(new RoundedBoxGeometry(9.4, .7, 4.4, 5, .22), new THREE.MeshPhysicalMaterial({ map: woodTex, roughness: .5, clearcoat: .35, clearcoatRoughness: .3, envMapIntensity: .5 }), false, true);
   table.position.set(0, -.72, 1.2); scene.add(table);
-  const cushion = mesh(new THREE.CylinderGeometry(1.5, 1.55, .26, 64), M.cloth(0x8fd6c3), true, true);
+  const cushion = mesh(new THREE.CylinderGeometry(1.5, 1.55, .26, 64), M.cloth(0x5a86ad), true, true);
   cushion.position.set(0, -.23, .25); scene.add(cushion);
-  const puff = mesh(new THREE.TorusGeometry(1.5, .14, 18, 72), M.cloth(0x7ccab6), true, true);
+  const puff = mesh(new THREE.TorusGeometry(1.5, .14, 18, 72), M.cloth(0x4d779c), true, true);
   puff.rotation.x = Math.PI / 2; puff.position.set(0, -.2, .25); scene.add(puff);
   const kit = new THREE.Group(); kit.position.set(3.45, .07, -.35); kit.rotation.y = -.45;
   kit.add(mesh(new RoundedBoxGeometry(1.25, .85, .75, 4, .13), M.gloss(0xfbf4e8, .35), true, true));
@@ -289,6 +360,11 @@ const lantern = new THREE.Group();
   const c2 = mesh(new RoundedBoxGeometry(.14, .46, .06, 2, .03), crossM); c2.position.z = .38; kit.add(c2);
   const handle = mesh(new THREE.TorusGeometry(.22, .045, 10, 24, Math.PI), M.metal(0xb8bcc6)); handle.position.y = .42; kit.add(handle);
   scene.add(kit);
+  const jar = new THREE.Group(); jar.position.set(-3.55, -.37, -.15); scene.add(jar);
+  const jg = mesh(new THREE.CylinderGeometry(.34, .34, .72, 32, 1, true), new THREE.MeshPhysicalMaterial({ color: 0xdff1ff, roughness: .05, clearcoat: 1, transparent: true, opacity: .28, side: THREE.DoubleSide, envMapIntensity: 1.4 }), false);
+  jg.position.y = .36; jar.add(jg);
+  for (let i = 0; i < 9; i++) { const c = mesh(new THREE.SphereGeometry(.13, 14, 10), M.cloth(0xffffff), false); c.position.set(rand(-.16, .16), .14 + (i / 9) * .45, rand(-.16, .16)); jar.add(c); }
+  const lid = mesh(new THREE.CylinderGeometry(.37, .37, .1, 32), M.matte(0x8a5a33, .6)); lid.position.y = .77; jar.add(lid);
 }
 
 // fireflies
@@ -313,21 +389,21 @@ const SHAPES = {
     h.closePath(); return h; },
   circle: s => { const h = new THREE.Shape(); h.absarc(0, 0, .46 * s, 0, Math.PI * 2, false); return h; },
 };
-const BANDAGE_COLOR = { heart: 0xff8fb1, star: 0xffcf4a, circle: 0x6fd0b8 };
+const BANDAGE_COLOR = { heart: 0xd24c3a, star: 0xe6a92c, circle: 0x3d7fc4 };
 
 // ───────────────────────── the bat ─────────────────────────
 const BATS = [
-  { name: 'hoowy', fur: 0xf27bb5, hat: [0xe2402f, 0xf6c445, 0x2f6fd6] },
-  { name: 'doowy', fur: 0xf088bd, hat: [0x2f9e5a, 0xf28a2e, 0xf6d047] },
-  { name: 'tooby', fur: 0xee72ae, hat: [0x24407a, 0xf08a2c, 0xf4efe2] },
-  { name: 'boopy', fur: 0xf384b9, hat: [0x1f9aa8, 0xf6c445, 0xe2402f] },
-  { name: 'zoomy', fur: 0xf07ab4, hat: [0x2c63c9, 0x49b35a, 0xf6c445] },
+  { name: 'hoowy', fur: 0xd3849e, hat: [0xd63b2a, 0xf0b93a, 0x2c5fbf] },
+  { name: 'doowy', fur: 0xcf8aa0, hat: [0x2f8a4e, 0xe8822a, 0xf0c63e] },
+  { name: 'tooby', fur: 0xca7f98, hat: [0x24407a, 0xe8822a, 0xefe6d2] },
+  { name: 'boopy', fur: 0xd28ea3, hat: [0x1d8a96, 0xf0b93a, 0xd63b2a] },
+  { name: 'zoomy', fur: 0xcd8199, hat: [0x2a5cb8, 0x45a352, 0xf0b93a] },
 ];
 
 function makeBat(cfg, scrapeKind) {
   const B = { root: new THREE.Group(), inner: new THREE.Group(), meshes: [] };
   B.root.add(B.inner);
-  const fur = M.fur(cfg.fur), furLight = M.fur(0xfaa6cd), furDark = M.fur(new THREE.Color(cfg.fur).multiplyScalar(.8));
+  const fur = M.fur(cfg.fur), furLight = M.fur(0xe6b3c1), furDark = M.fur(new THREE.Color(cfg.fur).multiplyScalar(.8));
   const SX = 1, SY = 1.08, SZ = .95;
   const add = (m, parent = B.inner) => { parent.add(m); m.traverse(o => o.isMesh && B.meshes.push(o)); return m; };
   const body = mesh(new THREE.SphereGeometry(1, 72, 54), fur); body.scale.set(SX, SY, SZ); add(body);
@@ -348,7 +424,7 @@ function makeBat(cfg, scrapeKind) {
   B.ears = [-1, 1].map(sd => {
     const piv = new THREE.Group(); piv.position.set(sd * .56, .62, -.12); piv.rotation.set(-.08, sd * .2, -sd * .55);
     const outer = mesh(earGeo, fur); outer.scale.set(1, 1, .5); piv.add(outer);
-    const inner = mesh(earGeo, M.fur(0xffb0d2)); inner.scale.set(.66, .78, .3); inner.position.set(0, .1, .1); piv.add(inner);
+    const inner = mesh(earGeo, M.fur(0xe3a3b6)); inner.scale.set(.66, .78, .3); inner.position.set(0, .1, .1); piv.add(inner);
     add(piv); piv.userData.rz = -sd * .55; return piv;
   });
 
@@ -373,20 +449,20 @@ function makeBat(cfg, scrapeKind) {
   // brows
   B.brows = [-1, 1].map(sd => {
     const g = new THREE.Group(); stick(g, sd * .34, .67, .01);
-    const cap = mesh(new THREE.CapsuleGeometry(.038, .2, 4, 10), M.gloss(0xa8326c, .4), false); cap.rotation.z = Math.PI / 2; g.add(cap);
+    const cap = mesh(new THREE.CapsuleGeometry(.05, .22, 4, 10), M.gloss(0x3e2230, .45), false); cap.rotation.z = Math.PI / 2; g.add(cap);
     g.userData.sd = sd; g.userData.cap = cap; return g;
   });
 
   // nose, cheeks
-  const nose = mesh(new THREE.SphereGeometry(.06, 20, 14), M.gloss(0xc2407f, .3), false); nose.scale.set(1.4, .9, .7); stick(nose, 0, .04, .02);
+  const nose = mesh(new THREE.SphereGeometry(.06, 20, 14), M.gloss(0x8a3d58, .3), false); nose.scale.set(1.4, .9, .7); stick(nose, 0, .04, .02);
   [-1, 1].forEach(sd => {
-    const ck = new THREE.Mesh(new THREE.CircleGeometry(.13, 32), new THREE.MeshBasicMaterial({ color: 0xff5f96, transparent: true, opacity: .45, depthWrite: false }));
+    const ck = new THREE.Mesh(new THREE.CircleGeometry(.13, 32), new THREE.MeshBasicMaterial({ color: 0xd8607a, transparent: true, opacity: .16, depthWrite: false }));
     stick(ck, sd * .6, -.08, .012);
   });
 
   // mouths: smile, open laugh, worried
   const tubeAlong = pts => new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.map(([x, y]) => surf(x, y, .012).p)), 24, .03, 8, false);
-  const lipMat = M.gloss(0x5a1430, .4);
+  const lipMat = M.gloss(0x3a1422, .4);
   B.mouth = {
     smile: add(mesh(tubeAlong([[-.27, -.13], [-.14, -.23], [0, -.26], [.14, -.23], [.27, -.13]]), lipMat, false)),
     worried: add(mesh(tubeAlong([[-.16, -.28], [-.06, -.23], [.06, -.23], [.16, -.28]]), lipMat, false)),
@@ -410,12 +486,12 @@ function makeBat(cfg, scrapeKind) {
   ws.quadraticCurveTo(1.86, .36, 1.97, -.16); ws.quadraticCurveTo(1.46, -.1, 1.26, -.58);
   ws.quadraticCurveTo(.82, -.26, .36, -.46); ws.quadraticCurveTo(.24, -.1, 0, -.22);
   const wingGeo = new THREE.ExtrudeGeometry(ws, { depth: .035, bevelEnabled: true, bevelThickness: .03, bevelSize: .03, bevelSegments: 3, curveSegments: 28 });
-  { const wp = wingGeo.attributes.position, wc = [], v = V3(), near = new THREE.Color(cfg.fur).lerp(new THREE.Color(0xffffff), .12), far = new THREE.Color(0xc23f86);
+  { const wp = wingGeo.attributes.position, wc = [], v = V3(), near = new THREE.Color(cfg.fur).lerp(new THREE.Color(0xffffff), .12), far = new THREE.Color(0x7d3e5c);
     for (let i = 0; i < wp.count; i++) { v.fromBufferAttribute(wp, i); const k = clamp(v.x / 2.3, 0, 1);
       wp.setZ(i, v.z - .32 * k * k + .06 * Math.sin(v.y * 2.4) * k); const c = near.clone().lerp(far, Math.pow(k, 1.4) * .75); wc.push(c.r, c.g, c.b); }
     wingGeo.setAttribute('color', new THREE.Float32BufferAttribute(wc, 3)); wingGeo.computeVertexNormals(); }
-  const wingMat = new THREE.MeshPhysicalMaterial({ vertexColors: true, color: 0xffffff, roughness: .55, sheen: .7, sheenColor: new THREE.Color(0xffc4e2), sheenRoughness: .4, side: THREE.DoubleSide, envMapIntensity: .4 });
-  const boneMat = M.gloss(0xc24a8a, .4);
+  const wingMat = new THREE.MeshPhysicalMaterial({ vertexColors: true, color: 0xffffff, roughness: .55, sheen: .7, sheenColor: new THREE.Color(0xe8c2d0), sheenRoughness: .4, side: THREE.DoubleSide, envMapIntensity: .4 });
+  const boneMat = M.gloss(0x7a3c58, .4);
   const bones = [[[.1, .3], [.62, .86], [1.22, 1.06]], [[1.22, 1.06], [1.8, .8], [2.32, .56]], [[1.22, 1.06], [1.6, .45], [1.97, -.16]], [[1.22, 1.06], [1.25, .2], [1.26, -.58]]];
   B.wings = [-1, 1].map(sd => {
     const piv = new THREE.Group(); piv.position.set(sd * .78, .04, -.22); if (sd < 0) piv.scale.x = -1;
@@ -448,9 +524,9 @@ function makeBat(cfg, scrapeKind) {
   add(hat);
 
   // glowing heart inside the chest (heartbeat)
-  B.heart = new THREE.Mesh(new THREE.ShapeGeometry(SHAPES.heart(.42), 24), new THREE.MeshBasicMaterial({ color: 0xff4f86, transparent: true, opacity: 0, depthWrite: false }));
+  B.heart = new THREE.Mesh(new THREE.ShapeGeometry(SHAPES.heart(.42), 24), new THREE.MeshBasicMaterial({ color: 0xff4a3d, transparent: true, opacity: 0, depthWrite: false }));
   B.heart.position.set(0, -.5, 1.0); B.inner.add(B.heart);
-  B.heartGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xff4f86, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending }));
+  B.heartGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xff4a3d, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending }));
   B.heartGlow.position.copy(B.heart.position); B.heartGlow.scale.setScalar(2.6); B.inner.add(B.heartGlow);
   B.chest = V3(.05, -.52, 1.0);
 
@@ -516,15 +592,16 @@ function makeSteth() {
   head.add(mesh(new THREE.CylinderGeometry(.33, .35, .14, 48), M.metal(0xe2e6ee)));
   const dia = mesh(new THREE.CylinderGeometry(.27, .27, .15, 48), M.gloss(0x2a2a36, .3)); dia.position.y = .01; head.add(dia);
   const ring = mesh(new THREE.TorusGeometry(.33, .045, 12, 48), M.metal(0xcfd4de)); ring.rotation.x = Math.PI / 2; ring.position.y = .07; head.add(ring);
-  const tube = new THREE.CatmullRomCurve3([V3(0, .3, -.02), V3(.18, .75, -.1), V3(.05, 1.15, -.15), V3(0, 1.38, -.15)]);
-  g.add(mesh(new THREE.TubeGeometry(tube, 40, .06, 12), M.gloss(0xd8433a, .32)));
-  const neck = mesh(new THREE.CylinderGeometry(.055, .055, .22, 12), M.metal(0xd9dde6)); neck.position.y = .26; g.add(neck);
+  // the tube runs off to the side (+x); it lies on the table, and hangs down once it is on a chest
+  const tube = new THREE.CatmullRomCurve3([V3(.42, 0, -.03), V3(.85, -.22, -.06), V3(1.3, .08, -.08), V3(1.7, -.02, -.1)]);
+  g.add(mesh(new THREE.TubeGeometry(tube, 48, .06, 12), M.gloss(0x2f4f86, .32)));
+  const neck = mesh(new THREE.CylinderGeometry(.055, .055, .2, 12), M.metal(0xd9dde6)); neck.position.x = .38; neck.rotation.z = Math.PI / 2; g.add(neck);
   [-1, 1].forEach(sd => {
-    const arm = new THREE.CatmullRomCurve3([V3(0, 1.38, -.15), V3(sd * .22, 1.55, -.15), V3(sd * .32, 1.86, -.1)]);
+    const arm = new THREE.CatmullRomCurve3([V3(1.7, -.02, -.1), V3(1.9, sd * .16, -.1), V3(2.15, sd * .3, -.08)]);
     g.add(mesh(new THREE.TubeGeometry(arm, 20, .032, 8), M.metal(0xd9dde6)));
-    const tip = mesh(new THREE.SphereGeometry(.075, 16, 12), M.gloss(0x1e1e26, .3)); tip.position.set(sd * .32, 1.9, -.1); g.add(tip);
+    const tip = mesh(new THREE.SphereGeometry(.075, 16, 12), M.gloss(0x1e1e26, .3)); tip.position.set(2.18, sd * .32, -.08); g.add(tip);
   });
-  g.scale.setScalar(.85);
+  g.scale.setScalar(.8);
   return g;
 }
 function makeBandage(kind) {
@@ -532,7 +609,7 @@ function makeBandage(kind) {
   const opts = { depth: .05, bevelEnabled: true, bevelThickness: .04, bevelSize: .05, bevelSegments: 4, curveSegments: 32 };
   const base = mesh(new THREE.ExtrudeGeometry(SHAPES[kind](1), opts), new THREE.MeshPhysicalMaterial({ color: col, roughness: .7, sheen: .6, sheenColor: new THREE.Color(0xffffff), envMapIntensity: .4 }));
   base.position.z = -.045; g.add(base);
-  const pad = mesh(new THREE.ExtrudeGeometry(SHAPES[kind](.52), { ...opts, depth: .03, bevelThickness: .03, bevelSize: .03 }), M.cloth(0xfff4df), false);
+  const pad = mesh(new THREE.ExtrudeGeometry(SHAPES[kind](.52), { ...opts, depth: .03, bevelThickness: .03, bevelSize: .03 }), M.cloth(0xf4e8cf), false);
   pad.position.z = .04; g.add(pad);
   const dotM = new THREE.MeshStandardMaterial({ color: new THREE.Color(col).multiplyScalar(.72), roughness: .8 });
   SHAPES[kind](.8).getSpacedPoints(kind === 'circle' ? 12 : 14).slice(0, -1).forEach(p => {
@@ -544,8 +621,8 @@ const hitMat = new THREE.MeshBasicMaterial({ visible: false });
 function makeTool(kind, obj, home) {
   const holder = new THREE.Group(); holder.add(obj); holder.position.copy(home); holder.scale.setScalar(.001); scene.add(holder);
   const hit = new THREE.Mesh(new THREE.SphereGeometry(kind === 'steth' ? 1 : .8, 12, 8), hitMat); holder.add(hit);
-  if (kind === 'steth') hit.position.y = .55;
-  const T = { kind, holder, obj, hit, home: home.clone(), restTilt: -.42, active: false, gone: false, wiggle: 0 };
+  if (kind === 'steth') hit.position.x = .55;
+  const T = { kind, holder, obj, hit, home: home.clone(), restTilt: kind === 'steth' ? -.95 : -.42, active: false, gone: false, wiggle: 0 };
   hit.userData.tool = T; obj.rotation.x = T.restTilt;
   return T;
 }
@@ -703,7 +780,7 @@ async function playRound() {
   await squashHop(); bat.setMood('open'); SFX.squeak();
   await say('n_' + cfg.name); bat.setMood('happy');
   // stethoscope
-  const st = makeTool('steth', makeSteth(), V3(0, TABLE_Y + .05, TOOL_Z)); tools.push(st);
+  const st = makeTool('steth', makeSteth(), V3(-.7, TABLE_Y - .12, TOOL_Z)); tools.push(st);
   await popIn(st);
   phase = 'listen'; await say('listen');
   armHint(() => hint());
@@ -725,7 +802,7 @@ async function onStethOnChest(T) {
   const target = () => bat.worldOf(bat.chest).add(V3(0, 0, .22));
   const from = T.holder.position.clone();
   const rz0 = T.obj.rotation.z, s0 = T.holder.scale.x;
-  await tween(.45, e => { T.holder.position.lerpVectors(from, target(), e); T.obj.rotation.x = 0; T.obj.rotation.z = rz0 + (Math.PI - .25 - rz0) * e; T.holder.scale.setScalar(s0 + (.8 - s0) * e); }, E.out);
+  await tween(.45, e => { T.holder.position.lerpVectors(from, target(), e); T.obj.rotation.x = 0; T.obj.rotation.z = rz0 + (-Math.PI / 2 - .2 - rz0) * e; T.holder.scale.setScalar(s0 + (.8 - s0) * e); }, E.out);
   bat.setMood('happy'); bat.bobAmt = .3; bat.flapAmp = .25;
   // four heartbeats: the heart glows and the bat swells a little with each one
   for (let i = 0; i < 4; i++) {
@@ -873,6 +950,10 @@ renderer.setAnimationLoop(() => {
   if (bat) { bat.lookTarget = drag ? drag.T.holder.position : null; updateBat(bat, t, dt); }
   lantern.rotation.z = Math.sin(t * .9) * .05; lantern.rotation.x = Math.sin(t * .7) * .03;
   crystals.forEach(c => { c.mat.emissiveIntensity = .45 + Math.sin(t * 1.3 + c.ph) * .2; c.l.intensity = 8 + Math.sin(t * 1.3 + c.ph) * 2.5; });
+  shrooms.forEach(m => m.mat.emissiveIntensity = .42 + Math.sin(t * 1.1 + m.ph) * .14);
+  vines.forEach(v => { v.piv.rotation.z = Math.sin(t * .6 + v.ph) * .03; v.piv.rotation.x = Math.sin(t * .45 + v.ph) * .02; });
+  sleepers.forEach(b => b.g.rotation.z = Math.sin(t * .8 + b.ph) * .07);
+  if ((zT -= dt) <= 0) { zT = rand(1.6, 2.8); const b = sleepers[Math.random() * sleepers.length | 0]; burst(b.g.position.clone().add(V3(.25, -.7, .3)), { n: 1, tex: zTex, color: 0xd7cfff, size: .38, speed: .15, up: .55, grav: 0, life: 2.4, additive: false }); }
   flies(t); updateParts(dt);
   camera.position.set(camBase.x + Math.sin(t * .23) * .12, camBase.y + Math.sin(t * .31) * .06, camBase.z); camera.lookAt(camTarget);
   renderer.render(scene, camera);
