@@ -137,7 +137,7 @@ function buildCrank(G) {
 function buildDoor(G) {
   const frame = mesh(new RoundedBoxGeometry(1.15, 1.6, .12, 2, .04), new THREE.MeshPhysicalMaterial({ color: 0x3a2a1a, roughness: .6 })); frame.position.z = .02; G.g.add(frame);
   const inside = mesh(new THREE.PlaneGeometry(1.0, 1.45), M.matte(0x0e1424, 1), false); inside.position.z = .085; G.g.add(inside);
-  const rex = makeRex(); rex.scale.setScalar(.6); rex.position.set(0, -.05, -.1); G.g.add(rex);
+  const rex = makeRex(); rex.scale.setScalar(.6); rex.position.set(0, -.05, -.55); G.g.add(rex);
   const hinge = new THREE.Group(); hinge.position.set(-.5, 0, .12); G.g.add(hinge);
   const leaf = mesh(new RoundedBoxGeometry(1.0, 1.45, .08, 3, .03), new THREE.MeshPhysicalMaterial({ color: 0xd63b2a, roughness: .4, clearcoat: .5 })); leaf.position.x = .5; hinge.add(leaf);
   [.33, -.33].forEach(y => { const p = mesh(new RoundedBoxGeometry(.7, .48, .03, 2, .02), new THREE.MeshPhysicalMaterial({ color: 0xb02f22, roughness: .5 })); p.position.set(.5, y, .05); hinge.add(p); });
@@ -218,10 +218,10 @@ const ACT = {
   async door(G) {
     S.creak();
     await tween(.5, e => G.hinge.rotation.y = -e * 1.9, E.out);
-    await tween(.4, e => G.rex.position.z = -.1 + e * .35, E.back);
+    await tween(.4, e => G.rex.position.z = -.55 + e * .6, E.back);
     S.roar(); await tween(.9, e => { G.rex.userData.jaw.rotation.x = Math.abs(Math.sin(e * Math.PI * 3)) * .55; G.rex.rotation.y = Math.sin(e * Math.PI * 2) * .3; });
     await sleep(900);
-    await tween(.3, e => G.rex.position.z = .25 - e * .35);
+    await tween(.3, e => G.rex.position.z = .05 - e * .6);
     S.creak(); await tween(.5, e => G.hinge.rotation.y = -1.9 * (1 - e));
   },
   async rocket(G) {
