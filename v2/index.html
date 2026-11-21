@@ -485,6 +485,63 @@ const SHAPES = {
 };
 const BANDAGE_COLOR = { heart: 0xd24c3a, star: 0xe6a92c, circle: 0x3d7fc4 };
 
+// ───────────────────────── fur, eyes, wing skin ─────────────────────────
+// fur is drawn as stacked "shells" (one instanced draw): each layer keeps only the strands tall enough to reach it
+const strandTex = (() => {
+  const S = 256, c = document.createElement('canvas'); c.width = c.height = S;
+  const g = c.getContext('2d'), img = g.createImageData(S, S);
+  for (let i = 0; i < S * S; i++) { const v = Math.pow(Math.random(), .5) * 255; img.data[i * 4] = img.data[i * 4 + 1] = img.data[i * 4 + 2] = v; img.data[i * 4 + 3] = 255; }
+  g.putImageData(img, 0, 0);
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.generateMipmaps = false; t.minFilter = THREE.LinearFilter; return t;
+})();
+function furShells(geo, color, { n = 20, len = .08, den = 3, droop = .015, face = 0, root = .5, tip = 1.12 } = {}) {
+  if (!geo.attributes.furUv) geo.setAttribute('furUv', geo.attributes.uv);
+  const mat = new THREE.MeshStandardMaterial({ color, roughness: .88, envMapIntensity: .3 });
+  mat.onBeforeCompile = sh => {
+    Object.assign(sh.uniforms, { uN: { value: n }, uLen: { value: len }, uDroop: { value: droop }, uStr: { value: strandTex }, uDen: { value: den }, uFace: { value: face }, uRoot: { value: root }, uTip: { value: tip } });
+    sh.vertexShader = 'uniform float uN, uLen, uDroop, uFace;\nattribute vec2 furUv;\nvarying float vLayer; varying float vMask; varying vec2 vFurUv;\n' + sh.vertexShader.replace('#include <begin_vertex>', `#include <begin_vertex>
+      float fl = float(gl_InstanceID + 1) / uN; vLayer = fl; vFurUv = furUv;
+      vec3 nn = normalize(objectNormal);
+      float faceAmt = smoothstep(.62, .9, dot(nn, normalize(vec3(0., .1, 1.))));
+      vMask = 1. - faceAmt * uFace * .82;
+      transformed += objectNormal * uLen * fl; transformed.y -= uDroop * fl * fl;`);
+    sh.fragmentShader = 'uniform sampler2D uStr; uniform float uDen, uRoot, uTip;\nvarying float vLayer; varying float vMask; varying vec2 vFurUv;\n' + sh.fragmentShader.replace('#include <map_fragment>', `#include <map_fragment>
+      float hs = texture2D(uStr, vFurUv * vec2(uDen * 2., uDen)).r;
+      if (hs < vLayer || vLayer > vMask) discard;
+      diffuseColor.rgb *= mix(uRoot, uTip, vLayer);`);
+  };
+  const im = new THREE.InstancedMesh(geo, mat, n);
+  im.frustumCulled = false; im.castShadow = false; im.receiveShadow = false; im.raycast = () => {};
+  return im;
+}
+// iris laid out in polar form: top of the canvas is the centre of the eye, bottom is its rim
+const irisTex = canvasTex(512, 128, (g, w, h) => {
+  const gr = g.createLinearGradient(0, 0, 0, h);
+  gr.addColorStop(0, '#050303'); gr.addColorStop(.46, '#070404'); gr.addColorStop(.5, '#2a1508'); gr.addColorStop(.62, '#7a4a1c');
+  gr.addColorStop(.8, '#5a3414'); gr.addColorStop(.92, '#2a170a'); gr.addColorStop(1, '#120a05');
+  g.fillStyle = gr; g.fillRect(0, 0, w, h);
+  for (let i = 0; i < 900; i++) { const x = rand(0, w), y0 = rand(.48, .6) * h, y1 = rand(.75, .95) * h; g.strokeStyle = Math.random() < .5 ? `rgba(200,140,70,${rand(.08, .3)})` : `rgba(30,15,5,${rand(.1, .35)})`; g.lineWidth = rand(.5, 1.6); g.beginPath(); g.moveTo(x, y0); g.lineTo(x + rand(-3, 3), y1); g.stroke(); }
+  g.fillStyle = 'rgba(230,170,90,.18)'; g.fillRect(0, .52 * h, w, .05 * h);
+});
+irisTex.wrapS = THREE.RepeatWrapping;
+// wing skin: soft mottling, veins branching from the finger bones, fine wrinkles (drawn in wing units, x 0..2.4, y -.7..1.1)
+const wingSkinTex = canvasTex(1024, 768, (g, w, h) => {
+  const X = x => x / 2.4 * w, Y = y => (1 - (y + .7) / 1.8) * h;
+  g.fillStyle = '#ffffff'; g.fillRect(0, 0, w, h);
+  for (let i = 0; i < 90; i++) { const c = g.createRadialGradient(rand(0, w), rand(0, h), 0, rand(0, w), rand(0, h), rand(20, 90)); c.addColorStop(0, `rgba(150,90,110,${rand(.04, .1)})`); c.addColorStop(1, 'rgba(150,90,110,0)'); g.fillStyle = c; g.fillRect(0, 0, w, h); }
+  const vein = (x0, y0, a, len, wd, depth) => {
+    let x = x0, y = y0; g.strokeStyle = `rgba(110,40,70,${.18 + wd * .12})`; g.lineWidth = wd; g.beginPath(); g.moveTo(X(x), Y(y));
+    for (let i = 0; i < 10; i++) { a += rand(-.25, .25); x += Math.cos(a) * len / 10; y += Math.sin(a) * len / 10; g.lineTo(X(x), Y(y)); if (depth > 0 && Math.random() < .25) { g.stroke(); vein(x, y, a + rand(-1.1, 1.1), len * .5, wd * .6, depth - 1); g.strokeStyle = `rgba(110,40,70,${.18 + wd * .12})`; g.lineWidth = wd; g.beginPath(); g.moveTo(X(x), Y(y)); } }
+    g.stroke();
+  };
+  const bones = [[[.1, .3], [1.22, 1.06]], [[1.22, 1.06], [2.32, .56]], [[1.22, 1.06], [1.97, -.16]], [[1.22, 1.06], [1.26, -.58]]];
+  bones.forEach(([[ax, ay], [bx, by]]) => { for (let t = .15; t < .95; t += .12) { const x = ax + (bx - ax) * t, y = ay + (by - ay) * t, a = Math.atan2(by - ay, bx - ax); vein(x, y, a + (Math.random() < .5 ? 1.3 : -1.3) + rand(-.3, .3), rand(.25, .5), rand(1.4, 2.6), 2); } });
+  g.strokeStyle = 'rgba(90,40,60,.09)'; g.lineWidth = 1;
+  for (let i = 0; i < 260; i++) { const x = rand(0, w), y = rand(0, h), a = rand(0, 6.28), l = rand(10, 40); g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(x + Math.cos(a + .4) * l * .5, y + Math.sin(a + .4) * l * .5, x + Math.cos(a) * l, y + Math.sin(a) * l); g.stroke(); }
+});
+wingSkinTex.repeat.set(1 / 2.4, 1 / 1.8); wingSkinTex.offset.set(0, .7 / 1.8);
+const wingBump = wingSkinTex.clone(); wingBump.colorSpace = THREE.NoColorSpace; wingBump.needsUpdate = true;
+
 // ───────────────────────── the bat ─────────────────────────
 const BATS = [
   { name: 'hoowy', fur: 0xd3849e, hat: [0xd63b2a, 0xf0b93a, 0x2c5fbf] },
@@ -497,10 +554,12 @@ const BATS = [
 function makeBat(cfg, scrapeKind) {
   const B = { root: new THREE.Group(), inner: new THREE.Group(), meshes: [] };
   B.root.add(B.inner);
-  const fur = M.fur(cfg.fur), furLight = M.fur(0xe6b3c1), furDark = M.fur(new THREE.Color(cfg.fur).multiplyScalar(.8));
+  const fur = M.fur(cfg.fur), furLight = M.fur(new THREE.Color(cfg.fur).lerp(new THREE.Color(0xe8c4cc), .12)), furDark = M.fur(new THREE.Color(cfg.fur).multiplyScalar(.8));
   const SX = 1, SY = 1.08, SZ = .95;
   const add = (m, parent = B.inner) => { parent.add(m); m.traverse(o => o.isMesh && B.meshes.push(o)); return m; };
-  const body = mesh(new THREE.SphereGeometry(1, 72, 54), fur); body.scale.set(SX, SY, SZ); add(body);
+  const bodyGeo = new THREE.SphereGeometry(1, 72, 54);
+  const body = mesh(bodyGeo, fur); body.scale.set(SX, SY, SZ); add(body);
+  const bodyFur = furShells(bodyGeo, cfg.fur, { n: 22, len: .085, den: 3.2, droop: .018, face: 1 }); bodyFur.scale.copy(body.scale); B.inner.add(bodyFur);
   const Z = V3(0, 0, 1);
   const surf = (x, y, off = 0) => {
     const zz = SZ * Math.sqrt(Math.max(0, 1 - x * x / (SX * SX) - y * y / (SY * SY)));
@@ -510,7 +569,9 @@ function makeBat(cfg, scrapeKind) {
   const stick = (m, x, y, off = 0) => { const s = surf(x, y, off); m.position.copy(s.p); m.quaternion.setFromUnitVectors(Z, s.n); return add(m); };
 
   // belly patch
-  const belly = mesh(new THREE.SphereGeometry(.5, 48, 32), furLight); belly.scale.set(1.05, .95, .5); belly.position.set(0, -.58, .57); add(belly);
+  const bellyGeo = new THREE.SphereGeometry(.5, 48, 32);
+  const belly = mesh(bellyGeo, furLight); belly.scale.set(1.05, .95, .5); belly.position.set(0, -.58, .57); add(belly);
+  const bellyFur = furShells(bellyGeo, new THREE.Color(cfg.fur).lerp(new THREE.Color(0xe8c4cc), .12), { n: 16, len: .06, den: 2.8, droop: .012, root: .6, tip: 1.08 }); bellyFur.scale.copy(belly.scale); bellyFur.position.copy(belly.position); B.inner.add(bellyFur);
 
   // ears
   const earPts = [[0, 0], [.36, .04], [.37, .36], [.25, .74], [.09, 1.02], [0, 1.08]].map(([x, y]) => new THREE.Vector2(x, y));
@@ -518,26 +579,28 @@ function makeBat(cfg, scrapeKind) {
   B.ears = [-1, 1].map(sd => {
     const piv = new THREE.Group(); piv.position.set(sd * .56, .62, -.12); piv.rotation.set(-.08, sd * .2, -sd * .55);
     const outer = mesh(earGeo, fur); outer.scale.set(1, 1, .5); piv.add(outer);
-    const inner = mesh(earGeo, M.fur(0xe3a3b6)); inner.scale.set(.66, .78, .3); inner.position.set(0, .1, .1); piv.add(inner);
+    const earFur = furShells(earGeo, cfg.fur, { n: 12, len: .05, den: 1.6, droop: .004 }); earFur.scale.copy(outer.scale); piv.add(earFur);
+    const inner = mesh(earGeo, new THREE.MeshPhysicalMaterial({ color: 0xc98a9c, roughness: .55, sheen: .4, sheenColor: new THREE.Color(0xf0c8d4), envMapIntensity: .3 })); inner.scale.set(.66, .78, .3); inner.position.set(0, .1, .16); piv.add(inner);
     add(piv); piv.userData.rz = -sd * .55; return piv;
   });
 
   // eyes: glossy whites, painted-on iris and pupil caps, fixed catch lights
-  const irisGeo = new THREE.SphereGeometry(.303, 40, 20, 0, Math.PI * 2, 0, .62).rotateX(Math.PI / 2);
-  const pupilGeo = new THREE.SphereGeometry(.306, 40, 16, 0, Math.PI * 2, 0, .33).rotateX(Math.PI / 2);
-  const ringGeo = new THREE.SphereGeometry(.304, 40, 20, 0, Math.PI * 2, .55, .07).rotateX(Math.PI / 2);
-  const white = new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: .06, clearcoat: 1, clearcoatRoughness: .05, envMapIntensity: 1 });
+  const irisGeo = new THREE.SphereGeometry(.303, 64, 24, 0, Math.PI * 2, 0, .64).rotateX(Math.PI / 2);
+  const irisMat = new THREE.MeshPhysicalMaterial({ map: irisTex, roughness: .2, clearcoat: 1, clearcoatRoughness: .04, envMapIntensity: .8 });
+  const white = new THREE.MeshPhysicalMaterial({ color: 0xf4efe8, roughness: .08, clearcoat: 1, clearcoatRoughness: .04, envMapIntensity: 1 });
+  const lidGeo = new THREE.SphereGeometry(.322, 40, 20, 0, Math.PI * 2, 0, 1.05);
+  const lidMat = M.fur(new THREE.Color(cfg.fur).multiplyScalar(.92));
   B.eyes = [-1, 1].map(sd => {
     const grp = new THREE.Group(), s = surf(sd * .33, .3, -.13);
     grp.position.copy(s.p); grp.rotation.y = sd * .12; grp.scale.set(1, 1, .82);
     grp.add(mesh(new THREE.SphereGeometry(.3, 48, 32), white, false));
     const look = new THREE.Group(); grp.add(look);
-    look.add(mesh(irisGeo, M.gloss(0x5a3420, .15), false));
-    look.add(mesh(ringGeo, M.gloss(0x2a160c, .2), false));
-    look.add(mesh(pupilGeo, M.gloss(0x0c0606, .1), false));
-    const hl = mesh(new THREE.SphereGeometry(.058, 16, 12), new THREE.MeshBasicMaterial({ color: 0xffffff }), false); hl.position.set(.085, .1, .27); grp.add(hl);
-    const hl2 = mesh(new THREE.SphereGeometry(.026, 12, 8), new THREE.MeshBasicMaterial({ color: 0xffffff }), false); hl2.position.set(-.07, -.08, .285); grp.add(hl2);
-    add(grp); return { grp, look };
+    look.add(mesh(irisGeo, irisMat, false));
+    const hl = mesh(new THREE.SphereGeometry(.04, 16, 12), new THREE.MeshBasicMaterial({ color: 0xffffff }), false); hl.position.set(.08, .09, .282); grp.add(hl);
+    const hl2 = mesh(new THREE.SphereGeometry(.018, 12, 8), new THREE.MeshBasicMaterial({ color: 0xffffff }), false); hl2.position.set(-.065, -.075, .29); grp.add(hl2);
+    const lid = mesh(lidGeo, lidMat, false); lid.rotation.x = -.42; grp.add(lid);
+    const lash = mesh(new THREE.TorusGeometry(.322 * Math.sin(1.05), .008, 6, 48), M.gloss(0x2a1820, .5), false); lash.rotation.x = Math.PI / 2; lash.position.y = .322 * Math.cos(1.05); lid.add(lash);
+    add(grp); return { grp, look, lid };
   });
 
   // brows
@@ -548,11 +611,10 @@ function makeBat(cfg, scrapeKind) {
   });
 
   // nose, cheeks
-  const nose = mesh(new THREE.SphereGeometry(.06, 20, 14), M.gloss(0x8a3d58, .3), false); nose.scale.set(1.4, .9, .7); stick(nose, 0, .04, .02);
-  [-1, 1].forEach(sd => {
-    const ck = new THREE.Mesh(new THREE.CircleGeometry(.13, 32), new THREE.MeshBasicMaterial({ color: 0xd8607a, transparent: true, opacity: .16, depthWrite: false }));
-    stick(ck, sd * .6, -.08, .012);
-  });
+  const snout = new THREE.Group(); stick(snout, 0, -.02, -.03);
+  const muzzle = mesh(new THREE.SphereGeometry(.15, 32, 20), M.fur(cfg.fur), false); muzzle.scale.set(1.1, .7, .4); snout.add(muzzle);
+  const nose = mesh(new THREE.SphereGeometry(.075, 24, 16), new THREE.MeshPhysicalMaterial({ color: 0x5a2a38, roughness: .3, clearcoat: .8, clearcoatRoughness: .2 }), false); nose.scale.set(1.15, .7, .7); nose.position.set(0, .035, .055); snout.add(nose);
+  [-1, 1].forEach(sd => { const ns = mesh(new THREE.SphereGeometry(.022, 12, 8), M.matte(0x140608, .6), false); ns.scale.set(1.1, .7, .5); ns.position.set(sd * .03, .028, .102); ns.scale.multiplyScalar(.8); snout.add(ns); });
 
   // mouths: smile, open laugh, worried
   const tubeAlong = pts => new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.map(([x, y]) => surf(x, y, .012).p)), 24, .03, 8, false);
@@ -569,7 +631,7 @@ function makeBat(cfg, scrapeKind) {
   };
   // buck teeth
   const toothGeo = new RoundedBoxGeometry(.15, .2, .08, 3, .035);
-  [-1, 1].forEach(sd => { const t = mesh(toothGeo, M.gloss(0xfffdf8, .18), false); stick(t, sd * .079, -.335, .012); });
+  [-1, 1].forEach(sd => { const t = mesh(toothGeo, new THREE.MeshPhysicalMaterial({ color: 0xf3ead8, roughness: .25, clearcoat: .9, clearcoatRoughness: .1, envMapIntensity: .6 }), false); stick(t, sd * .079, -.335, .012); t.rotation.z += sd * .04; });
 
   // feet
   [-1, 1].forEach(sd => { const f = mesh(new THREE.SphereGeometry(.15, 24, 16), furDark); f.scale.set(1.1, .6, 1.3); f.position.set(sd * .3, -1.01, .22); add(f); });
@@ -579,20 +641,24 @@ function makeBat(cfg, scrapeKind) {
   ws.moveTo(0, .32); ws.quadraticCurveTo(.6, 1.02, 1.22, 1.06); ws.lineTo(2.32, .56);
   ws.quadraticCurveTo(1.86, .36, 1.97, -.16); ws.quadraticCurveTo(1.46, -.1, 1.26, -.58);
   ws.quadraticCurveTo(.82, -.26, .36, -.46); ws.quadraticCurveTo(.24, -.1, 0, -.22);
-  const wingGeo = new THREE.ExtrudeGeometry(ws, { depth: .035, bevelEnabled: true, bevelThickness: .03, bevelSize: .03, bevelSegments: 3, curveSegments: 28 });
+  const wingGeo = new THREE.ExtrudeGeometry(ws, { depth: .018, bevelEnabled: true, bevelThickness: .014, bevelSize: .02, bevelSegments: 2, curveSegments: 32 });
   { const wp = wingGeo.attributes.position, wc = [], v = V3(), near = new THREE.Color(cfg.fur).lerp(new THREE.Color(0xffffff), .12), far = new THREE.Color(0x7d3e5c);
     for (let i = 0; i < wp.count; i++) { v.fromBufferAttribute(wp, i); const k = clamp(v.x / 2.3, 0, 1);
       wp.setZ(i, v.z - .32 * k * k + .06 * Math.sin(v.y * 2.4) * k); const c = near.clone().lerp(far, Math.pow(k, 1.4) * .75); wc.push(c.r, c.g, c.b); }
     wingGeo.setAttribute('color', new THREE.Float32BufferAttribute(wc, 3)); wingGeo.computeVertexNormals(); }
-  const wingMat = new THREE.MeshPhysicalMaterial({ vertexColors: true, color: 0xffffff, roughness: .55, sheen: .7, sheenColor: new THREE.Color(0xe8c2d0), sheenRoughness: .4, side: THREE.DoubleSide, envMapIntensity: .4 });
-  const boneMat = M.gloss(0x7a3c58, .4);
+  const wingMat = new THREE.MeshPhysicalMaterial({ vertexColors: true, color: 0xffffff, map: wingSkinTex, bumpMap: wingBump, bumpScale: 1.2, roughness: .48, sheen: .5, sheenColor: new THREE.Color(0xe8c2d0), sheenRoughness: .35, emissive: 0x4a1428, emissiveIntensity: .35, side: THREE.DoubleSide, envMapIntensity: .45 });
+  const boneMat = new THREE.MeshPhysicalMaterial({ color: 0x8a4a62, roughness: .45, sheen: .5, sheenColor: new THREE.Color(0xe0b0c0), envMapIntensity: .35 });
   const bones = [[[.1, .3], [.62, .86], [1.22, 1.06]], [[1.22, 1.06], [1.8, .8], [2.32, .56]], [[1.22, 1.06], [1.6, .45], [1.97, -.16]], [[1.22, 1.06], [1.25, .2], [1.26, -.58]]];
   B.wings = [-1, 1].map(sd => {
     const piv = new THREE.Group(); piv.position.set(sd * .78, .04, -.22); if (sd < 0) piv.scale.x = -1;
     piv.add(mesh(wingGeo, wingMat));
     const wz = (x, y) => .075 - .32 * (x / 2.3) ** 2 + .06 * Math.sin(y * 2.4) * (x / 2.3);
-    bones.forEach(b => { const tb = mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(b.map(([x, y]) => V3(x, y, wz(x, y)))), 16, .03, 6), boneMat, false); piv.add(tb); });
-    const claw = mesh(new THREE.ConeGeometry(.05, .14, 10), M.gloss(0xfff2f6, .3), false); claw.position.set(1.22, 1.14, wz(1.22, 1.1) - .02); claw.rotation.z = .5; piv.add(claw);
+    bones.forEach((b, bi) => {
+      const crv = new THREE.CatmullRomCurve3(b.map(([x, y]) => V3(x, y, wz(x, y))));
+      piv.add(mesh(new THREE.TubeGeometry(crv, 24, bi ? .02 : .032, 8), boneMat, false));
+      [.5, 1].forEach(t => { if (bi === 0 && t === 1) return; const k = mesh(new THREE.SphereGeometry(bi ? .03 : .045, 12, 8), boneMat, false); k.position.copy(crv.getPointAt(t)); k.scale.z = .7; piv.add(k); });
+    });
+    const claw = mesh(new THREE.ConeGeometry(.04, .14, 10), M.gloss(0x3a2a2c, .3), false); claw.position.set(1.22, 1.14, wz(1.22, 1.1) - .02); claw.rotation.z = .5; piv.add(claw);
     add(piv); return piv;
   });
 
@@ -663,11 +729,11 @@ function updateBat(B, t, dt) {
   B.blinkT -= dt;
   if (B.blinkT <= 0) { B.blinking = .16; B.blinkT = rand(2.2, 5); }
   if (B.blinking > 0) B.blinking -= dt;
-  const lid = B.blinking > 0 ? Math.max(.08, Math.abs(B.blinking - .08) / .08) : (B.mood === 'open' ? .86 : 1);
+  const close = B.blinking > 0 ? 1 - Math.abs(B.blinking - .08) / .08 : (B.mood === 'worried' ? .1 : 0);
   // eyes follow what the child is holding, otherwise the camera
   const tgt = B.lookTarget || camera.position;
   B.eyes.forEach(e => {
-    e.grp.scale.y += (lid - e.grp.scale.y) * Math.min(1, dt * 30);
+    e.lid.rotation.x += ((-.42 + close * 2.0) - e.lid.rotation.x) * Math.min(1, dt * 30);
     const l = e.grp.worldToLocal(tgt.clone()).normalize();
     const ry = clamp(Math.atan2(l.x, l.z), -.42, .42), rx = clamp(-Math.atan2(l.y, l.z), -.36, .36);
     e.look.rotation.y += (ry - e.look.rotation.y) * Math.min(1, dt * 12); e.look.rotation.x += (rx - e.look.rotation.x) * Math.min(1, dt * 12);
