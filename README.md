@@ -107,3 +107,13 @@ changes pace and pitch phrase by phrase. The game prefers the most natural voice
 installed (Premium, Enhanced or Natural voices first), and a grown-up can choose
 another in settings. The
 line list in `studio.html` must match `LINES` in `index.html`.
+
+## Version 2 (3D preview): `v2/index.html`
+
+A one-screen prototype of Bat Doctor in real-time 3D, to judge a softer, animated-movie look before converting all five games.
+
+- Built with [three.js](https://threejs.org) r160 (MIT, see `v2/THREE-LICENSE.txt`), bundled in `v2/` so it works offline. No other dependencies.
+- Everything is modelled in code: the bat (fuzzy "sheen" fur, glossy eyes that follow what the child is holding, blinking, buck teeth, propeller cap), the cave, the exam table and the tools.
+- Flow: the bat flies in, listen to the heart with the stethoscope, match the bandage to the scrape's shape, tap the bat three times, and it flies out of the cave to the moon. Each round is a new bat with a new cap and scrape shape.
+- Reuses the voice lines in `voice/`. Open it over http (e.g. `python3 -m http.server`), like the main game.
+- Hold the house button for 1 second to go back to the 2D game.
