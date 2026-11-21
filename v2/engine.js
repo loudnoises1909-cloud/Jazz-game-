@@ -651,7 +651,7 @@ function makeBat(cfg, { scrape: scrapeKind = null, furN = 1, blobY = -.085, scal
     lookTarget: null, blinkT: 2, blinking: 0, prop: B.prop, propSpeed: 3, bank: 0, vel: V3(), last: V3(), hurt: false });
   B.setMood = m => {
     B.mood = m;
-    B.mouth.smile.visible = m === 'happy'; B.mouth.open.visible = m === 'open'; B.mouth.worried.visible = m === 'worried';
+    B.mouth.smile.visible = m === 'happy' || m === 'sleep'; B.mouth.open.visible = m === 'open'; B.mouth.worried.visible = m === 'worried';
     B.brows.forEach(b => { b.userData.cap.rotation.z = Math.PI / 2 + (m === 'worried' ? -b.userData.sd * .38 : m === 'open' ? b.userData.sd * .12 : 0); b.position.y = surf(b.userData.sd * .34, m === 'open' ? .7 : .67, .01).p.y; });
   };
   B.setMood('happy');
@@ -672,7 +672,8 @@ function updateBat(B, t, dt) {
   B.root.position.copy(B.base).add(B.offset);
   B.root.position.y += Math.sin(t * 2.3) * .085 * B.bobAmt;
   const flap = Math.sin(t * fs);
-  B.wings[1].rotation.z = flap * a + .08; B.wings[0].rotation.z = -(flap * a + .08);
+  const lift = .08 + (B.wingLift || 0);
+  B.wings[1].rotation.z = flap * a + lift; B.wings[0].rotation.z = -(flap * a + lift);
   B.wings[1].rotation.y = -Math.cos(t * fs) * a * .45 - .1; B.wings[0].rotation.y = -B.wings[1].rotation.y;
   const sq = Math.sin(t * fs + 1.2) * .022 * (a / .42) + B.squash;
   B.inner.scale.set(1 - sq * .6, 1 + sq, 1 - sq * .6);
@@ -687,7 +688,7 @@ function updateBat(B, t, dt) {
   B.blinkT -= dt;
   if (B.blinkT <= 0) { B.blinking = .16; B.blinkT = rand(2.2, 5); }
   if (B.blinking > 0) B.blinking -= dt;
-  const close = B.blinking > 0 ? 1 - Math.abs(B.blinking - .08) / .08 : (B.mood === 'worried' ? .1 : 0);
+  const close = B.blinking > 0 ? 1 - Math.abs(B.blinking - .08) / .08 : (B.mood === 'sleep' ? 1 : B.mood === 'worried' ? .1 : 0);
   // eyes follow what the child is holding, otherwise the camera
   const tgt = B.lookTarget || camera.position;
   B.eyes.forEach(e => {
@@ -698,8 +699,8 @@ function updateBat(B, t, dt) {
   });
   // contact shadow
   const h = B.root.position.y;
-  const hh = (h - B.blobY - 1.2) / B.scale;
-  B.blob.position.x = B.root.position.x; B.blob.position.z = B.root.position.z; B.blob.visible = B.root.visible; B.blob.material.opacity = clamp(.55 - (hh - 1.1) * .18, 0, .5); B.blob.scale.setScalar((.9 + (hh - 1.4) * .25) * B.scale);
+  const hh = (h - B.blobY) / B.scale - .085;
+  B.blob.position.x = B.root.position.x; B.blob.position.z = B.root.position.z; B.blob.visible = B.root.visible && !B.noBlob; B.blob.material.opacity = clamp(.55 - (hh - 1.1) * .18, 0, .5); B.blob.scale.setScalar((.9 + (hh - 1.4) * .25) * B.scale);
   // scrape throbs while it hurts
   if (B.scrape.visible) B.scrape.scale.setScalar(1 + Math.max(0, Math.sin(t * 5)) * .1 * (B.hurt ? 1 : .3));
 }
